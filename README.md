@@ -12,6 +12,14 @@ giradas** para dejar de registrar la escena. Si nadie lo detecta a tiempo, el si
 aunque siga encendido. Detectar este sabotaje de forma automática permite alertar al personal de seguridad en
 cuanto ocurre.
 
+## Contexto regional
+
+Las cámaras de vigilancia son una herramienta clave de seguridad en las ciudades colombianas, y en Armenia
+(Quindío) apoyan el monitoreo y la captura de delincuentes; sin embargo, muchas quedan fuera de servicio o son
+vandalizadas. No existe un dataset público regional de cámaras saboteadas, por lo que el proyecto entrena con un
+dataset internacional y valida con una captura propia en una escena real de Armenia. Las fuentes verificadas
+están en `docs/contexto_regional.md` (tarea T06).
+
 ## Qué vamos a hacer
 
 Clasificar cada imagen de una cámara en una de **4 clases: normal, desenfocada, girada o tapada**, y reportar
@@ -30,25 +38,32 @@ Todo el proceso se implementa en **Python y MATLAB**.
 
 ## Cómo lo vamos a hacer
 
-1. **Dataset:** imágenes reales de cámaras exteriores (ver [Dataset](#dataset)), más una captura propia pequeña
-   con webcam o celular para la demo y para medir la generalización a otra cámara.
+1. **Datos:** se entrena con imágenes reales de cámaras exteriores (ver [Dataset](#dataset)) y se valida con una
+   **captura propia regional** en Armenia, Quindío, que también incluye cambios reales de iluminación. La captura
+   respeta la Ley 1581 de 2012 de protección de datos personales.
 2. **División por bloques:** train/val/test 70/15/15 por bloques de tiempo o ubicación de cámara, no aleatoria,
    porque los frames consecutivos son casi idénticos y una división aleatoria inflaría las métricas.
 3. **Módulo clásico:** preprocesamiento (escala de grises, tamaño fijo, filtro Gaussiano y mediana) y descriptores:
    - Varianza del Laplaciano → nitidez (detecta **desenfocada**).
    - Desviación estándar y entropía del histograma → uniformidad (detecta **tapada**).
    - Coincidencias ORB contra imágenes de referencia y ángulo por homografía → geometría (detecta **girada**).
+   - Saturación, dispersión del matiz y proporción de tono de piel en HSV → umbralización de color (separa
+     **tapada** con la mano de una escena nocturna oscura).
    - Densidad de bordes Canny y orientación dominante de Hough → descriptores complementarios.
 
    Un árbol de reglas (tapada → desenfocada → girada → normal) decide la clase, y un puntaje continuo de
    sabotaje permite trazar la curva ROC.
 4. **Módulo CNN** ⏳: transfer learning con MobileNetV2 y una cabeza de 4 clases (se confirma cuando se vea el
-   tema en clase).
+   tema en clase), con una comparación pequeña de hiperparámetros para justificar cada valor.
 5. **Auditoría:** perturbaciones de brillo (oscurecer y aclarar), corrección gamma, ruido gaussiano, sal y
-   pimienta y compresión JPEG, en 3 niveles y con semilla fija. El desenfoque no se usa como perturbación porque
-   es una de las clases.
+   pimienta y compresión JPEG, en 3 niveles y con semilla fija (degradación artificial), más la captura con
+   cambios reales de luz: luz apagada, lámpara y contraluz de ventana (degradación física). El desenfoque no se
+   usa como perturbación porque es una de las clases.
 6. **Correcciones para la defensa:** CLAHE o ecualización, corrección gamma, filtro de mediana, Gaussiano o
    bilateral, con la mejora medida antes y después.
+7. **Demo en vivo:** corre localmente en el portátil con la webcam (Colab no accede a la cámara en tiempo real).
+   Al iniciar, se calibra con 8 frames normales de la escena como referencias; durante la defensa, unas teclas
+   activan los filtros correctivos y muestran la predicción antes y después, con los FPS.
 
 ## Línea base de referencia
 
@@ -60,12 +75,14 @@ El artículo del dataset compara un método por reglas con una CNN binaria (norm
 | CNN (Conv 32-64-128, densa 128, salida sigmoide) | 0,9975 | 0,02 s | 37,8 MB |
 
 El artículo no evalúa la robustez ante cambios de iluminación ni ruido, y advierte que la CNN necesita datos
-nuevos si la cámara cambia de posición. **La auditoría de robustez y la defensa son el aporte de este proyecto.**
+nuevos si la cámara cambia de posición. **La auditoría de robustez (artificial y física), la validación con una
+captura propia en Armenia y la defensa son el aporte de este proyecto.**
 
 ## Tecnologías
 
 La guía del proyecto exige realizar el proceso en **Python y MATLAB**. Python lleva el flujo completo y MATLAB
-replica el módulo clásico para comprobar que ambos dan el mismo resultado.
+replica el módulo clásico para comprobar que ambos dan el mismo resultado. La red se entrena en Colab y la demo
+en vivo corre localmente en el portátil con TensorFlow en CPU, porque Colab no accede a la webcam en tiempo real.
 
 ### Lenguajes y entornos
 
@@ -102,6 +119,7 @@ docs/
   PLAN.md          Plan general
   PLAN_CRISTHIAN.md
   PLAN_SANTIAGO.md
+  contexto_regional.md  Justificación regional con fuentes (T06)
 notebooks/         Notebooks de Python (compatibles con Colab)
 src/               Código Python reutilizable
 tests/             Pruebas automáticas (pytest)
@@ -118,6 +136,8 @@ informe/           Informe técnico y presentación
 - **Descarga:** https://nc.uni-bremen.de/index.php/s/GCsBcswrQf9kBXC
 - **Uso:** la página no indica licencia; se usa solo con fines académicos y citando el artículo.
 - **No se sube al repositorio** (ver [data/README.md](data/README.md)).
+- **Captura propia regional:** ~100 imágenes por clase en Armenia, Quindío, más un conjunto con cambios reales
+  de iluminación (`data/propios/`, no se versiona).
 
 > S. Attarha, K. Shanmugi y A. Förster, "Poster: Camera Tampering Detection for Outdoor IoT Systems",
 > EWSN 2024. arXiv:2602.05706.
@@ -133,8 +153,8 @@ informe/           Informe técnico y presentación
 ## Plan
 
 - [Plan general](docs/PLAN.md): requisitos, decisiones, ruta crítica y todas las tareas.
-- [Plan de Cristhian](docs/PLAN_CRISTHIAN.md): datos, métricas, módulo clásico y auditoría.
-- [Plan de Santiago](docs/PLAN_SANTIAGO.md): perturbaciones, MATLAB, CNN, captura y demo.
+- [Plan de Cristhian](docs/PLAN_CRISTHIAN.md): contexto regional, datos, métricas, módulo clásico y auditoría.
+- [Plan de Santiago](docs/PLAN_SANTIAGO.md): perturbaciones, MATLAB, CNN, captura regional y demo.
 
 ## Estado
 

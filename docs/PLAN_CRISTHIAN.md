@@ -5,7 +5,8 @@ primero en el plan general.
 
 ## Tu rol
 
-Eres dueño de los datos, las métricas, el módulo clásico y la auditoría de robustez. Estas tareas forman la
+Eres dueño de la justificación regional, los datos, las métricas, el módulo clásico y la auditoría de robustez
+(artificial y física). Estas tareas forman la
 **ruta crítica** del proyecto: la división de datos (T14), las métricas (T25) y el clásico (T40–T43) desbloquean
 el trabajo de Santiago (MATLAB, CNN, demo) y la auditoría. Prioriza siempre las tareas ⛔.
 
@@ -19,6 +20,7 @@ commit y Pull Request revisado por Santiago.
 - T03 Configurar el entorno Python.
 - T10 Descargar el dataset.
 - T25 Módulo de métricas (solo depende de T03).
+- T06 Justificación regional (no depende de nada).
 
 ## Lista de tareas
 
@@ -37,6 +39,16 @@ commit y Pull Request revisado por Santiago.
 - [ ] **T03 🟢** Configurar el entorno Python (local o Colab) con `requirements.txt`.
   - **Qué hacer:** crear un entorno virtual e instalar `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
+- [ ] **T06 🟢** Justificación regional en `docs/contexto_regional.md`.
+  - **Qué hacer:** verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío; anotar fecha de consulta. No dar por ciertas las cifras hasta verificarlas. Fuentes de partida:
+    - https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10
+    - https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006
+    - https://www.bluradio.com/regiones/santanderes/robaron-2-000-metros-de-cable-de-camaras-de-seguridad-en-bucaramanga-rg10
+    - https://armenia.gov.co/alcaldia-de-armenia-rechaza-actos-vandalicos-contra-red-semaforica-y-llama-a-la-ciudadania-a-proteger-la-infraestructura-publica
+    - https://www.pulzo.com/nacion/robo-de-30-millones-en-armenia-camaras-mapas-de-calor-y-reaccion-policial-permiten-captura-PP5150773A
+  - **Entregable:** `docs/contexto_regional.md`.
+  - **Cómo verificar:** cada afirmación tiene su fuente verificada.
+  - **Quién te espera:** T101 (sección de contexto regional del informe).
 
 ### Fase 1. Datos
 
@@ -83,19 +95,23 @@ commit y Pull Request revisado por Santiago.
   - **Cómo verificar:** una imagen rotada un ángulo conocido devuelve un ángulo cercano.
 - [ ] **T34 🟢** Densidad de bordes Canny y orientación dominante de Hough.
   - **Cómo verificar:** prueba sobre una imagen sintética con bordes conocidos.
-- [ ] **T35 ⛔** Análisis de descriptores sobre train.
+- [ ] **T37 ⛔** Descriptor de color en HSV (umbralización de color).
+  - **Qué hacer:** saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara); sirve para separar "tapada" de una escena nocturna oscura.
+  - **Entregable:** `src/features.py`.
+  - **Cómo verificar:** una imagen sintética de tono piel da proporción alta y una gris da saturación cercana a 0.
+- [ ] **T35 ⛔** Análisis de descriptores sobre train (depende de T31, T32, T33 y T37).
   - **Qué hacer:** calcular todos los descriptores sobre train, hacer diagramas de caja por clase y escribir qué descriptor separa cada clase.
   - **Entregable:** `notebooks/03_descriptores.ipynb`.
   - **Cómo verificar:** gráficas y conclusiones escritas.
 - [ ] **T36 ⛔** Ficha de descriptores para MATLAB.
-  - **Qué hacer:** por cada descriptor, escribir fórmula, parámetros exactos (tamaño de kernel, umbrales de Canny, número de características ORB, etc.) y tamaño de imagen.
+  - **Qué hacer:** por cada descriptor, incluido el de color, escribir fórmula, parámetros exactos (tamaño de kernel, umbrales de Canny, número de características ORB, rangos HSV, etc.) y tamaño de imagen.
   - **Entregable:** `docs/descriptores.md`.
   - **Cómo verificar:** Santiago puede replicar cada descriptor solo con la ficha.
   - **Quién te espera:** Santiago (T51, T52, T53).
 
 ### Fase 5. Módulo clásico: reglas y evaluación
 
-- [ ] **T40 ⛔** Árbol de reglas en `src/classic.py`: tapada → desenfocada → girada → normal.
+- [ ] **T40 ⛔** Árbol de reglas en `src/classic.py`: tapada → desenfocada → girada → normal (la regla de tapada puede usar el descriptor de color de T37).
   - **Cómo verificar:** clasifica bien imágenes de ejemplo de cada clase.
   - **Quién te espera:** Santiago (T82, demo en vivo).
 - [ ] **T41 ⛔** Calibrar umbrales con train.
@@ -124,6 +140,11 @@ commit y Pull Request revisado por Santiago.
 - [ ] **T74 ⛔** `notebooks/06_auditoria.ipynb` con la interpretación.
   - **Cómo verificar:** cada condición crítica tiene su interpretación (incluida la confusión "oscura ↔ tapada").
   - **Quién te espera:** Santiago (T90, diagnóstico de la CNN).
+- [ ] **T75 ⛔** Auditoría física.
+  - **Esperas a:** Santiago (T81, conjunto de iluminación física); tu tarea T71.
+  - **Qué hacer:** ejecutar ambos modelos sobre el conjunto de iluminación física (luz apagada, lámpara, contraluz) y compararlo con la perturbación artificial equivalente: ¿el oscurecimiento artificial predice la luz baja real?
+  - **Entregable:** sección en `notebooks/06_auditoria.ipynb`, `results/auditoria/fisica.csv`.
+  - **Quién te espera:** Santiago (T90, diagnóstico de la CNN); tú mismo (T90, clásico).
 
 ### Fase 10. Defensa (tu parte)
 
@@ -140,11 +161,11 @@ commit y Pull Request revisado por Santiago.
 | T11 (inventario) | T12 (galería) |
 | T14 (división) | T60 (datos para la CNN) |
 | T25 (métricas) | T64 (evaluación de la CNN) |
-| T36 (ficha de descriptores) | T51, T52 (MATLAB) |
+| T36 (ficha de descriptores, incluido el color) | T51, T52 (MATLAB) |
 | T40 (reglas) | T82 (demo en vivo) |
 | T41 (umbrales) | T53 (clasificador en MATLAB) |
 | T43 (evaluación del clásico) | T44 (análisis de errores) y T83 (generalización) |
-| T74 (auditoría) | T90 (diagnóstico de la CNN) |
+| T74 y T75 (auditoría artificial y física) | T90 (diagnóstico de la CNN) |
 | T92 (antes/después) | T93 (guía de defensa) |
 
 | No empieces… | Hasta que Santiago termine… |
@@ -152,15 +173,17 @@ commit y Pull Request revisado por Santiago.
 | T70 (conjuntos degradados) | T20 (perturbaciones) |
 | T71 (auditoría de ambos modelos) | T64 (CNN evaluada) |
 | T92 (antes/después) | T91 (correcciones) |
+| T75 (auditoría física) | T81 (captura regional e iluminación física) |
 | T93 (guía de defensa) | T83 (generalización) y su parte de T90 |
+| T94 (ensayo con la demo) | T85 (filtros en la demo) |
 
 ## Tareas compartidas
 
 - [ ] **T01 ⛔** Acordar el plan (ver Fase 0).
 - [ ] **T03 🟢** Entorno Python (ver Fase 0).
 - [ ] **T93 ⛔** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte del clásico.
-- [ ] **T94 🟢** Ensayo cruzado: uno ataca en vivo y el otro explica, y viceversa.
+- [ ] **T94 🟢** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere T85 de Santiago).
 - [ ] **T100 🟢** Estructura del informe en `informe/` (tuya).
-- [ ] **T101 🟢** Tus secciones del informe: datos, clásico y auditoría.
+- [ ] **T101 🟢** Tus secciones del informe: contexto regional (a partir de T06), datos, clásico y auditoría.
 - [ ] **T102 🟢** Presentación.
 - [ ] **T103 ⛔** Revisión cruzada final: revisas las secciones de Santiago.
