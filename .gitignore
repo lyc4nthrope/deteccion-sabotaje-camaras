@@ -1,6 +1,7 @@
 # Data (downloaded or captured, not versioned)
 data/*
 !data/README.md
+!data/splits/
 
 # Python
 __pycache__/
