@@ -1,0 +1,8 @@
+numpy
+opencv-python
+scikit-image
+scikit-learn
+matplotlib
+pandas
+pytest
+# Deep learning framework is added in phase F6, once the CNN topic is covered in class.
