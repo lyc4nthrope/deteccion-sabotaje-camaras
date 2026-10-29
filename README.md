@@ -3,6 +3,7 @@
 Proyecto final de **Visión Artificial** · Grupo 7 · Temática: **Seguridad**
 
 **Integrantes:** Cristhian Eduardo Osorio Restrepo y Santiago Orozco Zuluaga
+
 **Docente:** Ing. Ana Maria Tamayo Ocampo, Mg
 
 ## Problema
