@@ -5,4 +5,4 @@ scikit-learn
 matplotlib
 pandas
 pytest
-# Deep learning framework is added in phase F6, once the CNN topic is covered in class.
+tensorflow  # Keras is included in TensorFlow; Colab already has it installed

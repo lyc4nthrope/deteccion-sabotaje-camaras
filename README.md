@@ -62,22 +62,33 @@ El artículo del dataset compara un método por reglas con una CNN binaria (norm
 El artículo no evalúa la robustez ante cambios de iluminación ni ruido, y advierte que la CNN necesita datos
 nuevos si la cámara cambia de posición. **La auditoría de robustez y la defensa son el aporte de este proyecto.**
 
-## Tecnologías propuestas
+## Tecnologías
 
-| Tecnología | Uso en el proyecto | Por qué |
+La guía del proyecto exige realizar el proceso en **Python y MATLAB**. Python lleva el flujo completo y MATLAB
+replica el módulo clásico para comprobar que ambos dan el mismo resultado.
+
+### Lenguajes y entornos
+
+| Tecnología | Para qué la usamos | Por qué esta |
 |---|---|---|
-| Python 3.11 | Lenguaje principal de todo el flujo | Ecosistema maduro para visión artificial y aprendizaje profundo |
-| OpenCV | Procesamiento de imágenes, Canny, ORB, homografía, Hough y cámara en vivo | Implementaciones rápidas de los algoritmos clásicos vistos en clase |
-| scikit-image | Descriptores y utilidades de imagen | Complementa a OpenCV con funciones de análisis documentadas |
-| NumPy | Operaciones con matrices de imagen | Base de todo el cálculo numérico en Python |
-| pandas | Tablas de inventario y resultados | Facilita guardar y comparar métricas por condición |
-| scikit-learn | Métricas: matriz de confusión, ROC/AUC, F1 | Funciones estándar y probadas para evaluar clasificadores |
-| Matplotlib | Gráficas y figuras del informe | Estándar para curvas, diagramas de caja y matrices |
-| TensorFlow/Keras con MobileNetV2 | ⏳ Módulo de aprendizaje profundo (propuesta, se confirma con el tema de CNN) | Transfer learning con un modelo liviano que converge rápido con pocos datos |
-| pytest | Pruebas automáticas | Verifica cada módulo antes de integrarlo |
-| Jupyter / Google Colab | Notebooks de análisis y GPU para entrenar | Permite documentar el análisis y entrenar sin GPU propia |
-| MATLAB (Image Processing Toolbox y Computer Vision Toolbox) | Réplica de las perturbaciones y del módulo clásico; Deep Learning Toolbox opcional | La guía exige el proceso en Python y MATLAB |
-| Git y GitHub | Control de versiones y Pull Requests | Trabajo en paralelo con revisión cruzada |
+| **Python 3.11** | Todo el flujo: datos, módulo clásico, red neuronal, auditoría y demo en vivo | Es el lenguaje con más herramientas de visión artificial y aprendizaje profundo, y es el que se usa en los notebooks de clase. La versión 3.11 es compatible con todas las librerías de esta lista |
+| **MATLAB** (Image Processing Toolbox y Computer Vision Toolbox) | Réplica de las perturbaciones y del módulo clásico (Fase 6) | Lo exige la guía. Las dos toolboxes traen los mismos algoritmos vistos en clase (Laplaciano, Canny, Hough, ORB y homografía), así que la réplica es directa. Si falta el Computer Vision Toolbox, la rotación se detecta con Hough (tarea T05) |
+| **Jupyter / Google Colab** | Notebooks de análisis y entrenamiento de la red | Los notebooks dejan el código, las gráficas y las explicaciones juntos, que es el formato de entrega de la materia. Colab da **GPU gratis**, necesaria para entrenar la red en minutos y no en horas |
+| **Git y GitHub** | Control de versiones, ramas y Pull Requests | Permite trabajar los dos en paralelo sin pisarse, revisar el trabajo del otro antes de unirlo y volver a una versión anterior si algo se daña |
+
+### Librerías de Python
+
+| Librería | Para qué la usamos | Por qué esta |
+|---|---|---|
+| **OpenCV** | Lectura de imágenes, filtros (Gaussiano, mediana), Laplaciano, Canny, ORB, homografía, Hough y captura de la webcam | Tiene en una sola librería todos los algoritmos del módulo clásico, es muy rápida (importa para medir el **tiempo por frame**) y maneja la cámara en vivo para la demo. Es la misma que se usa en clase y la que usó el artículo de referencia |
+| **NumPy** | Operaciones sobre las matrices de píxeles | Una imagen es una matriz de números, y NumPy es la base de todas las demás librerías. Permite calcular descriptores como la desviación estándar en una línea |
+| **scikit-image** | Entropía del histograma y funciones de análisis que OpenCV no trae | Complementa a OpenCV con funciones de análisis bien documentadas, ya usadas en las guías de la materia |
+| **TensorFlow / Keras** | Red neuronal: transfer learning con MobileNetV2 y curvas de loss y accuracy | Keras arma una red en pocas líneas, cada una corresponde a una capa, y eso facilita **explicar la arquitectura** en la defensa (la rúbrica castiga usar un modelo como caja negra). Entrega las curvas de loss y accuracy directamente, viene instalada en Colab y fue la usada por el artículo de referencia, así que los resultados se pueden comparar. Se descartó PyTorch porque exige escribir el ciclo de entrenamiento a mano, y el Deep Learning Toolbox de MATLAB porque no tiene GPU gratis |
+| **MobileNetV2** (dentro de Keras) | Modelo preentrenado para el transfer learning | Es una red **liviana**: entrena rápido con pocas imágenes (3600) y clasifica en pocos milisegundos, importante para la demo en vivo. Su arquitectura se ajusta a lo que se vea en el tema de CNN en clase |
+| **scikit-learn** | Matriz de confusión, curva ROC y AUC, F1 | Calcula con funciones probadas exactamente las métricas que exige la rúbrica, iguales para el módulo clásico y la red, así la comparación es justa |
+| **pandas** | Tablas de inventario del dataset y de resultados por condición | La auditoría genera muchas combinaciones (modelo × perturbación × nivel). pandas las organiza en tablas que se filtran, comparan y exportan al informe |
+| **Matplotlib** | Gráficas: diagramas de caja, curvas de loss y accuracy, ROC, F1 frente a severidad | Es la librería estándar de gráficas en Python y la usada en los notebooks de clase |
+| **pytest** | Pruebas automáticas de cada módulo | Cada tarea se verifica antes de unirla a `main`. Por ejemplo, comprueba que las perturbaciones sean reproducibles o que la división de datos no repita imágenes entre conjuntos |
 
 ## Estructura del repositorio
 
