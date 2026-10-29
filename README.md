@@ -16,9 +16,10 @@ cuanto ocurre.
 
 Las cámaras de vigilancia son una herramienta clave de seguridad en las ciudades colombianas, y en Armenia
 (Quindío) apoyan el monitoreo y la captura de delincuentes; sin embargo, muchas quedan fuera de servicio o son
-vandalizadas. No existe un dataset público regional de cámaras saboteadas, por lo que el proyecto entrena con un
-dataset internacional y valida con una captura propia en una escena real de Armenia. Las fuentes verificadas
-están en `docs/contexto_regional.md` (tarea T06).
+vandalizadas. No se encontró un dataset público regional de cámaras saboteadas, por lo que el proyecto entrena
+con un dataset internacional (Bremen) y lo prueba en cámaras CCTV reales de Medellín, a las que se les aplica
+sabotaje sintético, además de una captura propia en Armenia. Las fuentes verificadas están en
+`docs/contexto_regional.md` (tarea T06).
 
 ## Qué vamos a hacer
 
@@ -34,13 +35,14 @@ además la versión binaria (normal frente a saboteada).
 - **Defensa (40 %):** la profesora ataca el modelo en vivo con cambios de luz o ruido; debemos diagnosticar
   matemáticamente el fallo y proponer el filtro exacto que lo corrige.
 
-Todo el proceso se implementa en **Python y MATLAB**.
+Todo el proceso se implementa en **Python**; una réplica en MATLAB queda como extra opcional si sobra tiempo.
 
 ## Cómo lo vamos a hacer
 
-1. **Datos:** se entrena con imágenes reales de cámaras exteriores (ver [Dataset](#dataset)) y se valida con una
-   **captura propia regional** en Armenia, Quindío, que también incluye cambios reales de iluminación. La captura
-   respeta la Ley 1581 de 2012 de protección de datos personales.
+1. **Datos:** se entrena con imágenes reales de cámaras con sabotaje real (Bremen), se hace una **prueba regional
+   cruzada** con cámaras CCTV de Medellín y sabotaje sintético, y se usa una **captura propia** en Armenia, Quindío,
+   con cambios reales de iluminación (ver [Dataset](#dataset)). Se respeta la Ley 1581 de 2012 de protección de
+   datos personales.
 2. **División por bloques:** train/val/test 70/15/15 por bloques de tiempo o ubicación de cámara, no aleatoria,
    porque los frames consecutivos son casi idénticos y una división aleatoria inflaría las métricas.
 3. **Módulo clásico:** preprocesamiento (escala de grises, tamaño fijo, filtro Gaussiano y mediana) y descriptores:
@@ -75,13 +77,13 @@ El artículo del dataset compara un método por reglas con una CNN binaria (norm
 | CNN (Conv 32-64-128, densa 128, salida sigmoide) | 0,9975 | 0,02 s | 37,8 MB |
 
 El artículo no evalúa la robustez ante cambios de iluminación ni ruido, y advierte que la CNN necesita datos
-nuevos si la cámara cambia de posición. **La auditoría de robustez (artificial y física), la validación con una
-captura propia en Armenia y la defensa son el aporte de este proyecto.**
+nuevos si la cámara cambia de posición. **La auditoría de robustez (artificial y física), la prueba regional
+cruzada Alemania → Colombia y la defensa son el aporte de este proyecto.**
 
 ## Tecnologías
 
-La guía del proyecto exige realizar el proceso en **Python y MATLAB**. Python lleva el flujo completo y MATLAB
-replica el módulo clásico para comprobar que ambos dan el mismo resultado. La red se entrena en Colab y la demo
+La profesora aceptó realizar el proyecto solo en **Python**, que lleva el flujo completo. MATLAB queda como extra
+opcional al final. La red se entrena en Colab y la demo
 en vivo corre localmente en el portátil con TensorFlow en CPU, porque Colab no accede a la webcam en tiempo real.
 
 ### Lenguajes y entornos
@@ -89,7 +91,7 @@ en vivo corre localmente en el portátil con TensorFlow en CPU, porque Colab no 
 | Tecnología | Para qué la usamos | Por qué esta |
 |---|---|---|
 | **Python 3.11** | Todo el flujo: datos, módulo clásico, red neuronal, auditoría y demo en vivo | Es el lenguaje con más herramientas de visión artificial y aprendizaje profundo, y es el que se usa en los notebooks de clase. La versión 3.11 es compatible con todas las librerías de esta lista |
-| **MATLAB** (Image Processing Toolbox y Computer Vision Toolbox) | Réplica de las perturbaciones y del módulo clásico (Fase 6) | Lo exige la guía. Las dos toolboxes traen los mismos algoritmos vistos en clase (Laplaciano, Canny, Hough, ORB y homografía), así que la réplica es directa. Si falta el Computer Vision Toolbox, la rotación se detecta con Hough (tarea T05) |
+| **MATLAB** (opcional) | Réplica de las perturbaciones y del módulo clásico, solo si sobra tiempo (Fase 6) | Opcional: la profesora aceptó el proyecto solo en Python y se deja como extra. Todo el flujo (CNN, demo en vivo, métricas) ya está en Python, así que MATLAB solo duplicaría trabajo; esas horas se dedican al dataset regional |
 | **Jupyter / Google Colab** | Notebooks de análisis y entrenamiento de la red | Los notebooks dejan el código, las gráficas y las explicaciones juntos, que es el formato de entrega de la materia. Colab da **GPU gratis**, necesaria para entrenar la red en minutos y no en horas |
 | **Git y GitHub** | Control de versiones, ramas y Pull Requests | Permite trabajar los dos en paralelo sin pisarse, revisar el trabajo del otro antes de unirlo y volver a una versión anterior si algo se daña |
 
@@ -119,28 +121,39 @@ docs/
   PLAN.md          Plan general
   PLAN_CRISTHIAN.md
   PLAN_SANTIAGO.md
+  DECISIONES.md    Registro de decisiones
   contexto_regional.md  Justificación regional con fuentes (T06)
 notebooks/         Notebooks de Python (compatibles con Colab)
 src/               Código Python reutilizable
 tests/             Pruebas automáticas (pytest)
-matlab/            Implementación en MATLAB
+matlab/            Réplica opcional en MATLAB
 results/           Figuras y métricas generadas
 informe/           Informe técnico y presentación
 ```
 
 ## Dataset
 
-**ComNets Camera Tampering Images Datasets** (Universidad de Bremen): 3600 imágenes, 1800 normales,
-600 desenfocadas, 600 giradas y 600 con lente tapado.
+Los datos no se suben al repositorio (ver [data/README.md](data/README.md)).
 
-- **Descarga:** https://nc.uni-bremen.de/index.php/s/GCsBcswrQf9kBXC
-- **Uso:** la página no indica licencia; se usa solo con fines académicos y citando el artículo.
-- **No se sube al repositorio** (ver [data/README.md](data/README.md)).
-- **Captura propia regional:** ~100 imágenes por clase en Armenia, Quindío, más un conjunto con cambios reales
-  de iluminación (`data/propios/`, no se versiona).
+| Conjunto | Uso | Contenido | Licencia |
+|---|---|---|---|
+| **ComNets Camera Tampering Images Datasets** (Universidad de Bremen) | Entrenamiento, con sabotaje real | 3600 imágenes: 1800 normales, 600 desenfocadas, 600 giradas y 600 con lente tapado | No indicada; uso académico citando el artículo |
+| **Dataset for Detecting Motorcyclists in Pedestrian Areas** (Medellín) | Prueba regional cruzada, con sabotaje sintético | 6324 imágenes JPG de 1280×720 de 80 cámaras CCTV públicas de Medellín; no tiene sabotaje, se genera por código | CC BY 4.0 |
+| **Captura propia** (Armenia, Quindío) | Demo, calibración, auditoría física y muestra de sabotaje real | ~100 imágenes por clase y un conjunto con cambios reales de iluminación (`data/propios/`) | Propia; sin publicar imágenes con personas |
+
+- **Bremen:** https://nc.uni-bremen.de/index.php/s/GCsBcswrQf9kBXC
+- **Medellín:** https://zenodo.org/records/7935299
 
 > S. Attarha, K. Shanmugi y A. Förster, "Poster: Camera Tampering Detection for Outdoor IoT Systems",
 > EWSN 2024. arXiv:2602.05706.
+
+> N. Hernández-Díaz, E. Puertas, J. C. Martinez-Santos, G. Archbold, Y. Rios y Y. Peñaloza, "Dataset for Detecting
+> Motorcyclists in Pedestrian Areas", Zenodo, 2023. DOI: 10.5281/zenodo.7935299.
+> Artículo de datos en *Data in Brief*, DOI: 10.1016/j.dib.2023.109610.
+
+Como acordó la profesora, el informe aclara que no se encontró un dataset público regional de sabotaje de cámaras,
+que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional.
+Las imágenes de Medellín contienen peatones: no se republican imágenes con personas identificables.
 
 ## Cómo trabajamos
 
@@ -153,8 +166,9 @@ informe/           Informe técnico y presentación
 ## Plan
 
 - [Plan general](docs/PLAN.md): requisitos, decisiones, ruta crítica y todas las tareas.
+- [Registro de decisiones](docs/DECISIONES.md): qué se decidió, qué alternativas se consideraron y por qué.
 - [Plan de Cristhian](docs/PLAN_CRISTHIAN.md): contexto regional, datos, métricas, módulo clásico y auditoría.
-- [Plan de Santiago](docs/PLAN_SANTIAGO.md): perturbaciones, MATLAB, CNN, captura regional y demo.
+- [Plan de Santiago](docs/PLAN_SANTIAGO.md): perturbaciones, CNN, dataset regional, captura y demo (MATLAB opcional).
 
 ## Estado
 

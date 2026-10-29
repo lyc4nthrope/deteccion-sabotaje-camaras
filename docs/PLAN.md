@@ -3,7 +3,7 @@
 **Grupo 7 · Seguridad** · Cristhian Eduardo Osorio Restrepo y Santiago Orozco Zuluaga
 **Docente:** Ing. Ana Maria Tamayo Ocampo, Mg · **Fecha de entrega:** _por definir_
 
-Planes personales: [Cristhian](PLAN_CRISTHIAN.md) · [Santiago](PLAN_SANTIAGO.md)
+Planes personales: [Cristhian](PLAN_CRISTHIAN.md) · [Santiago](PLAN_SANTIAGO.md) · Registro de decisiones: [DECISIONES.md](DECISIONES.md)
 
 > Este plan es un documento vivo. Las tareas marcadas con ⏳ dependen de temas que aún no se han visto en clase
 > y se ajustan cuando la profesora los explique (ver sección 6).
@@ -19,6 +19,7 @@ Planes personales: [Cristhian](PLAN_CRISTHIAN.md) · [Santiago](PLAN_SANTIAGO.md
 | ⏳ | **Espera un tema de clase:** no se empieza hasta ver el tema (puede ser también bloqueante: ⏳⛔). |
 | ✅ | Tarea hecha. |
 | ⬜ | Tarea pendiente. |
+| Opcional | Solo si sobra tiempo al final. No forma parte de la ruta crítica ni de los totales de horas. |
 
 Columnas de las tablas de tareas:
 
@@ -40,17 +41,18 @@ Cada tarea termina así: verificación → commit → Pull Request a `main` revi
 
 | # | Requisito (guía del proyecto) | Estado actual | Tareas |
 |---|---|---|---|
-| R1 | Problema regional de clasificación o detección, con temática distinta por grupo | ✅ Definido: clasificar imágenes de cámaras de vigilancia saboteadas (Seguridad). ⬜ Componente regional: no existe un dataset público regional; se entrena con Bremen y se valida con una captura propia en Armenia (Quindío), con justificación regional documentada | T06, T80, T81, T83 |
-| R2 | Proceso en Python **y** MATLAB | ⬜ Pendiente. Python: todo el flujo. MATLAB: perturbaciones y módulo clásico; falta confirmar con la profesora si la CNN también debe hacerse en MATLAB | T04, T20–T44, T50–T54 |
+| R1 | Problema regional de clasificación o detección, con temática distinta por grupo | ✅ Definido: clasificar imágenes de cámaras de vigilancia saboteadas (Seguridad). ⬜ Componente regional: no existe un dataset público regional de sabotaje; se entrena con Bremen y se prueba en cámaras CCTV reales de Medellín con sabotaje sintético (D12), más una captura propia en Armenia (D3) y la justificación regional | T06, T16–T18, T76, T80, T81, T83 |
+| R2 | Lenguaje: Python, MATLAB o ambos | ✅ Resuelto: Python (MATLAB opcional), confirmado por la profesora (T04) | T04; T50–T54 opcionales |
 | R3 | Módulo 1, clásico (20 %): descriptores matemáticos, transformaciones geométricas, umbralización (incluida la umbralización de color), filtrado lineal y no lineal. Métricas: tiempo de cómputo por frame y tasa de falsos positivos en entornos estables | ⬜ Pendiente. Los temas necesarios ya se vieron en clase. La umbralización de color se cubre con un descriptor HSV (T37) | T30–T44 |
 | R4 | Módulo 2, aprendizaje profundo (20 %): CNN propia o transfer learning, con hiperparámetros justificados (no elegidos al azar). Métricas: curvas de loss y accuracy en train y val, sin sobreajuste severo | ⏳ Depende del tema de CNN en clase. Los hiperparámetros se eligen con una comparación pequeña y documentada (T66) | T60–T66 |
-| R5 | Módulo 3, auditoría de robustez (20 %): ambos sistemas ante entornos degradados de manera artificial o física (entornos dinámicos reales). Métricas: matrices de confusión cruzadas, curvas ROC y F1-score en condiciones críticas | ⬜ Pendiente. Degradación artificial (perturbaciones, T70–T74) y física (captura con cambios reales de iluminación, T75) | T20–T25, T70–T75, T81 |
+| R5 | Módulo 3, auditoría de robustez (20 %): ambos sistemas ante entornos degradados de manera artificial o física (entornos dinámicos reales). Métricas: matrices de confusión cruzadas, curvas ROC y F1-score en condiciones críticas | ⬜ Pendiente. Degradación artificial (perturbaciones, T70–T74), física (captura con cambios reales de iluminación, T75) y cambio de dominio Alemania → Colombia (T76) | T20–T25, T70–T76, T81 |
 | R6 | Defensa ante ataque adversario en vivo (40 %): diagnosticar matemáticamente el fallo y proponer el filtro correctivo exacto | ⬜ Pendiente. Demo local en el portátil (D11) con calibración de referencias y teclas para activar los filtros correctivos en vivo | T07, T82, T85, T90–T94 |
-| R7 | Dataset | ✅ Identificado y accesible: ComNets Camera Tampering Images Datasets (Universidad de Bremen), 3600 imágenes, para entrenamiento. ⬜ Captura propia regional en Armenia, Quindío | T10–T15, T80, T81 |
+| R7 | Dataset | ✅ Bremen (3600 imágenes con sabotaje real) para entrenamiento, aceptado por la profesora. ✅ Identificado el dataset regional de Medellín (CC BY 4.0) para la prueba cruzada. ⬜ Captura propia en Armenia, Quindío | T10–T18, T80, T81 |
 
 **Brecha principal:** el artículo de referencia compara reglas frente a una CNN, pero no prueba los modelos ante
 cambios de iluminación ni ruido, ni en cámaras de otra región. Ese es el aporte de este proyecto: la auditoría de
-robustez (artificial y física), la validación con una captura propia en Armenia y la defensa.
+robustez (artificial y física), la prueba regional cruzada en cámaras de Medellín, la captura propia en Armenia y
+la defensa.
 
 ---
 
@@ -59,16 +61,17 @@ robustez (artificial y física), la validación con una captura propia en Armeni
 | ID | Decisión | Elección | Por qué |
 |---|---|---|---|
 | D1 | Clases | 4 clases: normal, desenfocada, girada, tapada. Además se reporta la versión binaria (normal frente a saboteada) | Las 4 clases permiten diagnosticar el tipo de sabotaje; la versión binaria permite una curva ROC directa |
-| D2 | Dataset principal | ComNets Camera Tampering Images Datasets (Universidad de Bremen), citando el artículo, **para entrenamiento**. El componente regional lo aportan la captura propia en Armenia (D3) y la justificación regional (T06) | Imágenes reales, etiquetadas y de tamaño manejable. No existe un dataset público regional: la búsqueda en datos.gov.co y de cámaras web públicas de Armenia o Salento no dio resultados |
-| D3 | Datos propios (componente central) | Captura regional con webcam o celular fijo en una escena real de Armenia, Quindío (~100 imágenes por clase), más un conjunto con cambios físicos de iluminación (D7). Se respeta la Ley 1581 de 2012 de protección de datos personales | Es el componente regional del proyecto. Además, la demo en vivo usará otra cámara y el artículo advierte que la CNN falla si la cámara cambia: sirve para la demo, para medir generalización y para la auditoría física |
+| D2 | Dataset principal | ComNets Camera Tampering Images Datasets (Universidad de Bremen), citando el artículo, **para entrenamiento**. ✅ Aceptado por la profesora (T04) con la condición de que el informe diga que no se encontró un dataset público regional de sabotaje de cámaras, que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional | Imágenes reales con sabotaje real, etiquetadas y de tamaño manejable. No existe un dataset público regional de sabotaje: la búsqueda en datos.gov.co y de cámaras web públicas de Armenia o Salento no dio resultados |
+| D3 | Captura propia en Armenia | Captura con webcam o celular fijo en una escena real de Armenia, Quindío: ~100 imágenes por clase (muestra pequeña de sabotaje regional real) y un conjunto con cambios físicos de iluminación (D7). Se respeta la Ley 1581 de 2012 de protección de datos personales | Sirve para la demo en vivo y su calibración, para la auditoría física (T75) y como muestra de sabotaje real que complementa el sabotaje sintético de Medellín (D12). El artículo advierte que la CNN falla si la cámara cambia |
 | D4 | Módulo clásico | Árbol de reglas con umbrales calibrados y justificados. Descriptores: varianza del Laplaciano (nitidez), desviación estándar y entropía del histograma (tapada), coincidencias ORB contra referencias y ángulo por homografía (girada); descriptor de color en HSV: saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara), que ayuda a separar "tapada" de una escena nocturna oscura; complementarios: densidad de bordes Canny y orientación dominante de Hough. Preprocesamiento: escala de grises, tamaño fijo, filtro Gaussiano (lineal) y mediana (no lineal) | Sigue el método validado del artículo, usa los temas vistos en clase y cubre lo que pide la rúbrica: descriptores matemáticos, transformaciones geométricas, umbralización (incluida la **umbralización de color**, que el resto de descriptores en gris no cubre) y filtrado lineal y no lineal |
 | D5 | Módulo profundo | ✅ Framework decidido: **TensorFlow/Keras** (2026-10-29). Transfer learning con MobileNetV2 y una cabeza de 4 clases; la arquitectura se ajusta a lo que se vea en clase (⏳) | Keras es simple de escribir y de explicar, entrega las curvas de loss y accuracy, corre con GPU gratis en Colab y es el framework del artículo de referencia. El transfer learning converge rápido con pocos datos y reduce el sobreajuste |
 | D6 | División de datos | train/val/test 70/15/15 por bloques de tiempo o ubicación de cámara, no aleatoria imagen por imagen. El archivo de división se versiona en `data/splits/` | Los frames consecutivos son casi idénticos: una división aleatoria filtra información entre conjuntos e infla las métricas |
 | D7 | Perturbaciones de la auditoría | Brillo (oscurecer y aclarar), corrección gamma, ruido gaussiano, sal y pimienta y compresión JPEG; 3 niveles cada una; semilla fija. **El desenfoque no se usa como perturbación.** Además, degradación **física**: captura propia con cambios reales de iluminación (luz apagada, lámpara, contraluz de ventana) para escenas normales y saboteadas | Luz y ruido son los ataques probables en la defensa. El desenfoque es una clase ("desenfocada"): una imagen normal desenfocada cambiaría de etiqueta legítimamente. Nota: una imagen muy oscura puede parecerse a "tapada"; esa confusión es un hallazgo esperado que se debe diagnosticar. La guía admite degradación "artificial o física" y el título habla de "entornos dinámicos reales": la parte física comprueba si las perturbaciones artificiales predicen lo que pasa con luz real |
-| D8 | Python y MATLAB | Python: todo el flujo. MATLAB: réplica de perturbaciones y módulo clásico (CNN en MATLAB opcional). **El alcance final depende de T04** (confirmar con la profesora si la CNN también debe hacerse en MATLAB) | Cumple R2 sin duplicar el entrenamiento de la red |
+| D8 | Lenguaje | **Solo Python; MATLAB opcional al final** (Fase 6, solo si sobra tiempo). Confirmado por la profesora (T04): el proyecto puede hacerse en Python, en MATLAB o en ambos | Ahorra ≈ 12 h (Fase 6). Todo el flujo (CNN, demo en vivo, métricas) ya está en Python, y MATLAB solo duplicaría trabajo. Las horas liberadas se dedican al dataset regional (D12) |
 | D9 | Métricas | Las de la rúbrica: tiempo por frame, tasa de falsos positivos, curvas de loss y accuracy, matrices de confusión cruzadas, ROC y F1. El módulo clásico debe producir un **puntaje continuo de sabotaje** para poder trazar su ROC | Son exactamente las exigidas; un clasificador por reglas solo da etiquetas, y la ROC necesita un puntaje |
 | D10 | Flujo de trabajo con Git | Una rama por tarea (por ejemplo `feat/T14-division-datos`), Pull Request a `main` y revisión del otro integrante; commits convencionales; `main` siempre ejecutable; nunca se suben datos ni modelos | Permite trabajar en paralelo sin romper el trabajo del otro y deja trazabilidad de cada tarea |
 | D11 | Entorno de la demo en vivo | La demo corre **localmente en el portátil** con OpenCV (`VideoCapture`) y TensorFlow en CPU; Colab se usa solo para entrenar | Colab no puede acceder a la webcam en tiempo real. La defensa (40 %) depende de que la demo funcione sin conexión ni retrasos |
+| D12 | Prueba regional cruzada | Dataset de Medellín ("Dataset for Detecting Motorcyclists in Pedestrian Areas", Zenodo, CC BY 4.0): se toman imágenes normales y se sintetiza el sabotaje por código (desenfoque gaussiano, rotación, oclusión total y parcial), como en el dataset UHCTD. Se entrena en Bremen y se prueba en Medellín | Son cámaras CCTV reales de Colombia con licencia abierta. Muestra la generalización Alemania → Colombia, que es lo que pidió la profesora. El dataset no tiene sabotaje propio, por eso se sintetiza |
 
 ---
 
@@ -79,21 +82,24 @@ cualquiera de ellas retrasa la entrega; por eso se priorizan sobre las tareas �
 
 ```
 Cadena principal:
-T10 → T11 → T13 → T14 → T30 … T37 → T40 … T43 → T70 … T75 → T90 … T94
+T10 → T11 → T13 → T14 → T30 … T37 → T40 … T43 → T70 … T76 → T90 … T94
 
 Entradas a la cadena:
 T25 (métricas) ──────────────────► T43, T64, T71
 T20 (perturbaciones) ────────────► T70
 T60 … T66 ⏳ (CNN) ──────────────► T71
-T80 → T81 (captura regional) ────► T75, T83
+T16 → T17 → T18 (Medellín) ─────► T76
+T80 → T81 (captura Armenia) ─────► T75, T83
 T82 → T85 (demo con filtros) ────► T94
 ```
 
 - **T25** (métricas) alimenta la evaluación del clásico (T43), de la CNN (T64) y la auditoría (T71).
 - **T20** (perturbaciones) alimenta los conjuntos degradados (T70).
-- **T80 → T81** (captura regional) alimenta la auditoría física (T75) y la prueba de generalización (T83).
+- **T16 → T17 → T18** (dataset de Medellín con sabotaje sintético) alimenta la prueba regional cruzada (T76).
+- **T80 → T81** (captura en Armenia) alimenta la auditoría física (T75) y la prueba de generalización (T83).
 - **T85** (filtros en la demo) es necesaria para el ensayo de la defensa (T94).
 - **T60 … T66** esperan el tema de CNN; mientras tanto se avanza todo lo demás.
+- La Fase 6 (MATLAB, T05 y T50–T54) es opcional y queda fuera de la ruta crítica.
 
 ---
 
@@ -110,24 +116,28 @@ cambios de forma ordenada.
 | T01 | Leer y acordar este plan entre los dos | Ambos | T00 | ⛔ | Comentario o acuerdo en el PR del plan | Ambos aprueban | ⬜ |
 | T02 | Agregar a Santiago como colaborador y acordar el flujo de ramas (D10) | Cristhian | T00 | ⛔ (Santiago no puede subir cambios sin esto) | Acceso al repositorio | Santiago hace un PR de prueba | ⬜ |
 | T03 | Configurar el entorno Python (local o Colab) con `requirements.txt` | Ambos | T00 | 🟢 | Entorno funcionando | `pytest` se ejecuta y `import cv2` funciona | ⬜ |
-| T04 | Confirmar con la profesora: (a) fecha de entrega, (b) temas pendientes, (c) si la CNN también debe hacerse en MATLAB y (d) si es aceptable entrenar con un dataset extranjero y validar con una captura propia regional | Santiago | — | ⛔ (alcance final de la Fase 6, D8; confirma D2 y D3) | Nota en este plan | Las cuatro respuestas quedan escritas | ⬜ |
-| T05 | Confirmar versión de MATLAB y toolboxes disponibles (Image Processing, Computer Vision, Deep Learning) | Santiago | — | ⛔ (para T52) | Nota en `docs/matlab.md` | Lista de toolboxes escrita | ⬜ |
-| T06 | Justificación regional: verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío. Fuentes de partida (verificar antes de citar cifras): [Blu Radio, Bucaramanga 808 cámaras](https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10), [El Tiempo, Bogotá](https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006), [Blu Radio, robo de cable](https://www.bluradio.com/regiones/santanderes/robaron-2-000-metros-de-cable-de-camaras-de-seguridad-en-bucaramanga-rg10), [Alcaldía de Armenia](https://armenia.gov.co/alcaldia-de-armenia-rechaza-actos-vandalicos-contra-red-semaforica-y-llama-a-la-ciudadania-a-proteger-la-infraestructura-publica), [Pulzo, Armenia](https://www.pulzo.com/nacion/robo-de-30-millones-en-armenia-camaras-mapas-de-calor-y-reaccion-policial-permiten-captura-PP5150773A) | Cristhian | — | 🟢 (alimenta T101) | `docs/contexto_regional.md` | Cada afirmación tiene su fuente verificada y fecha de consulta | ⬜ |
+| T04 | Confirmar con la profesora: (a) fecha de entrega, (b) temas pendientes, (c) si la CNN también debe hacerse en MATLAB y (d) si es aceptable entrenar con un dataset extranjero. **Respuesta (2026-10-29):** (c) el proyecto puede hacerse solo en Python, solo en MATLAB o en ambos; (d) se acepta Bremen si el informe dice que no se encontró un dataset público regional de sabotaje, que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional. (a) y (b): por registrar | Santiago | — | ⛔ (definió D2 y D8) | Respuestas en este plan | Respuestas (c) y (d) escritas | ✅ |
+| T05 | **Opcional.** Confirmar versión de MATLAB y toolboxes disponibles (Image Processing, Computer Vision, Deep Learning); solo si se hace la Fase 6 | Santiago | — | 🟢 Opcional | Nota en `docs/matlab.md` | Lista de toolboxes escrita | ⬜ |
+| T06 | Justificación regional: verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío. Incluir en el informe la nota aprobada por la profesora (no se encontró un dataset público regional de sabotaje; Bremen se usó para entender y desarrollar el trabajo; el método se aplica igual a un dataset regional) y citar el dataset de Medellín (D12) como dato regional usado. Fuentes de partida (verificar antes de citar cifras): [Blu Radio, Bucaramanga 808 cámaras](https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10), [El Tiempo, Bogotá](https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006), [Blu Radio, robo de cable](https://www.bluradio.com/regiones/santanderes/robaron-2-000-metros-de-cable-de-camaras-de-seguridad-en-bucaramanga-rg10), [Alcaldía de Armenia](https://armenia.gov.co/alcaldia-de-armenia-rechaza-actos-vandalicos-contra-red-semaforica-y-llama-a-la-ciudadania-a-proteger-la-infraestructura-publica), [Pulzo, Armenia](https://www.pulzo.com/nacion/robo-de-30-millones-en-armenia-camaras-mapas-de-calor-y-reaccion-policial-permiten-captura-PP5150773A) | Cristhian | — | 🟢 (alimenta T101) | `docs/contexto_regional.md` | Cada afirmación tiene su fuente verificada y fecha de consulta | ⬜ |
 | T07 | Entorno local de la demo en el portátil que se llevará a la defensa: Python, OpenCV y TensorFlow (CPU); comprobar que la webcam abre (D11) | Santiago | T03 | 🟢 | Instrucciones en `docs/demo.md` | Un script muestra la webcam con los FPS en pantalla | ⬜ |
 
 ### Fase 1. Datos
 
-Descargar, conocer y dividir el dataset. La división por bloques (D6) evita la fuga de datos; todo lo que
-sigue se entrena y evalúa sobre esa división.
+Descargar, conocer y dividir el dataset de Bremen (entrenamiento) y preparar el dataset regional de Medellín
+(prueba cruzada, D12). La división por bloques (D6) evita la fuga de datos; todo lo que sigue se entrena y evalúa
+sobre esa división.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T10 | Descargar el dataset a `data/raw/` y registrar las condiciones de uso | Cristhian | T00 | ⛔ | `data/README.md` actualizado | Las imágenes están en `data/raw/` y las condiciones de uso quedan escritas | ⬜ |
+| T10 | Descargar el dataset de Bremen a `data/raw/bremen/` y registrar las condiciones de uso | Cristhian | T00 | ⛔ | `data/README.md` actualizado | Las imágenes están en `data/raw/bremen/` y las condiciones de uso quedan escritas | ⬜ |
 | T11 | Inventario: conteo por clase y cámara, resolución y formato | Cristhian | T10 | ⛔ | `src/data.py`, `results/inventario.csv` | Conteos 1800/600/600/600 | ⬜ |
 | T12 | Galería: 5 imágenes por clase y cámara | Santiago | T10, T11 | 🟢 | `results/figuras/galeria.png` | La figura muestra todas las clases y cámaras | ⬜ |
 | T13 | Analizar nombres y fechas de archivos para detectar casi-duplicados y definir el criterio de división | Cristhian | T11 | ⛔ | Nota en `docs/datos.md` | Criterio de división escrito | ⬜ |
 | T14 | Crear la división 70/15/15 por bloques, la función `load_split` y una prueba de no solapamiento | Cristhian | T13 | ⛔ | `data/splits/split.csv`, `src/data.py`, `tests/test_data.py` | `pytest` pasa | ⬜ |
 | T15 | Elegir imágenes de referencia normales por cámara (para ORB), solo del conjunto train, y documentarlas | Cristhian | T14 | ⛔ (para T33) | Lista en `docs/datos.md` | Cada cámara tiene sus referencias y todas pertenecen a train | ⬜ |
+| T16 | Descargar el dataset de Medellín ([Medellín, Zenodo](https://zenodo.org/records/7935299), DOI 10.5281/zenodo.7935299, `PedestrianDataSet.zip`, 643 MB) a `data/raw/medellin/`; registrar licencia CC BY 4.0 y cita; inventario: conteo, resolución y cámaras si se pueden identificar por nombre de archivo | Santiago | T03 | ⛔ (para T17) | `data/README.md` actualizado, `results/inventario_medellin.csv` | 6324 imágenes JPG de 1280×720; licencia y cita escritas | ⬜ |
+| T17 | Seleccionar un subconjunto de ≈600 imágenes normales repartido entre cámaras, excluyendo si es posible las que tengan personas identificables en primer plano; documentar el criterio. Riesgo: el descriptor ORB necesita referencias de la **misma** cámara; si no se puede derivar la cámara del nombre de archivo, agrupar por similitud visual o evaluar la rotación en Medellín con descriptores sin referencia (orientación de Hough) | Santiago | T16 | ⛔ (para T18) | Lista y criterio en `docs/datos.md` | ≈600 imágenes repartidas entre cámaras, con el criterio escrito | ⬜ |
+| T18 | Generar las 3 clases saboteadas sobre el subconjunto (desenfoque gaussiano, rotación con recorte, oclusión total y parcial) con semilla fija, más pruebas y script reproducible | Santiago | T17 | ⛔ (para T76) | `src/synthetic_tampering.py`, `tests/test_synthetic_tampering.py`, `data/medellin_sintetico/` (no versionado) | `pytest` pasa y el script regenera el mismo conjunto con la misma semilla | ⬜ |
 
 ### Fase 2. Perturbaciones
 
@@ -136,7 +146,7 @@ dependen de los datos, así que se pueden hacer desde el inicio.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T20 | Implementar brillo, gamma, ruido gaussiano, sal y pimienta y JPEG, con 3 niveles y semilla | Santiago | T03 | ⛔ (para T50, T70) | `src/perturbations.py` | Las pruebas de T21 pasan | ⬜ |
+| T20 | Implementar brillo, gamma, ruido gaussiano, sal y pimienta y JPEG, con 3 niveles y semilla | Santiago | T03 | ⛔ (para T70) | `src/perturbations.py` | Las pruebas de T21 pasan | ⬜ |
 | T21 | Pruebas: conserva forma, `dtype` uint8, rango 0–255 y reproducible con la misma semilla | Santiago | T20 | ⛔ (aceptación de T20) | `tests/test_perturbations.py` | `pytest` pasa | ⬜ |
 | T22 | Grilla visual perturbación × nivel | Santiago | T20 | 🟢 | `notebooks/02_perturbaciones.ipynb` | La grilla muestra las 5 perturbaciones en 3 niveles | ⬜ |
 | T23 | Justificar los niveles elegidos (qué situación real simula cada uno) | Santiago | T20 | 🟢 | Sección en `notebooks/02_perturbaciones.ipynb` | Cada nivel tiene su justificación escrita | ⬜ |
@@ -163,7 +173,7 @@ pueden justificar los umbrales.
 | T34 | Descriptores complementarios: densidad de bordes Canny y orientación dominante de Hough | Cristhian | T30 | 🟢 | `src/features.py` | Prueba sobre una imagen sintética con bordes conocidos | ⬜ |
 | T37 | Descriptor de color en HSV: saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara); ayuda a separar "tapada" de una escena nocturna oscura (umbralización de color) | Cristhian | T30 | ⛔ (para T35) | `src/features.py` | Prueba: una imagen sintética de tono piel da proporción alta y una gris da saturación cercana a 0 | ⬜ |
 | T35 | Calcular los descriptores sobre train, diagramas de caja por clase y anotar qué descriptor separa cada clase | Cristhian | T31, T32, T33, T37 | ⛔ (para T40) | `notebooks/03_descriptores.ipynb` | Las gráficas y la conclusión por clase quedan escritas | ⬜ |
-| T36 | Ficha exacta de cada descriptor, incluido el de color (fórmula, parámetros, rangos HSV, tamaño de imagen) para replicarlo en MATLAB | Cristhian | T35 | ⛔ (para T51–T53) | `docs/descriptores.md` | Santiago puede replicar cada descriptor solo con la ficha | ⬜ |
+| T36 | Ficha exacta de cada descriptor, incluido el de color (fórmula, parámetros, rangos HSV, tamaño de imagen), para el informe y, si se hace, para la réplica opcional en MATLAB | Cristhian | T35 | 🟢 | `docs/descriptores.md` | Cada descriptor se puede reproducir solo con la ficha | ⬜ |
 
 ### Fase 5. Módulo clásico: reglas y evaluación
 
@@ -173,23 +183,24 @@ de la rúbrica (tiempo por frame y tasa de falsos positivos).
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T40 | Árbol de reglas: tapada → desenfocada → girada → normal (la regla de tapada puede usar el descriptor de color de T37) | Cristhian | T35 | ⛔ | `src/classic.py` | Prueba: clasifica correctamente imágenes de ejemplo de cada clase | ⬜ |
-| T41 | Calibrar los umbrales con train (percentiles de las normales) y justificarlos con una gráfica | Cristhian | T40 | ⛔ (para T53) | `results/clasico/umbrales.json` y figura | Cada umbral tiene su gráfica y su justificación | ⬜ |
+| T41 | Calibrar los umbrales con train (percentiles de las normales) y justificarlos con una gráfica | Cristhian | T40 | ⛔ | `results/clasico/umbrales.json` y figura | Cada umbral tiene su gráfica y su justificación | ⬜ |
 | T42 | Puntaje continuo de sabotaje para poder trazar la ROC | Cristhian | T41 | ⛔ (para T71) | `src/classic.py` | El puntaje es mayor, en promedio, para las saboteadas que para las normales | ⬜ |
 | T43 | Evaluar en val (ajuste) y luego una sola vez en test: matriz, F1, tasa de falsos positivos y tiempo por frame | Cristhian | T25, T42 | ⛔ | `results/clasico/` | Las métricas de test quedan guardadas | ⬜ |
 | T44 | Análisis de errores con las imágenes mal clasificadas y su causa | Santiago | T43 | 🟢 | `notebooks/04_clasico.ipynb` | Cada tipo de error tiene ejemplos y causa escrita | ⬜ |
 
-### Fase 6. MATLAB
+### Fase 6. MATLAB (opcional)
 
-Replicar en MATLAB las perturbaciones y el módulo clásico (R2, D8) y comprobar que dan los mismos resultados
-que Python. El alcance final (si se agrega la CNN en MATLAB) se define con la respuesta de T04.
+**Opcional, solo si sobra tiempo al final (D8).** La profesora aceptó el proyecto solo en Python (T04). Si se hace,
+se replican en MATLAB las perturbaciones y el módulo clásico y se compara con Python. No forma parte de la ruta
+crítica ni de los totales de horas (≈ 12 h aparte).
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T50 | Perturbaciones equivalentes a T20 | Santiago | T20 | 🟢 | `matlab/perturbaciones.m` | Mismos parámetros y niveles que Python | ⬜ |
-| T51 | Descriptores: Laplaciano, desviación, entropía, color HSV, Canny y Hough, según la ficha de T36 | Santiago | T36 | 🟢 | `matlab/descriptores.m` | Valores comparables con Python en imágenes de prueba | ⬜ |
-| T52 | ORB y homografía en MATLAB (requiere Computer Vision Toolbox) | Santiago | T05, T36 | 🟢 | `matlab/geometrico.m` | Ángulo cercano al de Python en imágenes rotadas | ⬜ |
-| T53 | Clasificador clásico con los mismos umbrales (leídos de `results/clasico/`) | Santiago | T41, T51, T52 | 🟢 | `matlab/clasificador_clasico.m` | Clasifica las imágenes de prueba igual que Python | ⬜ |
-| T54 | Comparar Python frente a MATLAB en 20 imágenes | Santiago | T53 | 🟢 | Tabla de diferencias en `results/matlab/` | Diferencias por debajo de una tolerancia definida y explicada | ⬜ |
+| T50 | Perturbaciones equivalentes a T20 | Santiago | T20 | 🟢 Opcional | `matlab/perturbaciones.m` | Mismos parámetros y niveles que Python | ⬜ |
+| T51 | Descriptores: Laplaciano, desviación, entropía, color HSV, Canny y Hough, según la ficha de T36 | Santiago | T36 | 🟢 Opcional | `matlab/descriptores.m` | Valores comparables con Python en imágenes de prueba | ⬜ |
+| T52 | ORB y homografía en MATLAB (requiere Computer Vision Toolbox) | Santiago | T05, T36 | 🟢 Opcional | `matlab/geometrico.m` | Ángulo cercano al de Python en imágenes rotadas | ⬜ |
+| T53 | Clasificador clásico con los mismos umbrales (leídos de `results/clasico/`) | Santiago | T41, T51, T52 | 🟢 Opcional | `matlab/clasificador_clasico.m` | Clasifica las imágenes de prueba igual que Python | ⬜ |
+| T54 | Comparar Python frente a MATLAB en 20 imágenes | Santiago | T53 | 🟢 Opcional | Tabla de diferencias en `results/matlab/` | Diferencias por debajo de una tolerancia definida y explicada | ⬜ |
 
 ### Fase 7. Aprendizaje profundo ⏳
 
@@ -209,8 +220,8 @@ eligen con evidencia, no al azar).
 
 ### Fase 8. Captura propia y demo
 
-La captura regional en Armenia es el componente regional del proyecto (D3): mide la generalización a otra
-cámara y aporta el conjunto de iluminación física de la auditoría (D7). La demo en vivo corre en el portátil (D11)
+La captura propia en Armenia (D3) sirve para la demo y su calibración, aporta el conjunto de iluminación física
+de la auditoría (D7) y una muestra pequeña de sabotaje regional real. La demo en vivo corre en el portátil (D11)
 y es la herramienta principal de la defensa.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
@@ -224,7 +235,8 @@ y es la herramienta principal de la defensa.
 
 ### Fase 9. Auditoría de robustez
 
-Medir cómo se degradan los dos modelos ante luz y ruido, de forma artificial y física (R5, D7). Es el aporte
+Medir cómo se degradan los dos modelos ante luz y ruido, de forma artificial y física (R5, D7), y ante el cambio
+de cámaras de Alemania a Colombia (D12). Es el aporte
 principal frente al artículo de referencia y la base de la defensa.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
@@ -235,6 +247,7 @@ principal frente al artículo de referencia y la base de la defensa.
 | T73 | Curvas ROC por condición y curvas de F1 frente a severidad | Cristhian | T71 | ⛔ | `results/auditoria/` | Las curvas quedan guardadas | ⬜ |
 | T74 | Notebook de auditoría con la interpretación de los resultados | Cristhian | T72, T73 | ⛔ (para T90) | `notebooks/06_auditoria.ipynb` | Cada condición crítica tiene su interpretación escrita | ⬜ |
 | T75 | Auditoría física: ejecutar ambos modelos sobre el conjunto de iluminación física y compararlo con la perturbación artificial equivalente (¿el oscurecimiento artificial predice la luz baja real?) | Cristhian | T71, T81 | ⛔ (para T90) | Sección en `notebooks/06_auditoria.ipynb`, `results/auditoria/fisica.csv` | Tabla física frente a artificial por condición y ambos modelos, con su interpretación | ⬜ |
+| T76 | Evaluación regional cruzada: ambos modelos entrenados en Bremen se evalúan en Medellín (sabotaje sintético): matriz de confusión, F1 y tasa de falsos positivos; comparar con el resultado en Bremen y explicar la diferencia | Santiago | T18, T43, T64 | ⛔ (para T90, T101) | `results/regional/`, sección en `notebooks/06_auditoria.ipynb` | Métricas de ambos modelos en Medellín frente a Bremen, con la diferencia explicada | ⬜ |
 
 ### Fase 10. Defensa
 
@@ -243,7 +256,7 @@ qué falla el modelo y qué filtro lo corrige, con la mejora medida.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | ⬜ |
+| T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | ⬜ |
 | T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | ⬜ |
 | T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | ⬜ |
 | T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | ⬜ |
@@ -256,7 +269,7 @@ Consolidar todo en el informe técnico y la presentación final.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T100 | Estructura del informe | Cristhian | T01 | 🟢 | `informe/` | Índice con todas las secciones | ⬜ |
-| T101 | Redactar secciones: contexto regional, datos, clásico y auditoría (Cristhian); perturbaciones, CNN, captura regional, demo y MATLAB (Santiago) | Ambos | T06, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | ⬜ |
+| T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | ⬜ |
 | T102 | Presentación | Ambos | T101 | 🟢 | `informe/` | Presentación completa | ⬜ |
 | T103 | Revisión cruzada final | Ambos | T93, T101, T102 | ⛔ (entrega) | — | Cada uno revisa las secciones del otro | ⬜ |
 
@@ -268,8 +281,8 @@ Cuando se vea un tema nuevo, se revisa esta tabla y se ajustan las tareas y deci
 
 | Tema | Estado en clase | Tareas afectadas | Qué podría cambiar |
 |---|---|---|---|
-| Filtros espaciales, bordes (Canny, Sobel), morfología, segmentación (Otsu), extracción de características, texturas (GLCM, LBP, Gabor), momentos de Hu, transformada de Hough | ✅ Visto | T30–T44, T50–T54 | — |
-| Redes neuronales convolucionales y transfer learning | ⏳ Por ver | T60–T66, T71, T83, T84 | D5: arquitectura (el framework ya está decidido: Keras) |
+| Filtros espaciales, bordes (Canny, Sobel), morfología, segmentación (Otsu), extracción de características, texturas (GLCM, LBP, Gabor), momentos de Hu, transformada de Hough | ✅ Visto | T30–T44 (y T50–T54, opcionales) | — |
+| Redes neuronales convolucionales y transfer learning | ⏳ Por ver | T60–T66, T71, T76, T83, T84 | D5: arquitectura (el framework ya está decidido: Keras) |
 | Métricas formales de evaluación (ROC, F1) | ⏳ Confirmar si se ve en clase | T25 | D9: forma de calcularlas y presentarlas |
 | Otros temas que anuncie la profesora | ⏳ | Por definir | Por definir |
 
@@ -282,11 +295,13 @@ Cuando se vea un tema nuevo, se revisa esta tabla y se ajustan las tareas y deci
 | La licencia del dataset no está escrita en la página de descarga | Usarlo solo con fines académicos, citar el artículo y registrar las condiciones de uso en T10 |
 | La CNN no generaliza a la cámara de la demo (lo advierte el propio artículo) | Captura propia (T81) y evaluación con ajuste fino (T83) |
 | La captura regional puede registrar personas (Ley 1581 de 2012, protección de datos personales) | Protocolo de T80: evitar terceros identificables o pedir consentimiento, y nunca publicar imágenes con personas; los datos propios no se versionan |
-| La profesora no acepta entrenar con un dataset extranjero, o exige la CNN también en MATLAB | Preguntarlo pronto (T04) y ajustar D2, D3 y D8 antes de avanzar la Fase 6 |
+| El sabotaje sintético de Medellín no es idéntico al sabotaje real | Complementarlo con la muestra pequeña de sabotaje real de la captura en Armenia (T81, T83) y explicar la diferencia en T76 |
+| Las imágenes de Medellín contienen peatones (Ley 1581 de 2012) | Preferir imágenes sin personas identificables en primer plano (T17); no republicar imágenes con personas; los datos no se versionan |
+| Las cámaras de Medellín no se pueden identificar y ORB necesita referencias de la misma cámara | Agrupar por similitud visual o evaluar la rotación con la orientación de Hough, sin referencias (T17) |
 | El método clásico falla en la cámara de la demo porque sus referencias ORB son de otra cámara | Calibración con 8 referencias de la escena en vivo al iniciar la demo (T82) |
 | Fuga de datos por imágenes casi idénticas | División por bloques (T13, T14) con prueba de no solapamiento |
-| Poco tiempo | Tareas pequeñas; T10–T54 no dependen de temas pendientes y se pueden avanzar ya |
-| Faltan toolboxes de MATLAB | Confirmarlo pronto (T05). Si no hay Computer Vision Toolbox, estimar el giro con la orientación dominante de Hough en lugar de ORB y homografía |
+| Poco tiempo | Tareas pequeñas; T10–T44 no dependen de temas pendientes y se pueden avanzar ya; MATLAB quedó como opcional (D8) |
+| Faltan toolboxes de MATLAB (solo si se hace la Fase 6 opcional) | Confirmarlo con T05. Si no hay Computer Vision Toolbox, estimar el giro con la orientación dominante de Hough en lugar de ORB y homografía |
 | Una imagen muy oscura se parece a "tapada" | Es un hallazgo esperado: se documenta en la auditoría (T74) y se diagnostica en la defensa (T90) |
 
 ---
@@ -294,19 +309,21 @@ Cuando se vea un tema nuevo, se revisa esta tabla y se ajustan las tareas y deci
 ## 8. Reparto
 
 Cada integrante es dueño de un bloque completo del flujo, para que pueda explicarlo en la defensa. Cristhian se
-encarga de la justificación regional, datos, métricas, módulo clásico y auditoría (artificial y física);
-Santiago, de perturbaciones, MATLAB, CNN, captura regional y demo, además de la galería de datos (T12) y el
-análisis de errores del clásico (T44). La defensa y el informe son compartidos. El detalle de cada uno está en
-[docs/PLAN_CRISTHIAN.md](PLAN_CRISTHIAN.md) y [docs/PLAN_SANTIAGO.md](PLAN_SANTIAGO.md).
+encarga de la ruta crítica: justificación regional, datos de Bremen, métricas, módulo clásico y auditoría
+(artificial y física). Santiago se encarga de perturbaciones, CNN, dataset regional de Medellín, captura en
+Armenia y demo, además de la galería de datos (T12) y el análisis de errores del clásico (T44), que se movieron
+para equilibrar la carga. Las horas que liberó MATLAB (D8) pasaron al dataset regional (T16–T18, T76). La defensa
+y el informe son compartidos. El detalle está en [docs/PLAN_CRISTHIAN.md](PLAN_CRISTHIAN.md) y
+[docs/PLAN_SANTIAGO.md](PLAN_SANTIAGO.md).
 
 | Integrante | Tareas propias | Horas propias (estimadas) | Fases principales |
 |---|---|---|---|
 | Cristhian | 29 (T00 ya hecha): T00, T02, T06, T10, T11, T13–T15, T25, T30–T37, T40–T43, T70–T75, T92, T100 | ≈ 58 h | Contexto regional, datos, métricas, clásico, auditoría |
-| Santiago | 28: T04, T05, T07, T12, T20–T23, T44, T50–T54, T60–T66, T80–T85, T91 | ≈ 60 h | Perturbaciones, MATLAB, CNN, captura regional y demo |
+| Santiago | 26 (T04 ya hecha): T04, T07, T12, T16–T18, T20–T23, T44, T60–T66, T76, T80–T85, T91 | ≈ 58 h | Perturbaciones, CNN, dataset regional, captura y demo |
 | Ambos | 8 compartidas: T01, T03, T90, T93, T94, T101, T102, T103 | ≈ 15 h cada uno | Defensa e informe |
+| Opcional (Santiago) | 6: T05, T50–T54 (MATLAB) | ≈ 12 h, fuera de los totales | Solo si sobra tiempo |
 
-**Balance:** la carga queda aproximadamente equilibrada. Cristhian es dueño de la ruta crítica (datos →
-clásico → auditoría), por lo que sus tareas deben avanzar primero. Las tareas de aprendizaje profundo de
-Santiago son más pesadas por tarea y esperan el tema de CNN en clase; mientras tanto, Santiago adelanta
-perturbaciones, MATLAB, captura regional y demo. Las horas son estimaciones (cada tarea nueva ≈ 2–3 h) y se
-corrigen con el avance real.
+**Balance:** la carga queda equilibrada. Cristhian es dueño de la ruta crítica (datos → clásico → auditoría), por
+lo que sus tareas deben avanzar primero. Las tareas de aprendizaje profundo de Santiago son más pesadas por tarea
+y esperan el tema de CNN en clase; mientras tanto, Santiago adelanta perturbaciones, dataset regional, captura y
+demo. Las horas son estimaciones (cada tarea nueva ≈ 2–3 h) y se corrigen con el avance real.

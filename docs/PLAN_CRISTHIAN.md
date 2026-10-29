@@ -8,7 +8,7 @@ primero en el plan general.
 Eres dueño de la justificación regional, los datos, las métricas, el módulo clásico y la auditoría de robustez
 (artificial y física). Estas tareas forman la
 **ruta crítica** del proyecto: la división de datos (T14), las métricas (T25) y el clásico (T40–T43) desbloquean
-el trabajo de Santiago (MATLAB, CNN, demo) y la auditoría. Prioriza siempre las tareas ⛔.
+el trabajo de Santiago (CNN, demo, prueba regional) y la auditoría. Prioriza siempre las tareas ⛔.
 
 Símbolos: ⛔ bloqueante · 🟢 no bloqueante · ⏳ espera un tema de clase. Cada tarea termina con verificación,
 commit y Pull Request revisado por Santiago.
@@ -40,7 +40,7 @@ commit y Pull Request revisado por Santiago.
   - **Qué hacer:** crear un entorno virtual e instalar `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
 - [ ] **T06 🟢** Justificación regional en `docs/contexto_regional.md`.
-  - **Qué hacer:** verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío; anotar fecha de consulta. No dar por ciertas las cifras hasta verificarlas. Fuentes de partida:
+  - **Qué hacer:** verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío; anotar fecha de consulta. Incluir la nota aprobada por la profesora: no se encontró un dataset público regional de sabotaje de cámaras; Bremen se usó para entender y desarrollar el trabajo; el método se aplica igual a un dataset regional. Citar el dataset de Medellín (D12, Zenodo, DOI 10.5281/zenodo.7935299, CC BY 4.0) como dato regional usado. No dar por ciertas las cifras hasta verificarlas. Fuentes de partida:
     - https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10
     - https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006
     - https://www.bluradio.com/regiones/santanderes/robaron-2-000-metros-de-cable-de-camaras-de-seguridad-en-bucaramanga-rg10
@@ -52,7 +52,7 @@ commit y Pull Request revisado por Santiago.
 
 ### Fase 1. Datos
 
-- [ ] **T10 ⛔** Descargar el dataset a `data/raw/` y registrar las condiciones de uso.
+- [ ] **T10 ⛔** Descargar el dataset de Bremen a `data/raw/bremen/` y registrar las condiciones de uso.
   - **Qué hacer:** descargar desde el enlace de `data/README.md`, descomprimir en `data/raw/`, anotar estructura de carpetas y condiciones de uso.
   - **Entregable:** `data/README.md` actualizado.
   - **Cómo verificar:** las imágenes abren y las condiciones de uso quedan escritas.
@@ -103,11 +103,11 @@ commit y Pull Request revisado por Santiago.
   - **Qué hacer:** calcular todos los descriptores sobre train, hacer diagramas de caja por clase y escribir qué descriptor separa cada clase.
   - **Entregable:** `notebooks/03_descriptores.ipynb`.
   - **Cómo verificar:** gráficas y conclusiones escritas.
-- [ ] **T36 ⛔** Ficha de descriptores para MATLAB.
+- [ ] **T36 🟢** Ficha de descriptores (para el informe y la réplica opcional en MATLAB).
   - **Qué hacer:** por cada descriptor, incluido el de color, escribir fórmula, parámetros exactos (tamaño de kernel, umbrales de Canny, número de características ORB, rangos HSV, etc.) y tamaño de imagen.
   - **Entregable:** `docs/descriptores.md`.
-  - **Cómo verificar:** Santiago puede replicar cada descriptor solo con la ficha.
-  - **Quién te espera:** Santiago (T51, T52, T53).
+  - **Cómo verificar:** cada descriptor se puede reproducir solo con la ficha.
+  - **Nota:** solo la usaría Santiago si se hace la Fase 6 opcional (MATLAB); no bloquea a nadie.
 
 ### Fase 5. Módulo clásico: reglas y evaluación
 
@@ -117,7 +117,6 @@ commit y Pull Request revisado por Santiago.
 - [ ] **T41 ⛔** Calibrar umbrales con train.
   - **Qué hacer:** fijar cada umbral con percentiles de las normales de train; justificar con una gráfica; guardar en `results/clasico/umbrales.json`.
   - **Cómo verificar:** cada umbral tiene gráfica y justificación.
-  - **Quién te espera:** Santiago (T53, clasificador en MATLAB).
 - [ ] **T42 ⛔** Puntaje continuo de sabotaje.
   - **Qué hacer:** combinar los descriptores normalizados en un puntaje entre 0 y 1 para trazar la ROC.
   - **Cómo verificar:** el puntaje promedio de las saboteadas es mayor que el de las normales.
@@ -125,7 +124,7 @@ commit y Pull Request revisado por Santiago.
   - **Qué hacer:** ajustar con val; evaluar una sola vez en test: matriz, F1, tasa de falsos positivos y tiempo por frame.
   - **Entregable:** `results/clasico/`.
   - **Cómo verificar:** métricas de test guardadas.
-  - **Quién te espera:** Santiago (T44, análisis de errores; T83, generalización).
+  - **Quién te espera:** Santiago (T44, análisis de errores; T76, prueba regional; T83, generalización).
 
 ### Fase 9. Auditoría de robustez
 
@@ -149,6 +148,7 @@ commit y Pull Request revisado por Santiago.
 ### Fase 10. Defensa (tu parte)
 
 - [ ] **T90 ⛔** Diagnóstico de los fallos del clásico: qué descriptor se altera con cada perturbación y por qué.
+  - **Esperas a:** Santiago (T76, prueba regional en Medellín); tus tareas T74 y T75.
 - [ ] **T92 ⛔** Re-evaluar con las correcciones: tabla antes y después.
   - **Esperas a:** Santiago (T91, correcciones).
   - **Entregable:** `results/defensa/`.
@@ -161,10 +161,8 @@ commit y Pull Request revisado por Santiago.
 | T11 (inventario) | T12 (galería) |
 | T14 (división) | T60 (datos para la CNN) |
 | T25 (métricas) | T64 (evaluación de la CNN) |
-| T36 (ficha de descriptores, incluido el color) | T51, T52 (MATLAB) |
 | T40 (reglas) | T82 (demo en vivo) |
-| T41 (umbrales) | T53 (clasificador en MATLAB) |
-| T43 (evaluación del clásico) | T44 (análisis de errores) y T83 (generalización) |
+| T43 (evaluación del clásico) | T44 (análisis de errores), T76 (prueba regional) y T83 (generalización) |
 | T74 y T75 (auditoría artificial y física) | T90 (diagnóstico de la CNN) |
 | T92 (antes/después) | T93 (guía de defensa) |
 
@@ -176,6 +174,7 @@ commit y Pull Request revisado por Santiago.
 | T75 (auditoría física) | T81 (captura regional e iluminación física) |
 | T93 (guía de defensa) | T83 (generalización) y su parte de T90 |
 | T94 (ensayo con la demo) | T85 (filtros en la demo) |
+| T90 (diagnóstico del clásico) y T101 (informe) | T76 (prueba regional en Medellín) |
 
 ## Tareas compartidas
 

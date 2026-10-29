@@ -1,0 +1,28 @@
+# Registro de decisiones
+
+Registro de las decisiones del proyecto: qué se decidió, qué alternativas se consideraron y por qué. Los IDs `D`
+remiten a la sección 3 de [PLAN.md](PLAN.md). Fecha de todas las decisiones: 2026-10-29, salvo que se indique otra.
+
+Estados: **Vigente** (se aplica), **Confirmada** (aprobada por la profesora), **Provisional** (puede cambiar con
+un tema de clase pendiente).
+
+| # | Decisión | Alternativas consideradas | Por qué | Estado |
+|---|---|---|---|---|
+| 1 | Tema: **sabotaje de cámaras de vigilancia** (temática Seguridad) | Detección de fuego, uso de EPP, suplantación facial, objetos en rayos X, detección de intrusos | Existe un dataset real del tamaño justo; usa casi todos los temas vistos en clase (histograma, nitidez con el Laplaciano, Canny, Hough); la defensa en vivo es natural (tapar, desenfocar o girar la cámara frente a la profesora). Elegido por el equipo | Vigente |
+| 2 | Dataset de entrenamiento: **Bremen** (ComNets Camera Tampering Images, 3600 imágenes) y su artículo como línea base (D2) | Buscar un dataset regional; construir todo con captura propia | Imágenes reales con sabotaje real y etiquetado. El artículo da la línea base: reglas 0,905 de accuracy frente a CNN 0,9975. El artículo no probó luz ni ruido: ese es nuestro aporte | Confirmada |
+| 3 | Aceptación de la profesora (T04) | — | El proyecto puede hacerse en Python, en MATLAB o en ambos. Bremen se acepta si el informe dice que no se encontró un dataset público regional de sabotaje, que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional | Confirmada |
+| 4 | Prueba regional cruzada con el **dataset de Medellín** y sabotaje sintético (D12) | Usar solo la captura propia; usar solo Bremen | Cámaras CCTV reales de Colombia con licencia CC BY 4.0. Muestra la generalización Alemania → Colombia que pidió la profesora. No trae sabotaje, por eso se sintetiza (desenfoque, rotación, oclusión), como en el dataset UHCTD | Vigente |
+| 5 | **Captura propia en Armenia**, Quindío (D3) | No capturar datos propios | Necesaria para la demo en vivo y su calibración, para la auditoría física (T75) y como muestra pequeña de sabotaje regional real que complementa el sintético. Respeta la Ley 1581 de 2012 | Vigente |
+| 6 | **4 clases + reporte binario** (D1) | Solo binario (normal frente a anormal), como el artículo | Las 4 clases permiten diagnosticar el tipo de sabotaje; el binario permite una curva ROC directa | Vigente |
+| 7 | Módulo clásico: **descriptores y reglas con umbrales calibrados** (D4) | Clasificador entrenado (SVM, árbol) sobre los descriptores | Sigue el método validado del artículo y la rúbrica pide umbrales justificados; cada regla se puede explicar en la defensa | Vigente |
+| 8 | **Descriptor de color en HSV** (saturación, dispersión del matiz, tono de piel) (D4, T37) | Trabajar solo en escala de grises | La rúbrica pide "umbralización de color". Además ayuda a separar "tapada con la mano" de una escena nocturna oscura | Vigente |
+| 9 | Framework: **TensorFlow/Keras** (D5) | PyTorch; Deep Learning Toolbox de MATLAB | PyTorch exige escribir el ciclo de entrenamiento a mano; MATLAB no ofrece GPU gratis. Keras lo usó el artículo y cada línea es una capa, fácil de explicar | Vigente |
+| 10 | Modelo: **MobileNetV2** con transfer learning (D5) | CNN propia desde cero | Liviano, funciona con pocos datos y es rápido en la demo. La arquitectura final se ajusta al tema de CNN en clase | Provisional |
+| 11 | **División por bloques** de tiempo o cámara, 70/15/15 (D6) | División aleatoria por imagen | Los frames consecutivos son casi idénticos: una división aleatoria filtra información y infla las métricas | Vigente |
+| 12 | **Perturbaciones sin desenfoque** (D7) | Incluir desenfoque como perturbación | El desenfoque es una de las clases: una imagen normal desenfocada cambia de etiqueta legítimamente | Vigente |
+| 13 | **Degradación física** además de la artificial (D7, T75) | Solo perturbaciones por código | La guía admite degradación "artificial o física" y habla de "entornos dinámicos reales"; permite comprobar si la perturbación artificial predice la luz real | Vigente |
+| 14 | **Demo local** en el portátil, con calibración de 8 referencias y filtros activables en vivo (D11, T82, T85) | Demo en Colab; usar las referencias de Bremen | Colab no accede a la webcam en tiempo real. ORB necesita referencias de la misma cámara (8, como el artículo). T85 se hace con el clásico y no depende de la CNN, para no bloquear el ensayo | Vigente |
+| 15 | **Hiperparámetros justificados** con una comparación pequeña (T66) | Elegirlos por defecto | La rúbrica califica como "Básico" elegirlos al azar | Vigente |
+| 16 | **Solo Python; MATLAB opcional al final** (D8) | Python y MATLAB en paralelo | Confirmado por la profesora. Ahorra ≈ 12 h; todo el flujo ya está en Python y MATLAB solo duplicaría trabajo. Las horas pasan al dataset regional | Confirmada |
+| 17 | **Repositorio privado en GitHub**, una rama por tarea, Pull Request revisado por el otro integrante y commits convencionales (D10) | Trabajar sobre `main` directamente; compartir archivos por otro medio | Permite trabajar en paralelo sin pisarse, revisar antes de unir y mantener `main` siempre ejecutable | Vigente |
+| 18 | **Reparto por bloques**: Cristhian, la ruta crítica (datos, métricas, clásico, auditoría); Santiago, perturbaciones, CNN, captura, demo y dataset regional. T12 y T44 pasaron a Santiago para equilibrar | Reparto por fases alternadas | Cada uno puede explicar su bloque completo en la defensa; la carga queda en ≈ 58 h cada uno | Vigente |
