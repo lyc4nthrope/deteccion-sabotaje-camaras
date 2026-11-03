@@ -1,0 +1,8 @@
+{
+  "match_min": 12.5,
+  "blur_max": 18.8556480678888,
+  "cover_feature": "hue_std",
+  "cover_threshold": 5.4039473069309985,
+  "cover_direction": "<",
+  "angle_max": 0.9395254523820741
+}

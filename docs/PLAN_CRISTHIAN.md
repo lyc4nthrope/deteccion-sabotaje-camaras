@@ -77,25 +77,25 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [x] **T10 ⛔ P1** Descargar el dataset de Bremen y registrar las condiciones de uso (hecha: descarga completa).
   - **Método:** WebDAV público, `curl -u "GCsBcswrQf9kBXC:" https://nc.uni-bremen.de/public.php/webdav/<ruta>`; 1,46 GB en 2 ubicaciones × 4 zips (Normal, Blur, Rotated, Noimage) en `data/raw/bremen/zips/`; cada zip trae una carpeta superior (por ejemplo `Location1_Normal`) que se extrae en `data/raw/bremen/`.
   - **Entregable:** `data/README.md` actualizado.
-- [ ] **T11 ⛔ P1** Inventario por ubicación y clase.
+- [x] **T11 ⛔ P1** Inventario por ubicación y clase.
   - **Qué hacer:** escribir `src/data.py` que recorra `data/raw/` y genere `results/inventario.csv` (ruta, clase, cámara, resolución, formato).
   - **Entregable:** `src/data.py`, `results/inventario.csv`.
   - **Cómo verificar:** ubicación 1: 1800/600/600/600 (normal/desenfocada/girada/tapada); ubicación 2: 753/260/167/251; total 5031.
   - **Quién te espera:** Santiago (T12, galería).
-- [ ] **T13 ⛔ P1** Analizar nombres y fechas de archivos y definir el criterio de división por bloques de tiempo dentro de la ubicación 1.
+- [x] **T13 ⛔ P1** Analizar nombres y fechas de archivos y definir el criterio de división por bloques de tiempo dentro de la ubicación 1.
   - **Qué hacer:** revisar si los nombres o metadatos tienen fecha, hora o cámara; identificar secuencias de frames casi idénticos.
   - **Entregable:** nota en `docs/datos.md`.
   - **Cómo verificar:** el criterio de división queda escrito y justificado.
-- [ ] **T14 ⛔ P1** División 70/15/15 por bloques de tiempo dentro de la ubicación 1.
+- [x] **T14 ⛔ P1** División 70/15/15 por bloques de tiempo dentro de la ubicación 1.
   - **Qué hacer:** generar `data/splits/split.csv` según el criterio de T13; escribir `load_split` en `src/data.py`; escribir la prueba de no solapamiento en `tests/test_data.py`.
   - **Entregable:** `data/splits/split.csv`, `src/data.py`, `tests/test_data.py`.
   - **Cómo verificar:** `pytest` pasa y ningún bloque aparece en dos conjuntos.
   - **Quién te espera:** Santiago (T60, carga de datos de la CNN); tú mismo (T30, T70).
-- [ ] **T15 ⛔ P1** Imágenes de referencia normales por cámara (para ORB).
+- [x] **T15 ⛔ P1** Imágenes de referencia normales por cámara (para ORB).
   - **Qué hacer:** elegir varias normales por cámara, solo de train, con distintas horas y climas si es posible; listarlas.
   - **Entregable:** lista en `docs/datos.md`.
   - **Cómo verificar:** cada cámara tiene referencias y todas pertenecen a train.
-- [ ] **T19 ⛔ P1** Conjunto de prueba de cámara no vista (D6).
+- [x] **T19 ⛔ P1** Conjunto de prueba de cámara no vista (D6).
   - **Qué hacer:** reservar toda la ubicación 2 (1431 imágenes) como prueba de cámara nunca vista; no se usa para entrenar ni para calibrar umbrales. Mide la generalización a otra cámara, la limitación que advierte el artículo.
   - **Entregable:** `data/splits/camara_no_vista.csv` y nota en `docs/datos.md`.
   - **Cómo verificar:** el archivo lista las 1431 imágenes y ninguna aparece en `split.csv`.
@@ -103,7 +103,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 3. Métricas
 
-- [ ] **T25 ⛔ P1** Módulo de métricas.
+- [x] **T25 ⛔ P1** Módulo de métricas.
   - **Qué hacer:** en `src/metrics.py`, funciones para matriz de confusión, F1 macro, tasa de falsos positivos (normal predicha como saboteada), ROC binaria con AUC y tiempo por imagen en ms.
   - **Entregable:** `src/metrics.py`, `tests/test_metrics.py`.
   - **Cómo verificar:** pruebas con ejemplos de resultado conocido pasan.
@@ -111,19 +111,19 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 4. Módulo clásico: descriptores
 
-- [ ] **T30 ⛔ P1** Preprocesamiento en `src/features.py`: escala de grises, tamaño fijo, filtro Gaussiano.
+- [x] **T30 ⛔ P1** Preprocesamiento en `src/features.py`: escala de grises, tamaño fijo, filtro Gaussiano.
   - **Cómo verificar:** prueba de tamaño fijo y un solo canal.
-- [ ] **T31 ⛔ P1** Varianza del Laplaciano (nitidez).
+- [x] **T31 ⛔ P1** Varianza del Laplaciano (nitidez).
   - **Cómo verificar:** una imagen suavizada da menor valor que la original.
-- [ ] **T32 ⛔ P1** Desviación estándar y entropía del histograma (uniformidad).
+- [x] **T32 ⛔ P1** Desviación estándar y entropía del histograma (uniformidad).
   - **Cómo verificar:** una imagen constante da 0 en ambos.
-- [ ] **T33 ⛔ P1** Descriptor geométrico con la configuración de la clase 11.
+- [x] **T33 ⛔ P1** Descriptor geométrico con la configuración de la clase 11.
   - **Qué hacer:** ORB con `nfeatures=1000`, `BFMatcher(NORM_HAMMING)`, `knnMatch` k=2 y razón de Lowe 0,75 contra las referencias de T15; puntaje = número de buenas coincidencias; ángulo por homografía con RANSAC (viene del artículo, no de la clase).
   - **Cómo verificar:** una imagen rotada un ángulo conocido devuelve un ángulo cercano.
 - [ ] **T34 🟢 P2** Densidad de bordes Canny, orientación dominante de Hough y HOG.
   - **Qué hacer:** HOG con scikit-image (`orientations=9`, `pixels_per_cell=(8,8)`, `cells_per_block=(2,2)`) y distancia L2 frente a las referencias, como señal global de cambio de escena. Cuidado: el notebook de clase calcula la distancia sobre la imagen de visualización (`visualize=True` devuelve `(features, image)`); usar los vectores de características.
   - **Cómo verificar:** prueba sobre una imagen sintética con bordes conocidos.
-- [ ] **T37 ⛔ P1** Descriptor de color en HSV (umbralización de color).
+- [x] **T37 ⛔ P1** Descriptor de color en HSV (umbralización de color).
   - **Qué hacer:** saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara); sirve para separar "tapada" de una escena nocturna oscura.
   - **Entregable:** `src/features.py`.
   - **Cómo verificar:** una imagen sintética de tono piel da proporción alta y una gris da saturación cercana a 0.
@@ -131,7 +131,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Qué hacer:** en train y val, medir acierto en "girada", buenas coincidencias y tiempo por frame con la configuración de clase (KAZE: `NORM_L2`, razón 0,7; SIFT: FLANN KD-tree `trees=5`, `checks=50`, razón 0,7); elegir y justificar (ORB para tiempo real, KAZE para robustez).
   - **Entregable:** sección en `notebooks/03_descriptores.ipynb`, `results/clasico/comparacion_descriptores.csv`.
   - **Quién te espera:** Santiago (T77, robustez de descriptores).
-- [ ] **T35 ⛔ P1** Análisis de descriptores sobre train (depende de T31, T32, T33 y T37).
+- [x] **T35 ⛔ P1** Análisis de descriptores sobre train (depende de T31, T32, T33 y T37).
   - **Qué hacer:** calcular todos los descriptores sobre train, hacer diagramas de caja por clase y escribir qué descriptor separa cada clase.
   - **Entregable:** `notebooks/03_descriptores.ipynb`.
   - **Cómo verificar:** gráficas y conclusiones escritas.
@@ -143,16 +143,16 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 5. Módulo clásico: reglas y evaluación
 
-- [ ] **T40 ⛔ P1** Árbol de reglas en `src/classic.py`: tapada → desenfocada → girada → normal (la regla de tapada puede usar el descriptor de color de T37).
+- [x] **T40 ⛔ P1** Árbol de reglas en `src/classic.py`: tapada → desenfocada → girada → normal (la regla de tapada puede usar el descriptor de color de T37).
   - **Cómo verificar:** clasifica bien imágenes de ejemplo de cada clase.
   - **Quién te espera:** Santiago (T82, demo en vivo).
-- [ ] **T41 ⛔ P1** Calibrar umbrales con train.
+- [x] **T41 ⛔ P1** Calibrar umbrales con train.
   - **Qué hacer:** fijar cada umbral con percentiles de las normales de train; justificar con una gráfica; guardar en `results/clasico/umbrales.json`.
   - **Cómo verificar:** cada umbral tiene gráfica y justificación.
-- [ ] **T42 ⛔ P1** Puntaje continuo de sabotaje.
+- [x] **T42 ⛔ P1** Puntaje continuo de sabotaje.
   - **Qué hacer:** combinar los descriptores normalizados en un puntaje entre 0 y 1 para trazar la ROC.
   - **Cómo verificar:** el puntaje promedio de las saboteadas es mayor que el de las normales.
-- [ ] **T43 ⛔ P1** Evaluación del clásico.
+- [x] **T43 ⛔ P1** Evaluación del clásico.
   - **Qué hacer:** ajustar con val; evaluar una sola vez en test y en la cámara no vista (T19): matriz, F1, tasa de falsos positivos y tiempo por frame.
   - **Entregable:** `results/clasico/`.
   - **Cómo verificar:** métricas de test guardadas.
