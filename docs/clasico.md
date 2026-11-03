@@ -14,32 +14,39 @@ python -m src.evaluate_classic
 ```
 coincidencias ORB ≥ match_min  y |ángulo| ≤ angle_max  → normal
 coincidencias ORB ≥ match_min  y |ángulo| >  angle_max  → girada  (misma escena, vista girada)
+coincidencias ORB ≥ match_min  sin ángulo confiable     → girada  (coincidencias sin geometría consistente)
 si no, Laplaciano < blur_max:  dispersión del matiz < cover_threshold → tapada; si no → desenfocada
 si no                                                  → girada  (imagen nítida de otra escena)
 ```
 
-Cubre los elementos que pide la rúbrica para el módulo clásico: descriptores matemáticos (Laplaciano, entropía,
-ORB), transformación geométrica (similaridad estimada con RANSAC para el ángulo), umbralización de color (matiz en
-HSV) y filtrado espacial lineal (suavizado gaussiano en el preprocesamiento).
+El ángulo sale de una transformación de similaridad estimada con RANSAC entre los puntos ORB de la imagen y los
+de su mejor referencia; solo se acepta si la apoyan al menos 6 puntos consistentes.
+
+Elementos de la rúbrica que cubre: descriptores matemáticos (Laplaciano, entropía, ORB), transformación
+geométrica (similaridad con RANSAC) y umbralización de color (matiz en HSV). El filtrado espacial lineal y no
+lineal se aplica en el módulo de correcciones (T91), donde los experimentos de la sección 7 muestran que sí hace
+falta.
 
 ## 2. Umbrales calibrados con train (T41)
 
-`results/clasico/umbrales.json`. Cada umbral se elige **solo con el conjunto train** de la ubicación 1, en el punto
-medio entre dos valores observados, maximizando la exactitud balanceada de su decisión (la clase pequeña pesa igual
-que la grande).
+`results/clasico/umbrales.json`. Cada umbral se elige **solo con el conjunto train** de la ubicación 1 (sin las 8
+imágenes de referencia, que coincidirían consigo mismas), en el punto medio entre dos valores observados,
+maximizando la exactitud balanceada de su decisión (la clase pequeña pesa igual que la grande).
 
 | Umbral | Valor | Cómo se calibra | Interpretación |
 |---|---|---|---|
 | `match_min` | 12,5 | Normal frente al resto, con `orb_matches` | Con menos de 13 coincidencias contra las referencias, la escena ya no es la normal |
 | `blur_max` | 18,9 | Desenfocada y tapada frente a girada, con `lap_var`, **solo entre saboteadas** | Por debajo, la imagen no tiene bordes nítidos |
 | `cover_feature` | `hue_std` | El mejor de 5 candidatos (`hue_std`, `gray_std`, `entropy`, `sat_mean`, `lap_var`) | El color, no el brillo, separa una tapa de un desenfoque |
-| `cover_threshold` | 5,4° | Tapada frente a desenfocada | Menos de 5,4° de dispersión del matiz = un solo color (la tapa) |
-| `angle_max` | 1,40° | Percentil 99 del \|ángulo\| de las normales de train | Lo máximo que se mueve una cámara normal (viento, vibración) |
+| `cover_threshold` | 5,4° | Tapada frente a desenfocada | Menos de 5,4° de dispersión del matiz: un solo color, **o ningún píxel con color** (imagen gris u oscura; ver sección 6) |
+| `angle_max` | 0,94° | Percentil 99 del \|ángulo\| de las normales de train que sí coinciden (≥ `match_min`) | Lo máximo que se mueve una cámara normal (viento, vibración) |
 
 ## 3. Puntaje continuo para la curva ROC (T42)
 
-`max(match_min / (match_min + coincidencias), |ángulo| / (|ángulo| + angle_max))`, entre 0 y 1. Cada parte vale
-0,5 exactamente en su umbral, así que puntaje > 0,5 equivale a la decisión "saboteada".
+`max(match_min / (match_min + coincidencias), |ángulo| / (|ángulo| + angle_max))`, entre 0 y 1; la parte del
+ángulo vale 1 cuando no hay un ángulo confiable. Cada parte vale 0,5 exactamente en su umbral, así que puntaje
+> 0,5 equivale a la decisión "saboteada" (verificado en 500 filas aleatorias en las pruebas y en las 2609 filas
+reales por una revisión independiente).
 
 ## 4. Resultados (T43)
 
@@ -47,13 +54,13 @@ que la grande).
 
 | Conjunto | Imágenes | Exactitud | F1 macro | Falsos positivos (normales) | AUC binaria |
 |---|---|---|---|---|---|
-| Train | 1930 | 0,944 | 0,904 | 1,3 % | 0,999 |
-| Val | 352 | 0,980 | 0,970 | 0,5 % | 1,000 |
-| **Test** | 327 | **0,985** | **0,913** | **0,5 %** | **0,999** |
-| **Cámara no vista** | 1163 | **0,942** | **0,914** | **0,0 %** | **0,982** |
+| Train | 1930 | 0,941 | 0,898 | 1,8 % | 0,997 |
+| Val | 352 | 0,977 | 0,963 | 1,0 % | 0,997 |
+| **Test** | 327 | **0,991** | **0,954** | **0,5 %** | **0,997** |
+| **Cámara no vista** | 1163 | **0,947** | **0,920** | **0,1 %** | **0,979** |
 
 **Tiempo por frame** (descriptores + reglas sobre la imagen ya decodificada, 100 imágenes de test, con una
-llamada de calentamiento descartada): media **13,7 ms**, mediana 10,8 ms (unos 70 cuadros por segundo).
+llamada de calentamiento descartada): media **13,5 ms**, mediana 10,6 ms (unos 70 cuadros por segundo).
 
 Matriz de confusión de test (filas = real, columnas = predicho):
 
@@ -61,41 +68,59 @@ Matriz de confusión de test (filas = real, columnas = predicho):
 |---|---|---|---|---|
 | normal | 181 | 0 | 1 | 0 |
 | desenfocada | 0 | 68 | 0 | 0 |
-| girada | 4 | 0 | 5 | 0 |
+| girada | 2 | 0 | 7 | 0 |
 | tapada | 0 | 0 | 0 | 68 |
 
 Matriz de confusión de la cámara no vista:
 
 | | normal | desenfocada | girada | tapada |
 |---|---|---|---|---|
-| normal | 745 | 0 | 0 | 0 |
-| desenfocada | 20 | 216 | 15 | 0 |
-| girada | 32 | 0 | 135 | 0 |
+| normal | 744 | 0 | 1 | 0 |
+| desenfocada | 18 | 216 | 17 | 0 |
+| girada | 26 | 0 | 141 | 0 |
 
-## 5. Transparencia: la regla del ángulo se agregó después de ver la cámara no vista
+## 5. Transparencia: test y cámara no vista se evaluaron más de una vez
 
-La primera versión de las reglas no usaba el ángulo. Con ella, la cámara no vista dio **F1 macro 0,630**: 160 de
-167 giradas se clasificaron como normales. La causa: en la ubicación 1 "girada" significa que la cámara apunta a
-**otra escena** (casi 0 coincidencias), pero en la ubicación 2 el giro es **parcial** y la escena se superpone
-(mediana de 27 coincidencias, por encima de `match_min`). El ángulo estimado sí lo delata (mediana 3,6° frente a
-0,1° en las normales).
+Los umbrales siempre se calibraron solo con train, pero **las reglas cambiaron dos veces después de ver
+resultados**, así que test y la cámara no vista no se evaluaron una sola vez:
 
-Se agregó la regla del ángulo, que también usa el artículo de referencia, **calibrando su umbral solo con las
-normales de train de la ubicación 1** (percentil 99, fijado de antemano), sin ajustar nada con la cámara no vista.
-Aun así, la decisión de agregar la regla se tomó después de ver ese error, así que el resultado de la cámara no vista
-(F1 0,914) es optimista frente a una cámara realmente nueva. La prueba definitiva de generalización queda para el
-dataset de Medellín y la captura propia, que no se han mirado.
+| Versión | Qué cambió | Test F1 | Cámara no vista F1 | Giradas detectadas (no vista) |
+|---|---|---|---|---|
+| 1 | Reglas sin ángulo | 0,913 | 0,630 | 7 de 167 |
+| 2 | Regla del ángulo (umbral = percentil 99 de las normales de train) | 0,913 | 0,914 | 135 de 167 |
+| 3 | Correcciones de la revisión independiente: ángulo solo con ≥ 6 puntos RANSAC, umbral calculado con normales que coinciden, referencias fuera de la calibración, coincidencias sin geometría = sospechosa | 0,954 | 0,920 | 141 de 167 |
 
-| Versión | Test F1 | Cámara no vista F1 | Giradas detectadas (cámara no vista) |
-|---|---|---|---|
-| Sin regla del ángulo | 0,913 | 0,630 | 7 de 167 |
-| Con regla del ángulo | 0,913 | 0,914 | 135 de 167 |
+- **Versión 2:** la regla del ángulo se agregó después de ver que, en la cámara no vista, "girada" es un giro
+  **parcial** (la escena se superpone: mediana de 27 coincidencias, por encima de `match_min`) y no un cambio
+  completo de escena como en la ubicación 1. El umbral se fijó de antemano con las normales de train.
+- **Versión 3:** corrige defectos encontrados por una revisión de código (ángulos de 150° calculados con 2 o 3
+  puntos inflaban el umbral), no por los resultados.
 
-## 6. Errores que quedan (para la auditoría y la defensa)
+Por eso los resultados de test y de la cámara no vista son **optimistas**. La prueba de generalización que no se
+ha mirado queda para el dataset de Medellín y la captura propia.
 
-- **Girada con poca superposición o giro pequeño** (4 en test, 32 en la cámara no vista): pocas coincidencias de
-  diferencia con una normal; es el límite del método.
-- **Desenfocadas nocturnas de la cámara no vista** (20 como normales, 15 como giradas): de noche hay pocos puntos
+## 6. Errores y límites conocidos (para la auditoría y la defensa)
+
+- **Girada con giro pequeño** (2 en test, 26 en la cámara no vista): el ángulo queda por debajo de 0,94°.
+- **Desenfocadas nocturnas de la cámara no vista** (18 como normales, 17 como giradas): de noche hay pocos puntos
   ORB y el Laplaciano es bajo también en escenas nítidas.
-- **Tapadas de val clasificadas como desenfocadas** (6 de 66): tapas que no son de un solo color.
+- **`hue_std` = 0 cuando no hay color:** una imagen gris u oscura sin píxeles de color obtiene 0, igual que una
+  tapa de un solo color. Una cámara desenfocada de noche y sin color podría clasificarse como tapada.
 - La clase girada de test tiene solo 9 imágenes (ver `docs/datos.md`): su resultado en test es poco estable.
+
+## 7. Experimento: suavizado y ruido en el Laplaciano
+
+Se probó medir la nitidez sobre la imagen con suavizado gaussiano. Exactitud balanceada para separar borrosas
+(desenfocadas y tapadas) de nítidas, con 60 imágenes de train por clase y el umbral aprendido sin ruido:
+
+| Variante | Sin ruido | Con ruido gaussiano (σ = 15) |
+|---|---|---|
+| Laplaciano sin suavizar | 0,996 (umbral 17,5) | 0,500 |
+| Gaussiano 3×3 | 1,000 (umbral 2,9) | 0,500 |
+| Gaussiano 5×5 | 0,979 (umbral 2,2) | 0,500 |
+
+1. **Ningún suavizado gaussiano protege la regla del ruido:** el ruido crea bordes falsos, el Laplaciano sube y
+   una imagen borrosa parece nítida. Es el **fallo que se debe diagnosticar en la defensa**; la corrección
+   propuesta es un filtro no lineal (mediana) antes de medir (T91).
+2. Sin ruido, el Laplaciano sin suavizar deja más margen (umbral 17,5 frente a 2,9, muy cerca de 0). Por eso el
+   módulo lo mide sin suavizar.

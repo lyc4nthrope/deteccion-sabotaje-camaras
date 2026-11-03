@@ -39,16 +39,16 @@ def load_image(path: Path | str) -> np.ndarray:
 
 
 def preprocess(bgr: np.ndarray) -> dict:
-    """Resize to the working size and derive the gray, smoothed gray and HSV versions (T30).
+    """Resize to the working size and derive the gray and HSV versions (T30).
 
-    The Gaussian blur (linear filter) removes sensor noise before edge-based measures.
+    No smoothing here: a Gaussian blur lowered the margin of the sharpness rule on clean images and did not
+    protect it against noise either (docs/clasico.md, section 7); noise correction belongs to T91.
     """
     resized = cv2.resize(bgr, (WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     return {
         "bgr": resized,
         "gray": gray,
-        "smooth": cv2.GaussianBlur(gray, (5, 5), 0),
         "hsv": cv2.cvtColor(resized, cv2.COLOR_BGR2HSV),
     }
 
@@ -67,13 +67,18 @@ def uniformity(gray: np.ndarray) -> tuple[float, float]:
 
 
 def color_descriptors(bgr: np.ndarray) -> dict:
-    """Color thresholding in HSV (T37).
+    """Color thresholding in HSV (T37); see color_from_hsv."""
+    return color_from_hsv(cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV))
+
+
+def color_from_hsv(hsv: np.ndarray) -> dict:
+    """Color descriptors from an HSV image (T37).
 
     - sat_mean: mean saturation (0-1). A cover of one vivid color (the red cloth of Location 1) is high.
-    - hue_std: circular standard deviation of the hue, in degrees, over colored pixels. One color gives ~0.
+    - hue_std: circular standard deviation of the hue, in degrees, over colored pixels. It is ~0 for a single
+      color and exactly 0 when there are no colored pixels at all (a gray or very dark image).
     - skin_ratio: share of pixels with skin tones, as when a hand covers the camera.
     """
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     hue, sat, val = (hsv[..., i].astype(float) for i in range(3))
 
     colored = (sat >= COLOR_MIN_SAT) & (val >= COLOR_MIN_VAL)
@@ -86,6 +91,23 @@ def color_descriptors(bgr: np.ndarray) -> dict:
 
     skin = (hue <= SKIN_HUE_MAX) & (sat >= SKIN_SAT_RANGE[0]) & (sat <= SKIN_SAT_RANGE[1]) & (val >= SKIN_VAL_MIN)
     return {"sat_mean": float(sat.mean() / 255.0), "hue_std": float(hue_std), "skin_ratio": float(skin.mean())}
+
+
+def estimate_rotation(source: np.ndarray, target: np.ndarray) -> tuple[float, int]:
+    """Rotation angle (degrees) of a RANSAC similarity transform from source to target points.
+
+    Returns (nan, inliers) when fewer than MIN_MATCHES_FOR_GEOMETRY points agree: an angle supported by two or
+    three points is meaningless (it gave values like 150 degrees on normal images).
+    """
+    transform, inliers = cv2.estimateAffinePartial2D(
+        source, target, method=cv2.RANSAC, ransacReprojThreshold=RANSAC_THRESHOLD
+    )
+    if transform is None:
+        return float("nan"), 0
+    count = int(inliers.sum())
+    if count < MIN_MATCHES_FOR_GEOMETRY:
+        return float("nan"), count
+    return math.degrees(math.atan2(transform[1, 0], transform[0, 0])), count
 
 
 class ReferenceMatcher:
@@ -124,12 +146,7 @@ class ReferenceMatcher:
         reference_keypoints = self.references[best][0]
         source = np.float32([reference_keypoints[m.trainIdx].pt for m in good])
         target = np.float32([keypoints[m.queryIdx].pt for m in good])
-        transform, inliers = cv2.estimateAffinePartial2D(
-            source, target, method=cv2.RANSAC, ransacReprojThreshold=RANSAC_THRESHOLD
-        )
-        if transform is not None:
-            result["angle"] = math.degrees(math.atan2(transform[1, 0], transform[0, 0]))
-            result["orb_inliers"] = int(inliers.sum())
+        result["angle"], result["orb_inliers"] = estimate_rotation(source, target)
         return result
 
 
@@ -141,6 +158,6 @@ def extract(bgr: np.ndarray, matcher: ReferenceMatcher) -> dict:
         "lap_var": sharpness(pre["gray"]),
         "gray_std": std,
         "entropy": entropy,
-        **color_descriptors(pre["bgr"]),
+        **color_from_hsv(pre["hsv"]),
         **matcher.match(pre["gray"]),
     }

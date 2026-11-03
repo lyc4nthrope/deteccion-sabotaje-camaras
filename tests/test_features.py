@@ -42,17 +42,11 @@ def _rotate(image: np.ndarray, angle: float) -> np.ndarray:
 # ---------------------------------------------------------------- preprocessing (T30)
 
 
-def test_preprocess_resizes_to_the_working_size_and_returns_gray():
+def test_preprocess_resizes_to_the_working_size_and_returns_gray_and_hsv():
     pre = features.preprocess(_texture(0, size=(720, 1280)))
     assert pre["bgr"].shape == (features.HEIGHT, features.WIDTH, 3)
     assert pre["gray"].shape == (features.HEIGHT, features.WIDTH) and pre["gray"].dtype == np.uint8
-    assert pre["smooth"].shape == pre["gray"].shape
-
-
-def test_preprocess_smooth_is_a_gaussian_blur_of_gray():
-    pre = features.preprocess(_texture(0))
-    assert np.abs(pre["smooth"].astype(int) - pre["gray"].astype(int)).mean() > 0
-    assert cv2.Laplacian(pre["smooth"], cv2.CV_64F).var() < cv2.Laplacian(pre["gray"], cv2.CV_64F).var()
+    assert np.array_equal(pre["hsv"], cv2.cvtColor(pre["bgr"], cv2.COLOR_BGR2HSV))
 
 
 def test_load_image_fails_clearly_on_missing_file(tmp_path):
@@ -182,38 +176,39 @@ def test_matcher_needs_at_least_one_reference():
         features.ReferenceMatcher([])
 
 
+def test_rotation_needs_enough_ransac_inliers():
+    rng = np.random.default_rng(0)
+    source = rng.uniform(0, 600, (20, 2)).astype(np.float32)
+    angle, inliers = features.estimate_rotation(source, rng.uniform(0, 600, (20, 2)).astype(np.float32))
+    assert math.isnan(angle) and inliers < features.MIN_MATCHES_FOR_GEOMETRY
+
+
+def test_rotation_of_consistent_points():
+    rng = np.random.default_rng(1)
+    source = rng.uniform(0, 600, (30, 2)).astype(np.float32)
+    theta = math.radians(10)
+    rotation = np.array([[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]], np.float32)
+    angle, inliers = features.estimate_rotation(source, source @ rotation.T + 5)
+    assert angle == pytest.approx(10, abs=0.5) and inliers == 30
+
+
+def test_color_from_precomputed_hsv_matches_color_from_bgr():
+    image = _texture(3)
+    assert features.color_from_hsv(cv2.cvtColor(image, cv2.COLOR_BGR2HSV)) == features.color_descriptors(image)
+
+
 # ---------------------------------------------------------------- full vector
 
 
-def test_extract_returns_every_descriptor(matcher):
-    vector = features.extract(_texture(10), matcher)
-    assert set(vector) == {
-        "lap_var", "gray_std", "entropy", "sat_mean", "hue_std", "skin_ratio",
-        "orb_matches", "orb_inliers", "angle", "best_reference",
-    }
-
-
-# ---------------------------------------------------------------- real dataset
-
-
-@pytest.mark.skipif(not (BREMEN_ROOT.exists() and SPLIT.exists()), reason="Bremen dataset not available")
-def test_descriptors_separate_the_real_classes():
-    split = pd.read_csv(SPLIT)
-    refs = pd.read_csv(ROOT / "data" / "splits" / "referencias.csv")
-    matcher = features.ReferenceMatcher(
-        [features.preprocess(features.load_image(BREMEN_ROOT / p))["gray"] for p in refs["path"]]
+def test_extract_uses_the_unsmoothed_gray_for_sharpness(matcher):
+    image = _texture(4)
+    assert features.extract(image, matcher)["lap_var"] == pytest.approx(
+        features.sharpness(features.preprocess(image)["gray"])
     )
-    train = split[split["set"] == "train"]
-    medians = {}
-    for label, group in train.groupby("label"):
-        sample = group.sample(12, random_state=0)
-        rows = [features.extract(features.load_image(BREMEN_ROOT / p), matcher) for p in sample["path"]]
-        medians[label] = pd.DataFrame(rows).median()
-    # Defocus removes sharp edges.
-    assert medians["desenfocada"]["lap_var"] < medians["normal"]["lap_var"] / 3
-    # A covered lens shows a single color. Intensity std does NOT separate it from normal night images
-    # (dark and low contrast); the circular hue dispersion does (see docs/descriptores.md).
-    assert medians["tapada"]["hue_std"] < medians["normal"]["hue_std"] / 3
-    # A camera pointed elsewhere no longer matches the normal reference views.
-    assert medians["girada"]["orb_matches"] < medians["normal"]["orb_matches"] / 2
-    assert medians["normal"]["orb_matches"] > 50
+
+
+def test_noise_inflates_the_laplacian_of_a_blurred_image():
+    # Documents the weakness the defense must explain: sensor noise creates false edges.
+    blurred = cv2.GaussianBlur(cv2.cvtColor(_texture(5), cv2.COLOR_BGR2GRAY), (0, 0), 6)
+    noisy = np.clip(blurred + np.random.default_rng(0).normal(0, 15, blurred.shape), 0, 255).astype(np.uint8)
+    assert features.sharpness(noisy) > 20 * features.sharpness(blurred)

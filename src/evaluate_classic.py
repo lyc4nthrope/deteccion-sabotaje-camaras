@@ -47,7 +47,11 @@ def main() -> None:
     location1 = pd.read_csv(OUT_DIR / "descriptores_ubicacion1.csv")
     unseen = pd.read_csv(OUT_DIR / "descriptores_camara_no_vista.csv")
 
-    thresholds = classic.calibrate(location1[location1["set"] == "train"])
+    # The 8 ORB references would be compared against themselves (perfect match, angle 0): keep them out of the
+    # calibration.
+    references = pd.read_csv(data.SPLITS_DIR / "referencias.csv")["path"]
+    train = location1[(location1["set"] == "train") & ~location1["path"].isin(references)]
+    thresholds = classic.calibrate(train)
     classic.save_thresholds(thresholds, OUT_DIR / "umbrales.json")
 
     rows = [evaluate(location1[location1["set"] == name], thresholds, name) for name in ("train", "val", "test")]

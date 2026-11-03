@@ -139,14 +139,21 @@ def test_rule_turned_view_is_rotated_even_if_it_looks_soft(thresholds):
     assert classic.predict(_one(orb_matches=80, lap_var=5.0, hue_std=2.0, angle=3.0), thresholds)[0] == "girada"
 
 
-def test_rule_small_rotation_or_unknown_angle_stays_normal(thresholds):
+def test_rule_small_rotation_stays_normal(thresholds):
     assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=0.5), thresholds)[0] == "normal"
-    assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=float("nan")), thresholds)[0] == "normal"
 
 
-def test_angle_threshold_is_the_99th_percentile_of_normal_train_angles(train):
+def test_rule_matches_without_consistent_geometry_are_suspicious(thresholds):
+    # Enough matches but no reliable rotation (too few RANSAC inliers): the view is not the normal one.
+    assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=float("nan")), thresholds)[0] == "girada"
+
+
+def test_angle_threshold_is_the_99th_percentile_of_matching_normal_train_angles(train):
     angles = np.linspace(0, 2.0, 101)  # |angle| 0.00, 0.02, ..., 2.00 -> 99th percentile = 1.98
-    normal = pd.DataFrame({"label": "normal", "angle": np.r_[angles[:50], -angles[50:]]})
+    normal = pd.DataFrame({"label": "normal", "orb_matches": 200, "angle": np.r_[angles[:50], -angles[50:]]})
+    # Normals that barely match their references give meaningless angles and must be ignored.
+    weak = pd.DataFrame({"label": "normal", "orb_matches": 7, "angle": [150.0, -60.0, 34.0]})
+    normal = pd.concat([normal, weak], ignore_index=True)
     others = train[train["label"] != "normal"].assign(angle=45.0)  # must not influence the threshold
     t = classic.calibrate(pd.concat([train.assign(angle=np.nan)[train["label"] == "normal"], normal, others]))
     assert t.angle_max == pytest.approx(1.98)
@@ -161,7 +168,11 @@ def test_score_is_half_at_the_threshold_and_decreases_with_matches(thresholds):
     assert np.all(np.diff(scores) < 0) and scores.min() > 0
 
 
-@pytest.mark.parametrize("values", [{"orb_matches": 10}, {"orb_matches": 80, "angle": 3.0}, {"orb_matches": 80, "angle": 0.2}])
+@pytest.mark.parametrize(
+    "values",
+    [{"orb_matches": 10}, {"orb_matches": 80, "angle": 3.0}, {"orb_matches": 80, "angle": 0.2},
+     {"orb_matches": 80, "angle": float("nan")}],
+)
 def test_score_agrees_with_the_normal_decision(thresholds, values):
     frame = _one(lap_var=300.0, **values)
     assert (classic.sabotage_score(frame, thresholds)[0] > 0.5) == (classic.predict(frame, thresholds)[0] != "normal")
@@ -190,3 +201,30 @@ def test_real_validation_performance_is_reasonable():
     predicted = classic.predict(val, thresholds)
     assert metrics.f1_macro(val["label"], predicted) > 0.8
     assert metrics.false_positive_rate(val["label"], predicted) < 0.15
+
+
+
+def test_score_agrees_with_the_decision_on_random_rows(thresholds):
+    rng = np.random.default_rng(0)
+    n = 500
+    angle = rng.normal(0, 3, n)
+    angle[rng.random(n) < 0.2] = np.nan
+    frame = pd.DataFrame({
+        "orb_matches": rng.integers(0, 120, n), "angle": angle, "lap_var": rng.uniform(0, 400, n),
+        "hue_std": rng.uniform(0, 60, n), "gray_std": 0.0, "entropy": 0.0, "sat_mean": 0.0,
+    })
+    sabotage = classic.sabotage_score(frame, thresholds) > 0.5
+    assert np.array_equal(sabotage, classic.predict(frame, thresholds) != "normal")
+
+
+def test_score_has_no_nan_with_zero_thresholds():
+    t = classic.Thresholds(
+        match_min=0.0, blur_max=15.0, cover_feature="hue_std", cover_threshold=8.0, cover_direction="<", angle_max=0.0
+    )
+    scores = classic.sabotage_score(pd.DataFrame({"orb_matches": [0, 5], "angle": [0.0, np.nan]}), t)
+    assert np.isfinite(scores).all()
+
+
+def test_calibration_fails_without_any_valid_normal_angle(train):
+    with pytest.raises(ValueError, match="angle"):
+        classic.calibrate(train.assign(angle=np.nan))

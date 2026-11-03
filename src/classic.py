@@ -4,6 +4,7 @@ Decision tree (same idea as the reference paper, thresholds learnt from the trai
 
     orb_matches >= match_min and |angle| <= angle_max -> normal  (the scene still matches the references)
     orb_matches >= match_min and |angle| >  angle_max -> girada  (same scene, but the view turned: partial pan)
+    orb_matches >= match_min and no reliable angle    -> girada  (matches without a consistent geometry)
     otherwise, lap_var < blur_max                     -> tapada if the cover rule holds, else desenfocada
     otherwise                                         -> girada  (sharp image of a different scene)
 """
@@ -21,6 +22,7 @@ from src.metrics import LABELS
 
 # Percentile of |angle| among normal training images used as the largest normal rotation (wind, vibration).
 ANGLE_PERCENTILE = 99
+EPS = 1e-12
 
 # Descriptors tried to separate a covered lens from a defocused one; the best one on train is kept.
 COVER_CANDIDATES = ("hue_std", "gray_std", "entropy", "sat_mean", "lap_var")
@@ -73,16 +75,20 @@ def calibrate(train: pd.DataFrame) -> Thresholds:
         ((feature, *best_threshold(blurry[feature], blurry["label"] == "tapada")) for feature in COVER_CANDIDATES),
         key=lambda option: option[3],
     )
-    # Learnt from normal images only, like the calibration of the reference paper.
-    normal_angles = train.loc[train["label"] == "normal", "angle"].abs()
-    angle_max = float(np.nanpercentile(normal_angles, ANGLE_PERCENTILE))
+    # Learnt from normal images that match their references, like the calibration of the reference paper.
+    matching_normals = (train["label"] == "normal") & (train["orb_matches"] >= match_min)
+    normal_angles = train.loc[matching_normals, "angle"].abs().dropna()
+    if normal_angles.empty:
+        raise ValueError("Calibration needs normal train images with a valid angle.")
+    angle_max = float(np.percentile(normal_angles, ANGLE_PERCENTILE))
     return Thresholds(match_min, blur_max, cover[0], cover[1], cover[2], angle_max)
 
 
 def predict(descriptors: pd.DataFrame, t: Thresholds) -> np.ndarray:
     """Apply the decision tree to every row (T40)."""
     matching = descriptors["orb_matches"].to_numpy() >= t.match_min
-    turned = np.nan_to_num(np.abs(descriptors["angle"].to_numpy(dtype=float)), nan=0.0) > t.angle_max
+    angle = np.abs(descriptors["angle"].to_numpy(dtype=float))
+    turned = (angle > t.angle_max) | (matching & np.isnan(angle))
     normal = matching & ~turned
     blurry = descriptors["lap_var"].to_numpy() < t.blur_max
     feature = descriptors[t.cover_feature].to_numpy()
@@ -96,11 +102,15 @@ def sabotage_score(descriptors: pd.DataFrame, t: Thresholds) -> np.ndarray:
 
     Maximum of two parts, each equal to 0.5 exactly at its threshold, so score > 0.5 means "not normal":
     - match_min / (match_min + orb_matches): 1 with no matches, lower the better the scene matches;
-    - |angle| / (|angle| + angle_max): 0 without rotation, higher the more the view turned.
+    - |angle| / (|angle| + angle_max): 0 without rotation, higher the more the view turned; 1 when there is
+      no reliable angle.
+    Denominators are clamped so zero thresholds never give 0/0.
     """
     matches = descriptors["orb_matches"].to_numpy(dtype=float)
-    angle = np.nan_to_num(np.abs(descriptors["angle"].to_numpy(dtype=float)), nan=0.0)
-    return np.maximum(t.match_min / (t.match_min + matches), angle / (angle + t.angle_max))
+    angle = np.abs(descriptors["angle"].to_numpy(dtype=float))
+    match_part = t.match_min / np.maximum(t.match_min + matches, EPS)
+    angle_part = np.where(np.isnan(angle), 1.0, np.nan_to_num(angle) / np.maximum(np.nan_to_num(angle) + t.angle_max, EPS))
+    return np.maximum(match_part, angle_part)
 
 
 def save_thresholds(t: Thresholds, path: Path) -> None:
