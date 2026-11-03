@@ -6,6 +6,8 @@ Proyecto final de **Visión Artificial** · Grupo 7 · Temática: **Seguridad**
 
 **Docente:** Ing. Ana Maria Tamayo Ocampo, Mg
 
+**Fecha de entrega:** ≈ 15 de noviembre de 2026 (aproximada, por confirmar)
+
 ## Problema
 
 Antes de un robo o un acto vandálico, es común que las cámaras de vigilancia sean **tapadas, desenfocadas o
@@ -49,10 +51,11 @@ Todo el proceso se implementa en **Python**; una réplica en MATLAB queda como e
 3. **Módulo clásico:** preprocesamiento (escala de grises, tamaño fijo, filtro Gaussiano y mediana) y descriptores:
    - Varianza del Laplaciano → nitidez (detecta **desenfocada**).
    - Desviación estándar y entropía del histograma → uniformidad (detecta **tapada**).
-   - Coincidencias ORB contra imágenes de referencia y ángulo por homografía → geometría (detecta **girada**).
+   - Buenas coincidencias ORB contra imágenes de referencia (configuración de la clase 11) y ángulo por homografía
+     con RANSAC → geometría (detecta **girada**). Se compara con SIFT y KAZE, más robustos ante luz y ruido.
    - Saturación, dispersión del matiz y proporción de tono de piel en HSV → umbralización de color (separa
      **tapada** con la mano de una escena nocturna oscura).
-   - Densidad de bordes Canny y orientación dominante de Hough → descriptores complementarios.
+   - Densidad de bordes Canny, orientación dominante de Hough y HOG → descriptores complementarios.
 
    Un árbol de reglas (tapada → desenfocada → girada → normal) decide la clase, y un puntaje continuo de
    sabotaje permite trazar la curva ROC.
@@ -104,7 +107,7 @@ en vivo corre localmente en el portátil con TensorFlow en CPU, porque Colab no 
 | **NumPy** | Operaciones sobre las matrices de píxeles | Una imagen es una matriz de números, y NumPy es la base de todas las demás librerías. Permite calcular descriptores como la desviación estándar en una línea |
 | **scikit-image** | Entropía del histograma y funciones de análisis que OpenCV no trae | Complementa a OpenCV con funciones de análisis bien documentadas, ya usadas en las guías de la materia |
 | **TensorFlow / Keras** | Red neuronal: transfer learning con MobileNetV2 y curvas de loss y accuracy | Keras arma una red en pocas líneas, cada una corresponde a una capa, y eso facilita **explicar la arquitectura** en la defensa (la rúbrica castiga usar un modelo como caja negra). Entrega las curvas de loss y accuracy directamente, viene instalada en Colab y fue la usada por el artículo de referencia, así que los resultados se pueden comparar. Se descartó PyTorch porque exige escribir el ciclo de entrenamiento a mano, y el Deep Learning Toolbox de MATLAB porque no tiene GPU gratis |
-| **MobileNetV2** (dentro de Keras) | Modelo preentrenado para el transfer learning | Es una red **liviana**: entrena rápido con pocas imágenes (3600) y clasifica en pocos milisegundos, importante para la demo en vivo. Su arquitectura se ajusta a lo que se vea en el tema de CNN en clase |
+| **MobileNetV2** (dentro de Keras) | Modelo preentrenado para el transfer learning | Es una red **liviana**: entrena rápido con pocas imágenes (≈ 2500 de entrenamiento) y clasifica en pocos milisegundos, importante para la demo en vivo. Su arquitectura se ajusta a lo que se vea en el tema de CNN en clase |
 | **scikit-learn** | Matriz de confusión, curva ROC y AUC, F1 | Calcula con funciones probadas exactamente las métricas que exige la rúbrica, iguales para el módulo clásico y la red, así la comparación es justa |
 | **pandas** | Tablas de inventario del dataset y de resultados por condición | La auditoría genera muchas combinaciones (modelo × perturbación × nivel). pandas las organiza en tablas que se filtran, comparan y exportan al informe |
 | **Matplotlib** | Gráficas: diagramas de caja, curvas de loss y accuracy, ROC, F1 frente a severidad | Es la librería estándar de gráficas en Python y la usada en los notebooks de clase |
@@ -138,7 +141,7 @@ Los datos no se suben al repositorio (ver [data/README.md](data/README.md)).
 
 | Conjunto | Uso | Contenido | Licencia |
 |---|---|---|---|
-| **ComNets Camera Tampering Images Datasets** (Universidad de Bremen) | Entrenamiento, con sabotaje real | 3600 imágenes: 1800 normales, 600 desenfocadas, 600 giradas y 600 con lente tapado | No indicada; uso académico citando el artículo |
+| **ComNets Camera Tampering Images Datasets** (Universidad de Bremen) | Entrenamiento (ubicación 1) y prueba de cámara no vista (ubicación 2), con sabotaje real | 5031 imágenes de 2 cámaras: ubicación 1 con 3600 (las del artículo: 1800 normales, 600 desenfocadas, 600 giradas, 600 tapadas) y ubicación 2 con 1431 (753, 260, 167 y 251) | No indicada; uso académico citando el artículo |
 | **Dataset for Detecting Motorcyclists in Pedestrian Areas** (Medellín) | Prueba regional cruzada, con sabotaje sintético | 6324 imágenes JPG de 1280×720 de 80 cámaras CCTV públicas de Medellín; no tiene sabotaje, se genera por código | CC BY 4.0 |
 | **Captura propia** (Armenia, Quindío) | Demo, calibración, auditoría física y muestra de sabotaje real | ~100 imágenes por clase y un conjunto con cambios reales de iluminación (`data/propios/`) | Propia; sin publicar imágenes con personas |
 
