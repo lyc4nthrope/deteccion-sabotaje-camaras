@@ -31,6 +31,10 @@ COPY_MARKERS = (" - Copy", "(")
 SPLIT_RATIOS = {"train": 0.70, "val": 0.15, "test": 0.15}
 DEFAULT_SEED = 42
 DEFAULT_BLOCK_SIZE = 12
+# Images discarded on each side of a boundary between two sets, so near-identical neighbours never
+# end up in different sets.
+PURGE = 2
+PURGED = "descartada"
 DEFAULT_REFERENCES = 8
 
 
@@ -109,25 +113,43 @@ def _time_blocks(records: pd.DataFrame, block_size: int) -> pd.Series:
 def make_split(unique: pd.DataFrame, seed: int = DEFAULT_SEED, block_size: int = DEFAULT_BLOCK_SIZE) -> pd.DataFrame:
     """Split Location 1 into train/val/test by blocks of consecutive images, separately for each class.
 
-    Consecutive images are almost identical, so a whole block goes to the same set. Each class keeps at
-    least one block in val and in test when it has three or more blocks.
+    Consecutive images are almost identical, so a whole block goes to the same set, and PURGE images on each
+    side of a boundary between two sets are marked as PURGED and must not be used. Each class needs at least
+    three blocks (one per set). Every class has its own random generator, so adding or removing a class does
+    not change the split of the others.
     """
-    rng = np.random.default_rng(seed)
+    label_order = list(LABELS.values())
     split = unique[unique["location"] == 1].copy()
     split["block"] = _time_blocks(split, block_size)
     split["set"] = ""
     for label in sorted(split["label"].unique()):
         blocks = sorted(split.loc[split["label"] == label, "block"].unique())
-        rng.shuffle(blocks)
         n = len(blocks)
-        n_val = max(1, round(n * SPLIT_RATIOS["val"])) if n >= 3 else 0
-        n_test = max(1, round(n * SPLIT_RATIOS["test"])) if n >= 3 else 0
+        if n < 3:
+            raise ValueError(f"Class {label} has {n} blocks; at least 3 blocks are needed (one per set).")
+        rng = np.random.default_rng([seed, label_order.index(label)])
+        rng.shuffle(blocks)
+        n_val = max(1, round(n * SPLIT_RATIOS["val"]))
+        n_test = max(1, round(n * SPLIT_RATIOS["test"]))
         assignment = {b: "val" for b in blocks[:n_val]}
         assignment |= {b: "test" for b in blocks[n_val : n_val + n_test]}
         assignment |= {b: "train" for b in blocks[n_val + n_test :]}
         mask = split["label"] == label
         split.loc[mask, "set"] = split.loc[mask, "block"].map(assignment)
+        _purge_boundaries(split, mask)
     return split.sort_values("path").reset_index(drop=True)
+
+
+def _purge_boundaries(split: pd.DataFrame, mask: pd.Series) -> None:
+    """Mark PURGE images on each side of every place where the set changes, in time order (in place)."""
+    order = split[mask].sort_values(["timestamp", "path"]).index.to_list()
+    sets = split.loc[order, "set"].to_list()
+    purge = set()
+    for i in range(len(order) - 1):
+        if sets[i] != sets[i + 1]:
+            purge.update(order[max(0, i - PURGE + 1) : i + 1])
+            purge.update(order[i + 1 : i + 1 + PURGE])
+    split.loc[list(purge), "set"] = PURGED
 
 
 def unseen_camera_set(unique: pd.DataFrame) -> pd.DataFrame:
@@ -152,8 +174,18 @@ def select_references(split: pd.DataFrame, n: int = DEFAULT_REFERENCES, subset: 
     return candidates.iloc[positions].reset_index(drop=True)
 
 
+def calibration_split(unseen: pd.DataFrame, n: int = DEFAULT_REFERENCES) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split the unseen-camera set into n calibration references and the images left for evaluation."""
+    refs = select_references(unseen, n=n, subset="camara_no_vista")
+    evaluation = unseen[~unseen["path"].isin(refs["path"])].reset_index(drop=True)
+    return refs, evaluation
+
+
 def load_split(path: Path = SPLITS_DIR / "split.csv") -> pd.DataFrame:
-    """Read a split file written by this module."""
+    """Read a split file written by this module (use it instead of pd.read_csv: it parses the timestamps).
+
+    Images with set == PURGED must be ignored by every consumer.
+    """
     return pd.read_csv(path, parse_dates=["timestamp"])
 
 

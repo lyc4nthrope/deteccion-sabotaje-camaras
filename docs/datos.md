@@ -47,8 +47,11 @@ Archivo: `data/splits/split.csv` (columnas `path`, `location`, `label`, `timesta
 Se lee con `src.data.load_split()`.
 
 **Criterio:** dentro de cada clase, las imágenes se ordenan por fecha y hora y se agrupan en **bloques de 12
-imágenes consecutivas**. Cada bloque completo va a un solo conjunto, sorteado con semilla fija, en proporción
-70/15/15.
+imágenes consecutivas**. Cada bloque completo va a un solo conjunto, sorteado con semilla fija (un generador
+por clase), en proporción 70/15/15. Además, en cada frontera donde cambia el conjunto se **descartan 2 imágenes
+a cada lado** (`set = "descartada"`): así, dos imágenes vecinas en el tiempo nunca quedan en conjuntos distintos.
+Las descartadas no se usan en ningún conjunto. Si una clase tiene menos de 3 bloques, `make_split` falla con un
+error en lugar de dejarla sin prueba.
 
 **Por qué bloques de imágenes consecutivas y no división aleatoria:** dos fotos tomadas con un minuto (o un
 segundo) de diferencia son casi iguales. Si una cae en entrenamiento y la otra en prueba, la prueba mide
@@ -59,15 +62,20 @@ segundos en las ráfagas de tapadas, así que el criterio se adapta a ambos ritm
 y la división quedó con 550 imágenes en prueba y 40 en entrenamiento. Una prueba sobre el dataset real
 (`test_real_split_is_balanced_for_every_class`) verifica ahora que cada clase quede entre 60 % y 80 % en train.
 
-| Clase | Train | Val | Test | Bloques |
-|---|---|---|---|---|
-| normal | 1246 | 264 | 264 | 148 |
-| desenfocada | 408 | 96 | 96 | 50 |
-| girada | 96 | 24 | 15 | 12 |
-| tapada | 408 | 96 | 96 | 50 |
+**Por qué el descarte en las fronteras:** una revisión independiente encontró que, sin descarte, había 22
+fronteras en la clase tapada donde dos fotos tomadas con 1 segundo de diferencia quedaban una en train y otra
+en test.
 
-**Limitación:** la clase girada tiene solo 135 imágenes distintas (15 en prueba). Por eso se reporta F1 macro y
-se recomienda aumentación con rotaciones sintéticas al entrenar la red (T63).
+| Clase | Train | Val | Test | Descartadas | Bloques |
+|---|---|---|---|---|---|
+| normal | 1120 | 200 | 182 | 272 | 148 |
+| desenfocada | 356 | 68 | 68 | 108 | 50 |
+| girada | 84 | 18 | 9 | 24 | 12 |
+| tapada | 370 | 66 | 68 | 96 | 50 |
+
+**Limitación:** la clase girada tiene solo 135 imágenes distintas y quedan **9 en test**. Su evaluación principal
+es la cámara no vista (167 giradas, sección 4). Se reporta F1 macro y se recomienda aumentación con rotaciones
+sintéticas al entrenar la red (T63).
 
 ## 4. Cámara no vista: ubicación 2 (T19)
 
@@ -84,17 +92,17 @@ referencias con distintas condiciones de luz.
 
 | # | Fecha y hora |
 |---|---|
-| 1 | 2024-07-16 18:19 |
-| 2 | 2024-07-17 03:06 |
-| 3 | 2024-07-17 07:49 |
-| 4 | 2024-07-17 13:08 |
-| 5 | 2024-07-17 17:36 |
-| 6 | 2024-07-17 23:52 |
-| 7 | 2024-07-18 03:31 |
-| 8 | 2024-07-18 06:59 |
+| 1 | 2024-07-16 18:37 |
+| 2 | 2024-07-17 01:29 |
+| 3 | 2024-07-17 06:33 |
+| 4 | 2024-07-17 11:17 |
+| 5 | 2024-07-17 15:30 |
+| 6 | 2024-07-17 21:44 |
+| 7 | 2024-07-18 02:16 |
+| 8 | 2024-07-18 07:40 |
 
 Solo sirven para la cámara de la ubicación 1. Para la ubicación 2, Medellín y la demo en vivo, el método clásico
 necesita referencias de esa misma cámara: es un paso de **calibración** que se hace al instalar el sistema (igual
 que en la demo, T82). Para evaluar la ubicación 2 se toman 8 de sus normales como referencias con
-`select_references` y esas 8 se excluyen de la evaluación; los umbrales siguen siendo los calibrados en la
+`calibration_split`, que las excluye de la evaluación; los umbrales siguen siendo los calibrados en la
 ubicación 1.

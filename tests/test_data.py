@@ -27,14 +27,14 @@ def _copy(src: Path, dst: Path) -> None:
 
 @pytest.fixture
 def fake_root(tmp_path: Path) -> Path:
-    """Small dataset: 2 locations x 4 classes, 1 image per minute, 6 hours per class."""
+    """Small dataset: 2 locations x 4 classes, 1 image every 5 minutes, 6 hours (72 images) per class."""
     seed = 0
     for location in ("Location1", "Location2"):
         for folder, day in (("Normal", 16), ("Blur", 18), ("Rotated", 20), ("Noimage", 22)):
             if location == "Location2" and folder == "Noimage":
                 continue
             for hour in range(6, 12):
-                for minute in (0, 20, 40):
+                for minute in range(0, 60, 5):
                     name = f"image_2024-07-{day}_{hour:02d}-{minute:02d}-00.jpg"
                     _write_image(tmp_path / f"{location}_{folder}" / name, seed)
                     seed += 1
@@ -94,7 +94,7 @@ def test_deduplicate_keeps_one_file_per_content_and_the_original_name(fake_root)
     records = data.scan_images(fake_root)
     unique = data.deduplicate(records)
     rotated = unique[(unique["location"] == 1) & (unique["label"] == "girada")]
-    assert len(rotated) == 18
+    assert len(rotated) == 72
     assert not unique["md5"].duplicated().any()
     kept = unique.loc[unique["md5"] == records.loc[records["path"].str.contains("Copy"), "md5"].iloc[0], "path"]
     assert kept.iloc[0].endswith("image_2024-07-20_06-00-00.jpg")
@@ -103,14 +103,22 @@ def test_deduplicate_keeps_one_file_per_content_and_the_original_name(fake_root)
 def test_deduplicate_drops_location2_copies_of_location1(fake_root):
     unique = data.deduplicate(data.scan_images(fake_root))
     assert unique[(unique["location"] == 2) & (unique["label"] == "tapada")].empty
-    assert len(unique[(unique["location"] == 1) & (unique["label"] == "tapada")]) == 18
+    assert len(unique[(unique["location"] == 1) & (unique["label"] == "tapada")]) == 72
+
+
+def test_location1_wins_even_when_its_file_is_the_copy(fake_root):
+    src = fake_root / "Location2_Normal" / "image_2024-07-16_06-00-00.jpg"
+    _copy(src, fake_root / "Location1_Normal" / "image_2024-07-16_05-59-00 (1).jpg")
+    unique = data.deduplicate(data.scan_images(fake_root))
+    kept = unique[unique["md5"] == data._md5(src)]
+    assert len(kept) == 1 and kept["location"].iloc[0] == 1
 
 
 def test_inventory_counts_files_and_unique_images(fake_root):
     records = data.scan_images(fake_root)
     inventory = data.build_inventory(records, data.deduplicate(records))
     row = inventory[(inventory["location"] == 1) & (inventory["label"] == "girada")].iloc[0]
-    assert row["files"] == 20 and row["unique"] == 18
+    assert row["files"] == 74 and row["unique"] == 72
     row = inventory[(inventory["location"] == 2) & (inventory["label"] == "tapada")].iloc[0]
     assert row["files"] == 5 and row["unique"] == 0
 
@@ -120,21 +128,37 @@ def test_inventory_counts_files_and_unique_images(fake_root):
 
 def _split(fake_root, seed=42):
     unique = data.deduplicate(data.scan_images(fake_root))
-    return data.make_split(unique, seed=seed, block_size=3)
+    return data.make_split(unique, seed=seed, block_size=6)
 
 
 def test_split_uses_only_location1_and_assigns_every_image(fake_root):
     unique = data.deduplicate(data.scan_images(fake_root))
-    split = data.make_split(unique, seed=42, block_size=3)
+    split = data.make_split(unique, seed=42, block_size=6)
     assert set(split["location"]) == {1}
     assert len(split) == (unique["location"] == 1).sum()
-    assert set(split["set"]) == {"train", "val", "test"}
+    assert set(split["set"]) == {"train", "val", "test", data.PURGED}
 
 
-def test_split_never_puts_one_hour_block_in_two_sets(fake_root):
+def test_split_purges_images_at_every_boundary_between_sets(fake_root):
     split = _split(fake_root)
-    sets_per_block = split.groupby(["label", "block"])["set"].nunique()
-    assert (sets_per_block == 1).all()
+    for _, group in split.groupby("label"):
+        ordered = group.sort_values("timestamp").reset_index(drop=True)
+        kept = ordered[ordered["set"] != data.PURGED]
+        for (i, a), (j, b) in zip(kept.iterrows(), list(kept.iterrows())[1:]):
+            if a["set"] != b["set"]:
+                assert j - i - 1 >= 2 * data.PURGE, "neighbours in different sets must be separated by purged images"
+
+
+def test_purged_images_are_only_at_boundaries(fake_root):
+    split = _split(fake_root)
+    purged = split[split["set"] == data.PURGED]
+    assert 0 < len(purged) < len(split) / 2
+
+
+def test_split_rejects_a_class_with_fewer_than_three_blocks(fake_root):
+    unique = data.deduplicate(data.scan_images(fake_root))
+    with pytest.raises(ValueError, match="blocks"):
+        data.make_split(unique, seed=42, block_size=40)
 
 
 def test_split_blocks_are_consecutive_images_in_time(fake_root):
@@ -153,8 +177,9 @@ def test_split_has_every_class_in_every_set_with_roughly_70_15_15(fake_root):
     split = _split(fake_root)
     for label, group in split.groupby("label"):
         counts = group["set"].value_counts()
-        assert set(counts.index) == {"train", "val", "test"}, label
-        assert counts["train"] > counts["val"] and counts["train"] > counts["test"], label
+        assert {"train", "val", "test"} <= set(counts.index), label
+        kept = group[group["set"] != data.PURGED]["set"].value_counts(normalize=True)
+        assert 0.5 <= kept["train"] <= 0.85 and 0.05 <= kept["val"] <= 0.3 and 0.05 <= kept["test"] <= 0.3, label
 
 
 def test_split_is_reproducible_and_depends_on_the_seed(fake_root):
@@ -170,7 +195,7 @@ def test_split_is_reproducible_and_depends_on_the_seed(fake_root):
 
 def test_unseen_camera_has_location2_without_location1_content(fake_root):
     unique = data.deduplicate(data.scan_images(fake_root))
-    split = data.make_split(unique, seed=42, block_size=3)
+    split = data.make_split(unique, seed=42, block_size=6)
     unseen = data.unseen_camera_set(unique)
     assert set(unseen["location"]) == {2}
     assert set(unseen["label"]) == {"normal", "desenfocada", "girada"}
@@ -198,6 +223,9 @@ def test_load_split_round_trip(fake_root, tmp_path):
     split.to_csv(out, index=False)
     loaded = data.load_split(out)
     assert len(loaded) == len(split)
+    assert pd.api.types.is_datetime64_any_dtype(loaded["timestamp"])
+    assert (loaded["timestamp"].values == split["timestamp"].values).all()
+    assert loaded["set"].tolist() == split["set"].tolist() and loaded["block"].tolist() == split["block"].tolist()
     assert set(loaded.columns) >= {"path", "location", "label", "set", "timestamp", "md5", "block"}
 
 
@@ -225,7 +253,7 @@ def test_real_split_is_balanced_for_every_class():
     unique = data.deduplicate(data.scan_images(BREMEN_ROOT))
     split = data.make_split(unique)
     for label, group in split.groupby("label"):
-        share = group["set"].value_counts(normalize=True)
+        share = group[group["set"] != data.PURGED]["set"].value_counts(normalize=True)
         assert 0.60 <= share["train"] <= 0.80, (label, share.to_dict())
         assert 0.08 <= share["val"] <= 0.25 and 0.08 <= share["test"] <= 0.25, (label, share.to_dict())
 
@@ -235,3 +263,19 @@ def test_references_can_be_taken_from_the_unseen_camera(fake_root):
     refs = data.select_references(unseen, n=3, subset="camara_no_vista")
     assert len(refs) == 3
     assert set(refs["location"]) == {2} and set(refs["label"]) == {"normal"}
+
+
+def test_calibration_split_removes_the_references_from_the_evaluation(fake_root):
+    unseen = data.unseen_camera_set(data.deduplicate(data.scan_images(fake_root)))
+    refs, evaluation = data.calibration_split(unseen, n=3)
+    assert len(refs) == 3 and set(refs["label"]) == {"normal"}
+    assert not set(refs["path"]) & set(evaluation["path"])
+    assert len(refs) + len(evaluation) == len(unseen)
+
+
+def test_split_of_one_class_does_not_depend_on_the_other_classes(fake_root):
+    unique = data.deduplicate(data.scan_images(fake_root))
+    full = data.make_split(unique, seed=7, block_size=6)
+    alone = data.make_split(unique[unique["label"] == "girada"], seed=7, block_size=6)
+    a = full[full["label"] == "girada"].sort_values("path")["set"].tolist()
+    assert a == alone.sort_values("path")["set"].tolist()

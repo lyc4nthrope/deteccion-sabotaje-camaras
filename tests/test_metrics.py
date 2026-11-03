@@ -101,3 +101,24 @@ def test_summary_collects_the_rubric_metrics():
 
 def test_summary_without_scores_has_no_auc():
     assert math.isnan(metrics.summary(Y_TRUE, Y_PRED)["auc_binaria"])
+
+
+@pytest.mark.parametrize("bad", [["Normal", "girada"], ["normal", 3]])
+def test_metrics_reject_unknown_labels(bad):
+    with pytest.raises(ValueError, match="Unknown"):
+        metrics.confusion(bad, ["normal", "girada"])
+    with pytest.raises(ValueError, match="Unknown"):
+        metrics.f1_macro(["normal", "girada"], bad)
+
+
+def test_time_per_image_discards_a_warm_up_call():
+    calls = []
+
+    def predict(_image):
+        if not calls:
+            time.sleep(0.2)  # slow first call: lazy initialisation
+        calls.append(1)
+
+    result = metrics.time_per_image(predict, [None, None])
+    assert len(calls) == 3 and result["n"] == 2
+    assert result["mean_ms"] < 50 and "median_ms" in result

@@ -16,8 +16,15 @@ LABELS = ["normal", "desenfocada", "girada", "tapada"]
 NORMAL = "normal"
 
 
+def _check_labels(*groups: Iterable) -> None:
+    unknown = {value for group in groups for value in group} - set(LABELS)
+    if unknown:
+        raise ValueError(f"Unknown labels: {sorted(map(str, unknown))}. Valid labels: {LABELS}")
+
+
 def confusion(y_true: Sequence[str], y_pred: Sequence[str], labels: Sequence[str] = LABELS) -> pd.DataFrame:
     """Confusion matrix with true classes as rows and predicted classes as columns, in a fixed order."""
+    _check_labels(y_true, y_pred)
     matrix = confusion_matrix(y_true, y_pred, labels=list(labels))
     return pd.DataFrame(matrix, index=list(labels), columns=list(labels))
 
@@ -27,12 +34,14 @@ def f1_macro(y_true: Sequence[str], y_pred: Sequence[str]) -> float:
 
     A rare class (girada) weighs the same as the frequent one (normal).
     """
+    _check_labels(y_true, y_pred)
     present = [label for label in LABELS if label in set(y_true) | set(y_pred)]
     return float(f1_score(y_true, y_pred, labels=present, average="macro", zero_division=0))
 
 
 def false_positive_rate(y_true: Sequence[str], y_pred: Sequence[str]) -> float:
     """Share of normal images predicted as any sabotage class (false alarms in a stable environment)."""
+    _check_labels(y_true, y_pred)
     y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
     normal = y_true == NORMAL
     if not normal.any():
@@ -55,15 +64,24 @@ def binary_roc(y_true: Sequence[str], scores: Sequence[float]) -> dict:
 
 
 def time_per_image(predict: Callable, images: Sequence) -> dict:
-    """Mean and standard deviation, in milliseconds, of predict(image) over the given images."""
+    """Mean, median and standard deviation, in milliseconds, of predict(image) over the given images.
+
+    One warm-up call on the first image is discarded, so lazy initialisation does not inflate the result.
+    """
     if len(images) == 0:
         raise ValueError("At least one image is needed to measure time.")
+    predict(images[0])
     times = []
     for image in images:
         start = time.perf_counter()
         predict(image)
         times.append((time.perf_counter() - start) * 1000)
-    return {"n": len(times), "mean_ms": float(np.mean(times)), "std_ms": float(np.std(times))}
+    return {
+        "n": len(times),
+        "mean_ms": float(np.mean(times)),
+        "median_ms": float(np.median(times)),
+        "std_ms": float(np.std(times)),
+    }
 
 
 def summary(y_true: Sequence[str], y_pred: Sequence[str], scores: Sequence[float] | None = None) -> dict:
