@@ -1,0 +1,9 @@
+path,location,label,timestamp,md5,block,set
+Location1_Normal/image_2024-07-16_18-19-47.jpg,1,normal,2024-07-16 18:19:47,aefa46661fa1af04aee75a5e19f2af1b,normal_0000,train
+Location1_Normal/image_2024-07-17_00-23-58.jpg,1,normal,2024-07-17 00:23:58,46762234ed28f6851e916d897f067637,normal_0019,train
+Location1_Normal/image_2024-07-17_08-13-03.jpg,1,normal,2024-07-17 08:13:03,fe2fa4c127faa07ce26099f57a0b569f,normal_0048,train
+Location1_Normal/image_2024-07-17_12-17-10.jpg,1,normal,2024-07-17 12:17:10,23dd8bfd161cbe63d1736e43abd4224d,normal_0066,train
+Location1_Normal/image_2024-07-17_17-08-30.jpg,1,normal,2024-07-17 17:08:30,aa8e686d554bb61414c16b850d95c200,normal_0086,train
+Location1_Normal/image_2024-07-17_22-44-16.jpg,1,normal,2024-07-17 22:44:16,0bc4f93883f459ffff00ae8e6b61916e,normal_0111,train
+Location1_Normal/image_2024-07-18_02-50-08.jpg,1,normal,2024-07-18 02:50:08,b06238e0e1e7073eeeea284245d39461,normal_0127,train
+Location1_Normal/image_2024-07-18_07-40-56.jpg,1,normal,2024-07-18 07:40:56,c5ad5b741423bd7fb7314d7794a2b6ef,normal_0147,train
