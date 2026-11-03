@@ -2,9 +2,10 @@
 
 Decision tree (same idea as the reference paper, thresholds learnt from the training set):
 
-    orb_matches >= match_min                -> normal   (the scene still matches the normal references)
-    otherwise, lap_var < blur_max           -> tapada if the cover rule holds, else desenfocada
-    otherwise                               -> girada   (sharp image of a different scene)
+    orb_matches >= match_min and |angle| <= angle_max -> normal  (the scene still matches the references)
+    orb_matches >= match_min and |angle| >  angle_max -> girada  (same scene, but the view turned: partial pan)
+    otherwise, lap_var < blur_max                     -> tapada if the cover rule holds, else desenfocada
+    otherwise                                         -> girada  (sharp image of a different scene)
 """
 
 from __future__ import annotations
@@ -18,6 +19,9 @@ import pandas as pd
 
 from src.metrics import LABELS
 
+# Percentile of |angle| among normal training images used as the largest normal rotation (wind, vibration).
+ANGLE_PERCENTILE = 99
+
 # Descriptors tried to separate a covered lens from a defocused one; the best one on train is kept.
 COVER_CANDIDATES = ("hue_std", "gray_std", "entropy", "sat_mean", "lap_var")
 
@@ -29,6 +33,7 @@ class Thresholds:
     cover_feature: str
     cover_threshold: float
     cover_direction: str  # "<" or ">=": side of cover_threshold that means "tapada"
+    angle_max: float  # largest rotation, in degrees, of a normal view against its best reference
 
 
 def best_threshold(values: np.ndarray, positive: np.ndarray, directions=(">=", "<")) -> tuple[float, str, float]:
@@ -68,26 +73,34 @@ def calibrate(train: pd.DataFrame) -> Thresholds:
         ((feature, *best_threshold(blurry[feature], blurry["label"] == "tapada")) for feature in COVER_CANDIDATES),
         key=lambda option: option[3],
     )
-    return Thresholds(match_min, blur_max, cover[0], cover[1], cover[2])
+    # Learnt from normal images only, like the calibration of the reference paper.
+    normal_angles = train.loc[train["label"] == "normal", "angle"].abs()
+    angle_max = float(np.nanpercentile(normal_angles, ANGLE_PERCENTILE))
+    return Thresholds(match_min, blur_max, cover[0], cover[1], cover[2], angle_max)
 
 
 def predict(descriptors: pd.DataFrame, t: Thresholds) -> np.ndarray:
     """Apply the decision tree to every row (T40)."""
-    normal = descriptors["orb_matches"].to_numpy() >= t.match_min
+    matching = descriptors["orb_matches"].to_numpy() >= t.match_min
+    turned = np.nan_to_num(np.abs(descriptors["angle"].to_numpy(dtype=float)), nan=0.0) > t.angle_max
+    normal = matching & ~turned
     blurry = descriptors["lap_var"].to_numpy() < t.blur_max
     feature = descriptors[t.cover_feature].to_numpy()
     covered = feature < t.cover_threshold if t.cover_direction == "<" else feature >= t.cover_threshold
-    return np.where(normal, "normal", np.where(blurry, np.where(covered, "tapada", "desenfocada"), "girada"))
+    sabotage = np.where(blurry & ~matching, np.where(covered, "tapada", "desenfocada"), "girada")
+    return np.where(normal, "normal", sabotage)
 
 
 def sabotage_score(descriptors: pd.DataFrame, t: Thresholds) -> np.ndarray:
     """Continuous sabotage score in (0, 1] for the ROC curve (T42).
 
-    match_min / (match_min + orb_matches): 1 with no matches, 0.5 exactly at the normal threshold and lower
-    the better the image matches the normal references.
+    Maximum of two parts, each equal to 0.5 exactly at its threshold, so score > 0.5 means "not normal":
+    - match_min / (match_min + orb_matches): 1 with no matches, lower the better the scene matches;
+    - |angle| / (|angle| + angle_max): 0 without rotation, higher the more the view turned.
     """
     matches = descriptors["orb_matches"].to_numpy(dtype=float)
-    return t.match_min / (t.match_min + matches)
+    angle = np.nan_to_num(np.abs(descriptors["angle"].to_numpy(dtype=float)), nan=0.0)
+    return np.maximum(t.match_min / (t.match_min + matches), angle / (angle + t.angle_max))
 
 
 def save_thresholds(t: Thresholds, path: Path) -> None:

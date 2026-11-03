@@ -19,7 +19,7 @@ def _rows(label, n, **values):
 @pytest.fixture
 def train():
     """Separable synthetic descriptors that mimic the real class medians."""
-    base = {"gray_std": 30.0, "entropy": 6.8, "sat_mean": 0.2, "skin_ratio": 0.05, "orb_inliers": 0}
+    base = {"gray_std": 30.0, "entropy": 6.8, "sat_mean": 0.2, "skin_ratio": 0.05, "orb_inliers": 0, "angle": 0.1}
     return pd.concat(
         [
             _rows("normal", 40, **{**base, "orb_matches": 200, "lap_var": 400.0, "hue_std": 40.0}),
@@ -29,7 +29,8 @@ def train():
             _rows("normal", 80, **{**base, "orb_matches": 150, "lap_var": 4.5, "hue_std": 20.0}),
             _rows("desenfocada", 20, **{**base, "orb_matches": 1, "lap_var": 5.0, "hue_std": 18.0, "gray_std": 16.0}),
             _rows("girada", 10, **{**base, "orb_matches": 8, "lap_var": 600.0, "hue_std": 70.0}),
-            _rows("tapada", 20, **{**base, "orb_matches": 0, "lap_var": 4.0, "hue_std": 1.5, "gray_std": 8.0}),
+            # Same sharpness as the defocused ones (they overlap in the real data): only color separates them.
+            _rows("tapada", 20, **{**base, "orb_matches": 0, "lap_var": 5.0, "hue_std": 1.5, "gray_std": 8.0}),
         ],
         ignore_index=True,
     )
@@ -72,6 +73,12 @@ def test_calibration_learns_each_rule_from_train(train):
     assert thresholds.cover_feature in classic.COVER_CANDIDATES
 
 
+def test_blur_threshold_is_learnt_only_from_sabotaged_images(train):
+    # Midpoint between the sharpest blurry/covered sabotage (5) and the softest rotated one (600). The 80 dark
+    # night normals (lap_var 4.5) must not pull the threshold down.
+    assert classic.calibrate(train).blur_max == pytest.approx(302.5)
+
+
 def test_calibrated_rules_classify_the_training_data(train):
     thresholds = classic.calibrate(train)
     assert (classic.predict(train, thresholds) == train["label"]).all()
@@ -87,11 +94,14 @@ def test_calibration_needs_every_class(train):
 
 @pytest.fixture
 def thresholds():
-    return classic.Thresholds(match_min=50, blur_max=15.0, cover_feature="hue_std", cover_threshold=8.0, cover_direction="<")
+    return classic.Thresholds(
+        match_min=50, blur_max=15.0, cover_feature="hue_std", cover_threshold=8.0, cover_direction="<", angle_max=1.0
+    )
 
 
 def _one(**values):
-    base = {"orb_matches": 0, "lap_var": 0.0, "hue_std": 0.0, "gray_std": 0.0, "entropy": 0.0, "sat_mean": 0.0}
+    base = {"orb_matches": 0, "lap_var": 0.0, "hue_std": 0.0, "gray_std": 0.0, "entropy": 0.0, "sat_mean": 0.0,
+            "angle": 0.0}
     return pd.DataFrame([{**base, **values}])
 
 
@@ -112,23 +122,55 @@ def test_rule_few_matches_blurry_several_colors_is_defocused(thresholds):
 
 
 def test_rule_cover_direction_can_be_greater_or_equal():
-    t = classic.Thresholds(match_min=50, blur_max=15.0, cover_feature="sat_mean", cover_threshold=0.5, cover_direction=">=")
+    t = classic.Thresholds(
+        match_min=50, blur_max=15.0, cover_feature="sat_mean", cover_threshold=0.5, cover_direction=">=", angle_max=1.0
+    )
     assert classic.predict(_one(lap_var=3.0, sat_mean=0.9), t)[0] == "tapada"
     assert classic.predict(_one(lap_var=3.0, sat_mean=0.1), t)[0] == "desenfocada"
+
+
+def test_rule_matching_scene_with_a_rotation_beyond_normal_is_rotated(thresholds):
+    # Partial pan (Location 2): the scene still matches but the view turned.
+    assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=-3.5), thresholds)[0] == "girada"
+
+
+def test_rule_turned_view_is_rotated_even_if_it_looks_soft(thresholds):
+    # The scene matches, so low sharpness is not a defocus sabotage: the decisive fact is the rotation.
+    assert classic.predict(_one(orb_matches=80, lap_var=5.0, hue_std=2.0, angle=3.0), thresholds)[0] == "girada"
+
+
+def test_rule_small_rotation_or_unknown_angle_stays_normal(thresholds):
+    assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=0.5), thresholds)[0] == "normal"
+    assert classic.predict(_one(orb_matches=80, lap_var=300.0, angle=float("nan")), thresholds)[0] == "normal"
+
+
+def test_angle_threshold_is_the_99th_percentile_of_normal_train_angles(train):
+    angles = np.linspace(0, 2.0, 101)  # |angle| 0.00, 0.02, ..., 2.00 -> 99th percentile = 1.98
+    normal = pd.DataFrame({"label": "normal", "angle": np.r_[angles[:50], -angles[50:]]})
+    others = train[train["label"] != "normal"].assign(angle=45.0)  # must not influence the threshold
+    t = classic.calibrate(pd.concat([train.assign(angle=np.nan)[train["label"] == "normal"], normal, others]))
+    assert t.angle_max == pytest.approx(1.98)
 
 
 # ---------------------------------------------------------------- score and persistence
 
 
 def test_score_is_half_at_the_threshold_and_decreases_with_matches(thresholds):
-    scores = classic.sabotage_score(pd.DataFrame({"orb_matches": [0, 25, 50, 200]}), thresholds)
+    scores = classic.sabotage_score(pd.DataFrame({"orb_matches": [0, 25, 50, 200], "angle": 0.0}), thresholds)
     assert scores[0] == pytest.approx(1.0) and scores[2] == pytest.approx(0.5)
     assert np.all(np.diff(scores) < 0) and scores.min() > 0
 
 
-def test_score_agrees_with_the_normal_decision(thresholds):
-    frame = _one(orb_matches=10)
+@pytest.mark.parametrize("values", [{"orb_matches": 10}, {"orb_matches": 80, "angle": 3.0}, {"orb_matches": 80, "angle": 0.2}])
+def test_score_agrees_with_the_normal_decision(thresholds, values):
+    frame = _one(lap_var=300.0, **values)
     assert (classic.sabotage_score(frame, thresholds)[0] > 0.5) == (classic.predict(frame, thresholds)[0] != "normal")
+
+
+def test_score_grows_with_the_rotation_angle(thresholds):
+    frame = pd.DataFrame({"orb_matches": [200, 200, 200], "angle": [0.0, 2.0, -10.0]})
+    scores = classic.sabotage_score(frame, thresholds)
+    assert scores[0] < scores[1] < scores[2]
 
 
 def test_thresholds_round_trip(tmp_path, thresholds):
