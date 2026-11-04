@@ -49,6 +49,9 @@ data/raw/bremen/
 - **Descarga:** https://zenodo.org/records/7935299 (`PedestrianDataSet.zip`, 643 MB)
 - **Contenido:** 6324 imágenes JPG de 1280×720 de 80 cámaras CCTV públicas de Medellín (Secretaría de Movilidad).
   No tiene sabotaje: se genera por código (tarea T18).
+- **Inventario medido (T16):** 6324 archivos, todos de 1280×720, fechas 2022-10-03 a 2023-05-14. Según el nombre
+  (`imagenN_AAAAMMDD_HHMMSS.jpg`) hay 55 grupos `imagenN`, pero 22 de ellos tienen 1 a 4 imágenes. Por eso el
+  grupo por nombre **no** se trata como cámara fija sin verificar (ver T17). Detalle en `results/inventario_medellin.csv`.
 - **Licencia:** CC BY 4.0
 - **Cita:** N. Hernández-Díaz, E. Puertas, J. C. Martinez-Santos, G. Archbold, Y. Rios y Y. Peñaloza, "Dataset for
   Detecting Motorcyclists in Pedestrian Areas", Zenodo, 2023. DOI: 10.5281/zenodo.7935299. Artículo de datos en
