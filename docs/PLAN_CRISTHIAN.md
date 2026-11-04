@@ -217,7 +217,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [ ] **T03 🟢 P1** Entorno Python (ver Fase 0).
 - [ ] **T93 ⛔ P1** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte del clásico.
 - [ ] **T94 🟢 P1** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere T85 de Santiago).
-- [ ] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
+- [x] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
 - [ ] **T101 🟢 P1** Tus secciones del informe: contexto regional (a partir de T06), datos, clásico y auditoría.
 - [ ] **T102 🟢 P1** Presentación.
 - [ ] **T103 ⛔ P1** Revisión cruzada final: revisas las secciones de Santiago.
