@@ -1,0 +1,9 @@
+label,pred,descriptor_principal,n
+girada,normal,skin_ratio,21
+desenfocada,normal,orb_inliers,18
+desenfocada,girada,orb_inliers,11
+girada,normal,sat_mean,5
+desenfocada,girada,lap_var,4
+desenfocada,girada,gray_std,1
+desenfocada,girada,sat_mean,1
+normal,girada,angle,1
