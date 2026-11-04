@@ -10,6 +10,8 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
+from src.perturbations import GAMMA_VALUES
+
 
 def _check_uint8(image: np.ndarray) -> None:
     if image.dtype != np.uint8:
@@ -65,10 +67,14 @@ def bilateral(image: np.ndarray, diameter: int = 9, sigma_color: float = 75, sig
     return cv2.bilateralFilter(image, diameter, sigma_color, sigma_space)
 
 
-# Corrections the demo can toggle (T85): name -> function(image).
+# Inverse gamma for each darkening level of T20 (level k undone by 1 / GAMMA_VALUES[k - 1]).
+GAMMA_INVERSE = {f"gamma_inverso_nivel_{k}": (lambda g: lambda image: gamma_correct(image, 1 / g))(g)
+                 for k, g in enumerate(GAMMA_VALUES, start=1)}
+
+# Corrections the demo can toggle (T85) and the audit compares (T92): name -> function(image).
 CORRECTIONS = {
     "clahe": clahe,
-    "gamma_inverso_2": lambda image: gamma_correct(image, 1 / 2.0),
+    **GAMMA_INVERSE,
     "mediana": median,
     "gaussiano": gaussian,
     "bilateral": bilateral,

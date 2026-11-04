@@ -50,8 +50,19 @@ def test_filter_rejects_non_uint8(name, fn):
         fn(np.zeros((20, 20, 3), np.float32))
 
 
-def test_registry_has_the_demo_corrections():
-    assert set(C.CORRECTIONS) == {"clahe", "gamma_inverso_2", "mediana", "gaussiano", "bilateral"}
+def test_registry_has_one_inverse_gamma_per_darkening_level():
+    assert set(C.CORRECTIONS) == {
+        "clahe", "gamma_inverso_nivel_1", "gamma_inverso_nivel_2", "gamma_inverso_nivel_3",
+        "mediana", "gaussiano", "bilateral",
+    }
+    assert set(C.GAMMA_INVERSE) == {f"gamma_inverso_nivel_{k}" for k in P.LEVELS}
+
+
+@pytest.mark.parametrize("level", P.LEVELS)
+def test_each_inverse_gamma_undoes_its_own_level(level):
+    original = _smooth()
+    restored = C.CORRECTIONS[f"gamma_inverso_nivel_{level}"](P.gamma(original, level))
+    assert np.abs(restored.astype(int) - original.astype(int)).mean() < 2
     image = _scene(3)
     for fn in C.CORRECTIONS.values():
         assert fn(image).shape == image.shape
