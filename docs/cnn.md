@@ -30,5 +30,28 @@ Cada corrida: `results/cnn/<corrida>/run.json`. Tabla completa en `results/cnn/h
 
 **Limitación:** la validación de la ubicación 1 casi no discrimina. Casi todas las corridas dan 97–100 % de accuracy, porque las imágenes de validación son de la misma cámara y escena que el entrenamiento. La elección de hiperparámetros se confirmará con la cámara no vista (T64), no con esta tabla.
 
+## Evaluación en test y cámara no vista (T64)
+
+Modelo: lr 1e-2, lote 32, base congelada (la corrida elegida en T66). Métricas de T25, mismas fórmulas que el clásico. Detalle en `results/cnn/evaluacion/`.
+
+| Conjunto | n | Accuracy | F1 macro | FPR normal | AUC binaria |
+|---|---|---|---|---|---|
+| Test (ubicación 1) | 327 | 0,994 | 0,967 | 0,000 | 0,999 |
+| Cámara no vista (ubicación 2) | 1171 | 0,740 | 0,580 | 0,041 | 0,752 |
+
+Mismas métricas para el clásico en la cámara no vista (`results/clasico/metricas.csv`, 1163 imágenes): accuracy 0,947, F1 macro 0,920, FPR normal 0,001, AUC 0,979. La diferencia de 8 imágenes (1171 frente a 1163) aún no está explicada; hay que revisar cuáles son.
+
+Matriz de la cámara no vista (filas: real; columnas: predicha):
+
+| Real | normal | desenfocada | girada |
+|---|---|---|---|
+| normal | 722 | 1 | 30 |
+| desenfocada | 110 | 80 | 61 |
+| girada | 102 | 0 | 65 |
+
+La CNN acierta en la ubicación 1 pero no generaliza a otra cámara: 110 de 251 desenfocadas y 102 de 167 giradas salen como normal. Es un cambio de dominio, no sobreajuste en el sentido de T63. **Consecuencia:** la elección de hiperparámetros de T66 no basta; la comparación justa con el clásico queda en desventaja para la CNN en este conjunto.
+
+Nota: la cámara no vista no tiene tapadas (las 251 de la ubicación 2 son copias de la ubicación 1, ver docs/datos.md), así que F1 macro usa las tres clases presentes.
+
 ## Sobreajuste (T63)
 Pendiente de decidir con T64. Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mínima en la época 3 y sube después, y la parada temprana corta en la época 6 (pérdida de entrenamiento 0,0002 frente a validación 0,007). Con tasa 1e-3 y lote 32 las dos curvas siguen bajando hasta la época 15 (0,0027 frente a 0,0143): aún no hay sobreajuste, pero la brecha crece. Aumentación y dropout (T63) se aplican solo si la cámara no vista muestra caída.
