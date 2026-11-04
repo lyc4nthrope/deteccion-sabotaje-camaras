@@ -25,7 +25,7 @@ Las imágenes se guardan en `data/propios/` y **no se versionan** (ver `.gitigno
 |---|---|---|
 | normal | Escena sin intervención | Hora y condición de luz |
 | desenfocada | Quitar el enfoque automático y mover el lente, o colocar un papel translúcido delante del lente | Nivel de desenfoque (leve, medio, fuerte) |
-| girada | Girar el soporte de la cámara | Ángulo aproximado (con transportador o app de nivel) |
+| girada | Paneo: girar la cámara en horizontal hacia otra parte de la escena, como en Bremen. No inclinar la imagen | Lado del paneo y ángulo aproximado (con transportador o app de nivel) |
 | tapada | Cubrir el lente con la mano, cinta o tela | Tipo de cobertura (total o parcial) |
 
 Cada toma de sabotaje se hace con la misma escena normal, para que la única diferencia sea el sabotaje.
