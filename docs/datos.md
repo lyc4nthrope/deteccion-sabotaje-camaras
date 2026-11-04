@@ -106,3 +106,12 @@ necesita referencias de esa misma cámara: es un paso de **calibración** que se
 que en la demo, T82). Para evaluar la ubicación 2 se toman 8 de sus normales como referencias con
 `calibration_split`, que las excluye de la evaluación; los umbrales siguen siendo los calibrados en la
 ubicación 1.
+
+## 6. Subconjunto normal de Medellín (T17)
+
+- Fuente: `PedestrianDataSet.zip` (Zenodo, CC BY 4.0). Inventario en `results/inventario_medellin.csv`: 6324 imágenes de 1280×720.
+- Cámara: la cámara **no** se conoce con certeza. Se usa el número `N` de `imagenN_AAAAMMDD_HHMMSS.jpg` como grupo, pero hay 55 grupos y 22 de ellos tienen entre 1 y 4 imágenes.
+- Criterio: ~600 imágenes en total, repartidas por grupo con un tope por grupo (reparto equitativo; los grupos pequeños aportan todas sus imágenes). Dentro de cada grupo, las imágenes se toman a intervalos regulares en el tiempo.
+- Resultado: 600 imágenes en los 55 grupos, sin duplicados. Lista en `data/splits/medellin_normales.csv`. Código en `src/medellin.py`.
+- **Pendiente:** excluir imágenes con personas identificables en primer plano. Esto no se ha revisado a mano y no es automatizable de forma fiable; se documenta como limitación antes de publicar cualquier figura.
+- Riesgo ORB: las referencias de la misma cámara (T33) no se pueden garantizar con el nombre de archivo. Para la prueba regional se evaluará la rotación con Hough, que no usa referencias (ver T76).
