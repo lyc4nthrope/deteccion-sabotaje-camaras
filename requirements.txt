@@ -1,5 +1,5 @@
 numpy
-opencv-python
+opencv-python>=4.10,<5  # OpenCV 5 removed KAZE (needed in T38); Colab and the class use OpenCV 4
 scikit-image
 scikit-learn
 matplotlib

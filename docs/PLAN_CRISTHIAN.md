@@ -127,7 +127,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Qué hacer:** saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara); sirve para separar "tapada" de una escena nocturna oscura.
   - **Entregable:** `src/features.py`.
   - **Cómo verificar:** una imagen sintética de tono piel da proporción alta y una gris da saturación cercana a 0.
-- [ ] **T38 🟢 P2** Comparar ORB, SIFT y KAZE como descriptor geométrico.
+- [x] **T38 🟢 P2** Comparar ORB, SIFT y KAZE como descriptor geométrico.
   - **Qué hacer:** en train y val, medir acierto en "girada", buenas coincidencias y tiempo por frame con la configuración de clase (KAZE: `NORM_L2`, razón 0,7; SIFT: FLANN KD-tree `trees=5`, `checks=50`, razón 0,7); elegir y justificar (ORB para tiempo real, KAZE para robustez).
   - **Entregable:** sección en `notebooks/03_descriptores.ipynb`, `results/clasico/comparacion_descriptores.csv`.
   - **Quién te espera:** Santiago (T77, robustez de descriptores).

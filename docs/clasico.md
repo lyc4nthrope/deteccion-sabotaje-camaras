@@ -124,3 +124,25 @@ Se probó medir la nitidez sobre la imagen con suavizado gaussiano. Exactitud ba
    propuesta es un filtro no lineal (mediana) antes de medir (T91).
 2. Sin ruido, el Laplaciano sin suavizar deja más margen (umbral 17,5 frente a 2,9, muy cerca de 0). Por eso el
    módulo lo mide sin suavizar.
+
+## 8. Comparación de detectores: ORB, SIFT y KAZE (T38)
+
+`src/compare_descriptors.py`, resultados en `results/clasico/comparacion_descriptores.csv`. Para cada detector,
+con la configuración de la clase 11 (ORB: Hamming y ratio 0,75; SIFT y KAZE: L2 y ratio 0,7), se calibra el umbral
+de coincidencias que separa normales de saboteadas con una muestra de train (50 por clase) y se evalúa en **todo
+val** (test no se usa). SIFT usa búsqueda exhaustiva en lugar de FLANN para que el resultado sea reproducible.
+
+| Detector | Exactitud balanceada (val) | Falsas alarmas | Giradas detectadas solo por coincidencias | AUC | Tiempo de emparejamiento por cuadro |
+|---|---|---|---|---|---|
+| **ORB** | 0,948 | 0,5 % | 3 de 18 | **0,998** | **1,3 ms** |
+| SIFT | 0,961 | 0 % | 6 de 18 | 0,988 | 18,6 ms |
+| KAZE | 0,948 | 0,5 % | 3 de 18 | 0,986 | 67,8 ms |
+
+**Conclusión:** con imágenes limpias, ORB separa igual que SIFT y KAZE y es 14 y 51 veces más rápido; la ventaja de
+SIFT (3 giradas más de 18) no es significativa. Se mantiene ORB, como indica el árbol de decisión de la clase 11
+para tiempo real. Las giradas se detectan sobre todo con la regla del ángulo, no solo con las coincidencias. La
+afirmación de la clase de que KAZE es más robusto ante cambios de luz y ruido se pone a prueba con las
+perturbaciones en T77.
+
+Nota de versión: los resultados del módulo clásico son idénticos con OpenCV 5.0 y con OpenCV 4.14 (mismas métricas
+y umbrales); el proyecto fija OpenCV 4 porque OpenCV 5 eliminó KAZE.
