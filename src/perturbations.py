@@ -1,8 +1,13 @@
 """Perturbations that simulate light and noise degradation for the robustness audit (T20).
 
-Five perturbation types, three severity levels each (D7). Blur is deliberately absent: it is a sabotage class
-("desenfocada"), so a defocused input is not a degraded normal image. Every function takes a uint8 image and
-returns a uint8 image of the same shape. Random perturbations take a seed, so the same seed gives the same output.
+Six perturbation types (brightness split into darken and lighten, D7), three severity levels each. Blur is
+deliberately absent: it is a sabotage class ("desenfocada"), so a defocused input is not a degraded normal image.
+Every function takes a uint8 image and returns a uint8 image of the same shape. Random perturbations take a seed,
+so the same seed gives the same output.
+
+Apply them after resizing to the classic working size (640x360, features.WIDTH/HEIGHT). The Location 2 originals
+are 4608x2592; perturbing them at full size and then downscaling averages the noise away and erases the JPEG
+artifacts, so the descriptors would not see the perturbation.
 """
 
 from __future__ import annotations
