@@ -114,4 +114,4 @@ ubicación 1.
 - Criterio: ~600 imágenes en total, repartidas por grupo con un tope por grupo (reparto equitativo; los grupos pequeños aportan todas sus imágenes). Dentro de cada grupo, las imágenes se toman a intervalos regulares en el tiempo.
 - Resultado: 600 imágenes en los 55 grupos, sin duplicados. Lista en `data/splits/medellin_normales.csv`. Código en `src/medellin.py`.
 - **Pendiente:** excluir imágenes con personas identificables en primer plano. Esto no se ha revisado a mano y no es automatizable de forma fiable; se documenta como limitación antes de publicar cualquier figura.
-- Riesgo ORB: las referencias de la misma cámara (T33) no se pueden garantizar con el nombre de archivo. Para la prueba regional se evaluará la rotación con Hough, que no usa referencias (ver T76).
+- Riesgo ORB: las referencias de la misma cámara (T33) no se pueden garantizar con el nombre de archivo. **Sin resolver:** el clásico necesita referencias de la misma cámara para decidir "normal" (T33). Medellín todavía no tiene referencias por cámara, así que esta selección no basta para T76. Hough sin referencias no está implementado.
