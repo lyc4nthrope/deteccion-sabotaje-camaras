@@ -162,7 +162,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 - [ ] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
   - **Esperas a:** Santiago (T20, perturbaciones).
-  - **Cómo verificar:** el número de imágenes coincide con test × 5 × 3.
+  - **Cómo verificar:** el número de imágenes coincide con test × 6 × 3 (brillo oscuro y claro por separado).
 - [ ] **T71 ⛔ P1** Ejecutar ambos modelos en cada condición: F1, tasa de falsos positivos y tiempo.
   - **Esperas a:** Santiago (T64, CNN evaluada).
   - **Entregable:** `results/auditoria/tabla.csv`.
