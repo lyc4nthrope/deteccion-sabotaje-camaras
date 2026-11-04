@@ -5,7 +5,7 @@ Tareas T11, T13, T14, T15 y T19. Todo se genera con `python -m src.data` a parti
 
 ## 1. Inventario (T11)
 
-Archivo: `results/inventario.csv`. Imágenes JPG de 1280×720.
+Archivo: `results/inventario.csv`. Imágenes JPG: la ubicación 1 es de 1280×720; la ubicación 2 es de **4608×2592** (1180 archivos), salvo sus 251 tapadas de 1280×720, que son las copias de la ubicación 1. El módulo clásico reduce todas a 640×360, así que cualquier perturbación debe aplicarse **después** de reducir (de lo contrario el ruido se promedia y casi desaparece).
 
 | Ubicación | Clase | Archivos | Imágenes distintas | Duplicados |
 |---|---|---|---|---|
