@@ -37,15 +37,15 @@ Modelo: lr 1e-2, lote 32, base congelada (la corrida elegida en T66). Métricas 
 | Conjunto | n | Accuracy | F1 macro | FPR normal | AUC binaria |
 |---|---|---|---|---|---|
 | Test (ubicación 1) | 327 | 0,994 | 0,967 | 0,000 | 0,999 |
-| Cámara no vista (ubicación 2) | 1171 | 0,740 | 0,580 | 0,041 | 0,752 |
+| Cámara no vista (ubicación 2) | 1163 | 0,739 | 0,580 | 0,042 | 0,753 |
 
-Mismas métricas para el clásico en la cámara no vista (`results/clasico/metricas.csv`, 1163 imágenes): accuracy 0,947, F1 macro 0,920, FPR normal 0,001, AUC 0,979. La diferencia de 8 imágenes (1171 frente a 1163) aún no está explicada; hay que revisar cuáles son.
+Mismas métricas para el clásico en la cámara no vista (`results/clasico/metricas.csv`, 1163 imágenes): accuracy 0,947, F1 macro 0,920, FPR normal 0,001, AUC 0,979. Las 8 imágenes de diferencia son las referencias ORB de la cámara no vista (`referencias_camara_no_vista.csv`): el clásico no las evalúa y la CNN sí, hasta esta corrección. Ahora ambos evalúan las mismas 1163.
 
 Matriz de la cámara no vista (filas: real; columnas: predicha):
 
 | Real | normal | desenfocada | girada |
 |---|---|---|---|
-| normal | 722 | 1 | 30 |
+| normal | 714 | 1 | 30 |
 | desenfocada | 110 | 80 | 61 |
 | girada | 102 | 0 | 65 |
 

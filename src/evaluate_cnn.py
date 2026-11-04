@@ -53,7 +53,9 @@ def main() -> None:
     test = cnn.read_split()
     test = test[test["set"] == "test"].reset_index(drop=True)
     unseen = pd.read_csv(UNSEEN)
-    unseen = unseen.reset_index(drop=True)
+    # Same evaluation set as the classic module: the ORB references of the unseen camera are excluded (T43, T19).
+    references = pd.read_csv(ROOT / "data" / "splits" / "referencias_camara_no_vista.csv")
+    unseen = unseen[~unseen["path"].isin(references["path"])].reset_index(drop=True)
 
     rows = [evaluate_set(model, test, "test"), evaluate_set(model, unseen, "camara_no_vista")]
     pd.DataFrame(rows).to_csv(OUT / "resumen.csv", index=False)
