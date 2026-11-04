@@ -53,5 +53,16 @@ La CNN acierta en la ubicación 1 pero no generaliza a otra cámara: 110 de 251 
 
 Nota: la cámara no vista no tiene tapadas (las 251 de la ubicación 2 son copias de la ubicación 1, ver docs/datos.md), así que F1 macro usa las tres clases presentes.
 
+## Aumentación y dropout (T63)
+
+Corrida `lr1e-2_b32_frozen_aug_drop05`: misma configuración de T66 con aumentación (volteo horizontal, traslación 5 %, contraste y brillo ±20 %) y dropout 0,5. Resultados en `results/cnn/lr1e-2_b32_frozen_aug_drop05/`.
+
+| Conjunto | Accuracy | F1 macro | FPR normal | AUC |
+|---|---|---|---|---|
+| Test (ubicación 1) | 0,963 | 0,825 | 0,033 | 0,994 |
+| Cámara no vista (ubicación 2) | 0,664 | 0,333 | 0,003 | 0,737 |
+
+**Resultado negativo.** Empeora la cámara no vista: 221 de 251 desenfocadas salen como normal y ninguna girada se acierta. La pérdida de validación también sube (0,26 frente a 0,004 sin aumentación), así que no es un ajuste solo de generalización. No se probaron más variantes: ajustar sobre la cámara no vista la contaminaría como conjunto de prueba. Si se quiere otra variante, la selección debe hacerse solo con validación.
+
 ## Sobreajuste (T63)
-Pendiente de decidir con T64. Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mínima en la época 3 y sube después, y la parada temprana corta en la época 6 (pérdida de entrenamiento 0,0002 frente a validación 0,007). Con tasa 1e-3 y lote 32 las dos curvas siguen bajando hasta la época 15 (0,0027 frente a 0,0143): aún no hay sobreajuste, pero la brecha crece. Aumentación y dropout (T63) se aplican solo si la cámara no vista muestra caída.
+Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mínima en la época 3 y sube después, y la parada temprana corta en la época 6 (pérdida de entrenamiento 0,0002 frente a validación 0,007). Con tasa 1e-3 y lote 32 las dos curvas siguen bajando hasta la época 15 (0,0027 frente a 0,0143): aún no hay sobreajuste, pero la brecha crece. Aumentación y dropout (T63) se aplican solo si la cámara no vista muestra caída.

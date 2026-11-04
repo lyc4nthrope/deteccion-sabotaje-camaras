@@ -22,7 +22,16 @@ from src import cnn
 RESULTS = Path(__file__).resolve().parents[1] / "results" / "cnn"
 
 
-def run(name: str, learning_rate: float, batch: int, trainable_layers: int, epochs: int, seed: int = 0) -> dict:
+def run(
+    name: str,
+    learning_rate: float,
+    batch: int,
+    trainable_layers: int,
+    epochs: int,
+    seed: int = 0,
+    augment: bool = False,
+    dropout: float = 0.2,
+) -> dict:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -39,7 +48,9 @@ def run(name: str, learning_rate: float, batch: int, trainable_layers: int, epoc
     x_val = cnn.load_images(val["path"].tolist())
     y_val = val["y"].to_numpy()
 
-    model = cnn.build_model(trainable_layers=trainable_layers, learning_rate=learning_rate)
+    model = cnn.build_model(
+        trainable_layers=trainable_layers, learning_rate=learning_rate, augment=augment, dropout=dropout
+    )
     early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
     start = time.time()
     fit = model.fit(
@@ -79,6 +90,8 @@ def run(name: str, learning_rate: float, batch: int, trainable_layers: int, epoc
         "learning_rate": learning_rate,
         "batch": batch,
         "trainable_layers": trainable_layers,
+        "augment": augment,
+        "dropout": dropout,
         "epochs_run": len(history),
         "best_epoch": best + 1,
         "best_val_loss": float(history["val_loss"].iloc[best]),
@@ -99,8 +112,10 @@ def main() -> None:
     parser.add_argument("--trainable", type=int, default=0, help="last base layers unfrozen (0 = frozen)")
     parser.add_argument("--epochs", type=int, default=15)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--augment", action="store_true", help="random flip, translation, contrast, brightness")
+    parser.add_argument("--dropout", type=float, default=0.2)
     args = parser.parse_args()
-    summary = run(args.name, args.lr, args.batch, args.trainable, args.epochs, args.seed)
+    summary = run(args.name, args.lr, args.batch, args.trainable, args.epochs, args.seed, args.augment, args.dropout)
     print(json.dumps(summary, indent=2))
 
 

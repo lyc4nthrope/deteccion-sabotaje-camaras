@@ -18,10 +18,9 @@ import pandas as pd
 from src import cnn, metrics
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "results" / "cnn" / "lr1e-2_b32_frozen" / "model.keras"
-OUT = ROOT / "results" / "cnn" / "evaluacion"
 UNSEEN = ROOT / "data" / "splits" / "camara_no_vista.csv"
 TIMING_IMAGES = 100
+DEFAULT_RUN = "lr1e-2_b32_frozen"
 
 
 def predict_proba(model, images: np.ndarray) -> np.ndarray:
@@ -46,10 +45,18 @@ def time_frames(model, table: pd.DataFrame) -> dict:
 
 
 def main() -> None:
+    import argparse
+
     import tensorflow as tf
 
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run", default=DEFAULT_RUN, help="name of a folder in results/cnn/")
+    args = parser.parse_args()
+    run_dir = ROOT / "results" / "cnn" / args.run
+    global OUT
+    OUT = run_dir / "evaluacion"
     OUT.mkdir(parents=True, exist_ok=True)
-    model = tf.keras.models.load_model(RUN)
+    model = tf.keras.models.load_model(run_dir / "model.keras")
     test = cnn.read_split()
     test = test[test["set"] == "test"].reset_index(drop=True)
     unseen = pd.read_csv(UNSEEN)

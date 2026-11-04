@@ -52,11 +52,19 @@ def class_weights(labels: np.ndarray) -> dict[int, float]:
     return {i: float(w) for i, w in enumerate(weights)}
 
 
-def build_model(trainable_layers: int = 0, learning_rate: float = 1e-3, weights: str | None = "imagenet"):
-    """MobileNetV2 with a 4-class head (T61).
+def build_model(
+    trainable_layers: int = 0,
+    learning_rate: float = 1e-3,
+    weights: str | None = "imagenet",
+    augment: bool = False,
+    dropout: float = 0.2,
+):
+    """MobileNetV2 with a 4-class head (T61, T63).
 
     trainable_layers: how many of the last layers of the base are unfrozen (0 = frozen base).
     weights="imagenet" downloads the pretrained weights; pass None for tests without network.
+    augment: random flip, translation, contrast and brightness, active only during training (T63).
+    dropout: dropout rate before the softmax head.
     """
     import tensorflow as tf
 
@@ -68,10 +76,19 @@ def build_model(trainable_layers: int = 0, learning_rate: float = 1e-3, weights:
         base.trainable = True
         for layer in base.layers[:-trainable_layers]:
             layer.trainable = False
+    augmentation = []
+    if augment:
+        augmentation = [
+            tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomTranslation(0.05, 0.05),
+            tf.keras.layers.RandomContrast(0.2),
+            tf.keras.layers.RandomBrightness(0.2, value_range=(-1.0, 1.0)),
+        ]
     model = tf.keras.Sequential(
         [
+            *augmentation,
             base,
-            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dropout(dropout),
             tf.keras.layers.Dense(len(CLASSES), activation="softmax"),
         ]
     )
