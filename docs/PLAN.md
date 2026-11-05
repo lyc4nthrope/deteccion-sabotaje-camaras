@@ -43,11 +43,11 @@ Cada tarea termina así: verificación → commit → Pull Request a `main` revi
 
 | # | Requisito (guía del proyecto) | Estado actual | Tareas |
 |---|---|---|---|
-| R1 | Problema regional de clasificación o detección, con temática distinta por grupo | ✅ Definido: clasificar imágenes de cámaras de vigilancia saboteadas (Seguridad). ⬜ Componente regional: no existe un dataset público regional de sabotaje; se entrena con Bremen y se prueba en cámaras CCTV reales de Medellín con sabotaje sintético (D12), más una captura propia en Armenia (D3) y la justificación regional | T06, T16–T18, T76, T80, T81, T83 |
+| R1 | Problema regional de clasificación o detección, con temática distinta por grupo | ✅ Definido: clasificar imágenes de cámaras de vigilancia saboteadas (Seguridad). ⬜ Componente regional: no existe un dataset público regional de sabotaje; se entrena con Bremen y se prueba en cámaras CCTV reales de Medellín con sabotaje sintético (D12), más una captura propia en Armenia (D3) y la justificación regional | T06, T16–T18, T17b, T76, T80, T81, T83 |
 | R2 | Lenguaje: Python, MATLAB o ambos | ✅ Resuelto: Python (MATLAB opcional), confirmado por la profesora (T04) | T04; T50–T54 opcionales |
-| R3 | Módulo 1, clásico (20 %): descriptores matemáticos, transformaciones geométricas, umbralización (incluida la umbralización de color), filtrado lineal y no lineal. Métricas: tiempo de cómputo por frame y tasa de falsos positivos en entornos estables | ⬜ Pendiente. Los temas necesarios ya se vieron en clase. La umbralización de color se cubre con un descriptor HSV (T37) | T30–T44 |
+| R3 | Módulo 1, clásico (20 %): descriptores matemáticos, transformaciones geométricas, umbralización (incluida la umbralización de color), filtrado lineal y no lineal. Métricas: tiempo de cómputo por frame y tasa de falsos positivos en entornos estables | ⬜ Pendiente. Los temas necesarios ya se vieron en clase. La umbralización de color se cubre con un descriptor HSV (T37). Los "descriptores avanzados de forma justificada" se respaldan además con clasificadores supervisados (KNN, SVM, Naive Bayes, clase 20) entrenados sobre los mismos descriptores y comparados con las reglas (T45, D15) | T30–T45 |
 | R4 | Módulo 2, aprendizaje profundo (20 %): CNN propia o transfer learning, con hiperparámetros justificados (no elegidos al azar). Métricas: curvas de loss y accuracy en train y val, sin sobreajuste severo | ⏳ Se empieza ya con estudio propio de Keras y se ajusta con el tema de CNN en clase (D14). Los hiperparámetros se eligen con una comparación pequeña y documentada (T66) | T60–T66 |
-| R5 | Módulo 3, auditoría de robustez (20 %): ambos sistemas ante entornos degradados de manera artificial o física (entornos dinámicos reales). Métricas: matrices de confusión cruzadas, curvas ROC y F1-score en condiciones críticas | ⬜ Pendiente. Degradación artificial (perturbaciones, T70–T74), física (captura con cambios reales de iluminación, T75) y cambio de dominio Alemania → Colombia (T76) | T20–T25, T70–T76, T81 |
+| R5 | Módulo 3, auditoría de robustez (20 %): ambos sistemas ante entornos degradados de manera artificial o física (entornos dinámicos reales). Métricas: matrices de confusión cruzadas, curvas ROC y F1-score en condiciones críticas | ⬜ Pendiente. Degradación artificial (perturbaciones, T70–T74), física (captura con cambios reales de iluminación, T75) y cambio de dominio Alemania → Colombia (T76). Las métricas por clase (precisión, recall, especificidad, promedios macro y micro, T26) completan la lectura de las matrices de confusión | T20–T26, T70–T76, T81 |
 | R6 | Defensa ante ataque adversario en vivo (40 %): diagnosticar matemáticamente el fallo y proponer el filtro correctivo exacto | ⬜ Pendiente. Demo local en el portátil (D11) con calibración de referencias y teclas para activar los filtros correctivos en vivo | T07, T82, T85, T90–T94 |
 | R7 | Dataset | ✅ Bremen descargado: 5031 imágenes de 2 cámaras con sabotaje real (ubicación 1 con 3600, las del artículo; ubicación 2 con 1431), aceptado por la profesora. La ubicación 2 se reserva como prueba de cámara no vista (D6). ✅ Identificado el dataset regional de Medellín (CC BY 4.0) para la prueba cruzada. ⬜ Captura propia en Armenia, Quindío | T10–T19, T80, T81 |
 
@@ -76,6 +76,7 @@ la defensa.
 | D12 | Prueba regional cruzada | Dataset de Medellín ("Dataset for Detecting Motorcyclists in Pedestrian Areas", Zenodo, CC BY 4.0): se toman imágenes normales y se sintetiza el sabotaje por código (desenfoque gaussiano, rotación, oclusión total y parcial), como en el dataset UHCTD. Se entrena en Bremen y se prueba en Medellín | Son cámaras CCTV reales de Colombia con licencia abierta. Muestra la generalización Alemania → Colombia, que es lo que pidió la profesora. El dataset no tiene sabotaje propio, por eso se sintetiza |
 | D13 | Aportes de la clase 11 (SIFT, HOG, KAZE, SURF, ORB), 2026-11-03 | ORB con la configuración de clase como descriptor geométrico por defecto; comparación ORB frente a SIFT frente a KAZE (T38) y su robustez ante perturbaciones (T77); HOG como descriptor global complementario (T34); SURF descartado | Según la clase, ORB es el más rápido y libre de patentes, pero pierde precisión con cambios de iluminación, contraste y ruido; KAZE usa difusión no lineal y es más robusto; SIFT (128 dimensiones) ya no tiene patente. Comparar da evidencia para elegir y un argumento para la defensa |
 | D14 | No esperar la clase de CNN, 2026-11-03 | Santiago estudia por su cuenta transfer learning con Keras; T60–T66 pasan a "⏳ ajustable": se empiezan ya y se ajustan cuando se vea el tema en clase. La arquitectura puede cambiar | El equipo empezó tarde; esperar el tema dejaría la CNN y todo lo que depende de ella (T71, T76, T84) para el final |
+| D15 | Aportes de la clase 20 (clasificación supervisada y no supervisada), 2026-11-05 | (a) Clasificadores supervisados KNN, SVM y Naive Bayes sobre los descriptores clásicos ya calculados, como línea base intermedia entre las reglas y la CNN (T45); las reglas siguen siendo el módulo clásico principal. (b) Precisión, recall y especificidad por clase, con promedios macro y micro, en las métricas compartidas (T26). (c) Toda validación cruzada K-fold se **agrupa por los bloques de tiempo** de `data/splits/split.csv` (`GroupKFold` sobre la columna `block`). (d) Clustering no supervisado (jerárquico de Ward con dendrograma, o K-means con el método del codo) para recuperar la cámara de cada imagen de Medellín (T17b) | (a) Mide cuánto ganan los descriptores con un clasificador entrenado frente a los umbrales manuales, sin el costo de la CNN; KNN y SVM se basan en distancias y son sensibles a la escala, por eso se estandarizan las características. (b) Con clases desbalanceadas el accuracy engaña (advertencia de la clase); el promedio macro pesa igual cada clase. (c) Un K-fold aleatorio, como el ejemplo de clase sobre datos sintéticos, pondría frames consecutivos casi idénticos en entrenamiento y validación (fuga de datos); no aplica a frames de video. (d) Resuelve el bloqueo de la revisión del PR #2: Medellín no trae referencias de la misma cámara y el módulo clásico las necesita |
 
 ---
 
@@ -93,19 +94,20 @@ T25 (métricas) ──────────────────► T43, T
 T20 (perturbaciones) ────────────► T70
 T60 … T66 (CNN, ⏳ ajustable) ───► T64 → T71
 T19 (cámara no vista) ───────────► T43, T64, T71
-T16 → T17 → T18 (Medellín) ─────► T76
+T16 → T17b, T17 → T18 (Medellín) ► T76
 T80 → T81 (captura Armenia) ─────► T75, T83
 T82 → T85 (demo con filtros) ────► T94
 ```
 
 - **T25** (métricas) alimenta la evaluación del clásico (T43), de la CNN (T64) y la auditoría (T71).
 - **T20** (perturbaciones) alimenta los conjuntos degradados (T70).
-- **T16 → T17 → T18** (dataset de Medellín con sabotaje sintético) alimenta la prueba regional cruzada (T76).
+- **T16 → T17b, T17 → T18** (dataset de Medellín agrupado por cámara y con sabotaje sintético) alimenta la prueba regional cruzada (T76). T76 también necesita las correcciones de la revisión del PR #2.
 - **T80 → T81** (captura en Armenia) alimenta la auditoría física (T75) y la prueba de generalización (T83).
 - **T85** (filtros en la demo) es necesaria para el ensayo de la defensa (T94).
 - **T19** (prueba de cámara no vista, ubicación 2) entra en las evaluaciones del clásico, de la CNN y de la auditoría.
 - **T60 … T66** se empiezan ya con estudio propio (D14); la arquitectura puede cambiar cuando se vea el tema de CNN.
 - **T38** y **T77** (comparación de descriptores) son P2 y quedan fuera de la ruta crítica.
+- **T26** (métricas por clase) y **T45** (clasificadores supervisados) son P2 (D15) y quedan fuera de la ruta crítica.
 - La Fase 6 (MATLAB, T05 y T50–T54) es opcional y queda fuera de la ruta crítica.
 
 ---
@@ -119,7 +121,7 @@ las P3 son lo primero que se quita si falta tiempo.
   Datos y división (T10–T15, T19), métricas (T25), clásico (T30–T43), CNN (T60–T66), auditoría artificial
   (T70–T74), captura y demo de la defensa (T80–T85, sin T83), defensa (T90–T94) e informe (T06, T100–T103).
 - **P2 Recomendado** (suma nota; recortar solo si falta tiempo):
-  - T16, T17, T18, T76: prueba regional en Medellín. La profesora aceptó Bremen con nota, así que es una mejora y no un requisito.
+  - T16, T17, T17b, T18, T76: prueba regional en Medellín (T17b agrupa las imágenes por cámara, D15). La profesora aceptó Bremen con nota, así que es una mejora y no un requisito.
   - T75: auditoría física.
   - T83: generalización a la captura propia.
   - T38, T77: comparación de descriptores ORB, SIFT y KAZE.
@@ -127,6 +129,8 @@ las P3 son lo primero que se quita si falta tiempo.
   - T36: ficha de descriptores.
   - T44: análisis de errores del clásico.
   - T22, T23: grilla y justificación de niveles de perturbación.
+  - T26: métricas por clase y promedios macro y micro (D15).
+  - T45: clasificadores supervisados KNN, SVM y Naive Bayes sobre los descriptores (D15).
 - **P3 Recortable primero:** T12 (galería) y la Fase 6 opcional de MATLAB (T05, T50–T54).
 
 Si se recorta una tarea P2 que figura como dependencia (por ejemplo T75 o T76 para T90), se quita también de
@@ -152,7 +156,7 @@ para atrasos y revisión final. Cada día respeta las dependencias de la secció
 | 1 | mar 3 nov | T02, T10 ✅ (ya descargado), T11, T13 | T07, T20, T21; empezar el estudio de Keras y transfer learning | T01, T03 |
 | 2 | mié 4 nov | T14 (a primera hora), T15, T19, T25 | T80, T81 (captura en Armenia, con el conjunto de luz real), T60 (después de T14) | — |
 | 3 | jue 5 nov | T30, T31, T32, T33, T37 | T61, T62 | — |
-| 4 | vie 6 nov | T35, T40, T41 | T66, T63 | — |
+| 4 | vie 6 nov | T35, T40, T41, T26 (P2), T45 (P2) | T66, T63, T17b (P2) | — |
 | 5 | sáb 7 nov | T42, T43 | T64, T65, T82 | — |
 | 6 | dom 8 nov | T70, T71 | T91, T85, T84 | — |
 | 7 | lun 9 nov | T72, T73, T38 (P2) | T16, T17, T18 (P2) | — |
@@ -171,6 +175,8 @@ para atrasos y revisión final. Cada día respeta las dependencias de la secció
 - T77 depende de T38: T38 se adelantó al día 7 y T74 pasó al día 8, que sigue antes de T90 (día 9).
 - T85 depende de T91: el día 6 Santiago hace T91 antes que T85.
 - T93 depende de T90 y T92, que se hacen el mismo día 9: T93 va al final del día.
+- T45 depende de T43 (día 5 en el calendario original): T43 ya está hecha, así que T45 y T26 pasan al día 4. Cristhian va adelantado y sus tareas de auditoría esperan las perturbaciones de Santiago (T20).
+- T17b depende de T16 (día 7 en el calendario original): T16 ya está en el PR #2, por eso T17b puede ir el día 4.
 
 ### Verificación de capacidad
 
@@ -178,8 +184,8 @@ Las horas son estimaciones (≈ 2 h por tarea; las de la CNN ≈ 2,5 h). Hay 11 
 
 | Integrante | Horas P1 propias | Horas P1 compartidas | Total P1 | Horas por día (11 días) | Con P2 |
 |---|---|---|---|---|---|
-| Cristhian | ≈ 50 h (25 tareas) | ≈ 15 h | ≈ 65 h | ≈ 6 h/día | ≈ 74 h → ≈ 6,7 h/día |
-| Santiago | ≈ 40 h (16 tareas) + ≈ 4 h de estudio de Keras | ≈ 15 h | ≈ 59 h | ≈ 5,4 h/día | ≈ 79 h → ≈ 7,2 h/día |
+| Cristhian | ≈ 50 h (25 tareas) | ≈ 15 h | ≈ 65 h | ≈ 6 h/día | ≈ 79 h → ≈ 7,2 h/día (incluye T26 y T45, ≈ 2,5 h cada una) |
+| Santiago | ≈ 40 h (16 tareas) + ≈ 4 h de estudio de Keras | ≈ 15 h | ≈ 59 h | ≈ 5,4 h/día | ≈ 81,5 h → ≈ 7,4 h/día (incluye T17b, ≈ 2,5 h) |
 
 **Si un día se atrasa, se recorta en este orden:** (1) tareas P3; (2) T77; (3) T38; (4) Medellín reducido a ~200
 imágenes; (5) T75 con una sola condición de luz. Nunca se recorta una tarea P1.
@@ -220,8 +226,9 @@ sobre esa división.
 | T15 | Elegir imágenes de referencia normales por cámara (para ORB), solo del conjunto train, y documentarlas | Cristhian | T14 | ⛔ (para T33) | Lista en `docs/datos.md` | Cada cámara tiene sus referencias y todas pertenecen a train | ✅ |
 | T19 | Definir y documentar el conjunto de prueba de cámara no vista: toda la ubicación 2 (1431 imágenes), nunca usada para entrenar ni calibrar umbrales | Cristhian | T11 | ⛔ (para T43, T64, T71) | `data/splits/camara_no_vista.csv`, nota en `docs/datos.md` | El archivo lista las 1431 imágenes y ninguna aparece en `split.csv` | ✅ |
 | T16 | Descargar el dataset de Medellín ([Medellín, Zenodo](https://zenodo.org/records/7935299), DOI 10.5281/zenodo.7935299, `PedestrianDataSet.zip`, 643 MB) a `data/raw/medellin/`; registrar licencia CC BY 4.0 y cita; inventario: conteo, resolución y cámaras si se pueden identificar por nombre de archivo | Santiago | T03 | ⛔ (para T17) | `data/README.md` actualizado, `results/inventario_medellin.csv` | 6324 imágenes JPG de 1280×720; licencia y cita escritas | ⬜ |
-| T17 | Seleccionar un subconjunto de ≈600 imágenes normales repartido entre cámaras, excluyendo si es posible las que tengan personas identificables en primer plano; documentar el criterio. Riesgo: el descriptor ORB necesita referencias de la **misma** cámara; si no se puede derivar la cámara del nombre de archivo, agrupar por similitud visual o evaluar la rotación en Medellín con descriptores sin referencia (orientación de Hough) | Santiago | T16 | ⛔ (para T18) | Lista y criterio en `docs/datos.md` | ≈600 imágenes repartidas entre cámaras, con el criterio escrito | ⬜ |
-| T18 | Generar las 3 clases saboteadas sobre el subconjunto (desenfoque gaussiano, rotación con recorte, oclusión total y parcial) con semilla fija, más pruebas y script reproducible | Santiago | T17 | ⛔ (para T76) | `src/synthetic_tampering.py`, `tests/test_synthetic_tampering.py`, `data/medellin_sintetico/` (no versionado) | `pytest` pasa y el script regenera el mismo conjunto con la misma semilla | ⬜ |
+| T17 | Seleccionar un subconjunto de ≈600 imágenes normales repartido entre cámaras, excluyendo si es posible las que tengan personas identificables en primer plano; documentar el criterio. Riesgo: el descriptor ORB necesita referencias de la **misma** cámara; la cámara no se deduce del nombre de archivo, por eso se recupera con clustering (T17b); como alternativa, evaluar la rotación en Medellín con descriptores sin referencia (orientación de Hough) | Santiago | T16 | ⛔ (para T18) | Lista y criterio en `docs/datos.md` | ≈600 imágenes repartidas entre cámaras, con el criterio escrito | ⬜ |
+| T17b | Agrupar las imágenes de Medellín por cámara con clustering no supervisado (clase 20, D15): descriptor global compacto (miniatura en gris de 32×18 o histograma de color), clustering jerárquico de Ward con dendrograma (o K-means con método del codo) para elegir el número de grupos (cerca de 80 cámaras), verificación visual de una muestra de grupos y descarte de grupos con menos de 10 imágenes; apartar 8 referencias por grupo como en `calibration_split`. Resuelve el bloqueo de la revisión del PR #2 (Medellín no tiene referencias de la misma cámara y el módulo clásico las necesita) | Santiago | T16 | ⛔ (para T18, T76) | `src/medellin.py` (o un módulo nuevo), `data/splits/medellin_grupos.csv`, nota en `docs/datos.md` | Dendrograma (o curva del codo) guardado con el número de grupos justificado; muestra de grupos revisada a mano; cada grupo conservado tiene 10 o más imágenes y 8 referencias apartadas | ⬜ |
+| T18 | Generar las 3 clases saboteadas sobre el subconjunto (desenfoque gaussiano, rotación con recorte, oclusión total y parcial) con semilla fija, más pruebas y script reproducible | Santiago | T17, T17b | ⛔ (para T76) | `src/synthetic_tampering.py`, `tests/test_synthetic_tampering.py`, `data/medellin_sintetico/` (no versionado) | `pytest` pasa y el script regenera el mismo conjunto con la misma semilla | ⬜ |
 
 ### Fase 2. Perturbaciones
 
@@ -242,6 +249,7 @@ Un solo módulo de métricas para los dos modelos garantiza que se comparen con 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T25 | Matriz de confusión, F1 macro, tasa de falsos positivos (normal predicha como saboteada), ROC binaria con AUC y tiempo por imagen en ms | Cristhian | T03 | ⛔ (para T43, T64, T71) | `src/metrics.py`, `tests/test_metrics.py` | Las pruebas con ejemplos de resultado conocido pasan | ✅ |
+| T26 | Ampliar `src/metrics.py` con precisión, recall y especificidad por clase y promedios macro y micro (clase 20, diapositivas 25–29; D15). Con datos desbalanceados el accuracy engaña: se reportan junto al F1 macro. Alimenta los reportes de T71 y T72 | Cristhian | T25 | 🟢 | `src/metrics.py`, `tests/test_metrics.py` | `pytest` pasa con ejemplos calculados a mano (por ejemplo, VP=40, VN=50, FP=10, FN=20 → accuracy 0,75, precisión 0,80, recall 0,67, como en la diapositiva de clase) | ⬜ |
 
 ### Fase 4. Módulo clásico: descriptores
 
@@ -272,6 +280,7 @@ de la rúbrica (tiempo por frame y tasa de falsos positivos).
 | T42 | Puntaje continuo de sabotaje para poder trazar la ROC | Cristhian | T41 | ⛔ (para T71) | `src/classic.py` | El puntaje es mayor, en promedio, para las saboteadas que para las normales | ✅ |
 | T43 | Evaluar en val (ajuste) y luego una sola vez en test y en la cámara no vista: matriz, F1, tasa de falsos positivos y tiempo por frame | Cristhian | T19, T25, T42 | ⛔ | `results/clasico/` | Las métricas de test quedan guardadas | ✅ |
 | T44 | Análisis de errores con las imágenes mal clasificadas y su causa | Santiago | T43 | 🟢 | `notebooks/04_clasico.ipynb` | Cada tipo de error tiene ejemplos y causa escrita | ⬜ |
+| T45 | Clasificadores supervisados KNN, SVM y Naive Bayes (clase 20, D15) entrenados sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`), con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala). Hiperparámetros elegidos con `GroupKFold` por la columna `block` solo sobre train; evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros** | Cristhian | T35, T43 | 🟢 | `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md` | `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues de `GroupKFold` no comparten bloques | ⬜ |
 
 ### Fase 6. MATLAB (opcional)
 
@@ -332,7 +341,7 @@ principal frente al artículo de referencia y la base de la defensa.
 | T73 | Curvas ROC por condición y curvas de F1 frente a severidad | Cristhian | T71 | ⛔ | `results/auditoria/` | Las curvas quedan guardadas | ⬜ |
 | T74 | Notebook de auditoría con la interpretación de los resultados | Cristhian | T72, T73 | ⛔ (para T90) | `notebooks/06_auditoria.ipynb` | Cada condición crítica tiene su interpretación escrita | ⬜ |
 | T75 | Auditoría física: ejecutar ambos modelos sobre el conjunto de iluminación física y compararlo con la perturbación artificial equivalente (¿el oscurecimiento artificial predice la luz baja real?) | Cristhian | T71, T81 | ⛔ (para T90) | Sección en `notebooks/06_auditoria.ipynb`, `results/auditoria/fisica.csv` | Tabla física frente a artificial por condición y ambos modelos, con su interpretación | ⬜ |
-| T76 | Evaluación regional cruzada: ambos modelos entrenados en Bremen se evalúan en Medellín (sabotaje sintético): matriz de confusión, F1 y tasa de falsos positivos; comparar con el resultado en Bremen y explicar la diferencia | Santiago | T18, T43, T64 | ⛔ (para T90, T101) | `results/regional/`, sección en `notebooks/06_auditoria.ipynb` | Métricas de ambos modelos en Medellín frente a Bremen, con la diferencia explicada | ⬜ |
+| T76 | Evaluación regional cruzada: ambos modelos entrenados en Bremen se evalúan en Medellín (sabotaje sintético): matriz de confusión, F1 y tasa de falsos positivos; comparar con el resultado en Bremen y explicar la diferencia. Requiere también las correcciones de la revisión del PR #2 | Santiago | T17b, T18, T43, T64 | ⛔ (para T90, T101) | `results/regional/`, sección en `notebooks/06_auditoria.ipynb` | Métricas de ambos modelos en Medellín frente a Bremen, con la diferencia explicada | ⬜ |
 | T77 | Robustez de ORB, SIFT y KAZE ante las perturbaciones (brillo, gamma, ruido, JPEG): buenas coincidencias frente a severidad. Comprueba lo que dice la clase (ORB pierde precisión con luz y ruido; KAZE es más robusto) y da el argumento de defensa: "con poca luz ORB pierde coincidencias → aplicar CLAHE o cambiar a KAZE" | Santiago | T20, T38 | 🟢 (alimenta T90, T93) | `results/auditoria/descriptores_vs_perturbacion.csv` y figura | Curva por descriptor y perturbación, con la conclusión escrita | ⬜ |
 
 ### Fase 10. Defensa
@@ -370,7 +379,8 @@ Cuando se vea un tema nuevo, se revisa esta tabla y se ajustan las tareas y deci
 | Filtros espaciales, bordes (Canny, Sobel), morfología, segmentación (Otsu), extracción de características, texturas (GLCM, LBP, Gabor), momentos de Hu, transformada de Hough | ✅ Visto | T30–T44 (y T50–T54, opcionales) | — |
 | Descriptores locales: SIFT, HOG, KAZE, SURF y ORB (clase 11, 2026-11-03) | ✅ Visto | T33, T34, T38, T77 | D4 y D13 actualizados. RANSAC y homografía no se vieron en clase: vienen del artículo |
 | Redes neuronales convolucionales y transfer learning | ⏳ Por ver; se empieza con estudio propio (D14) | T60–T66, T71, T76, T83, T84 | D5: arquitectura (el framework ya está decidido: Keras) |
-| Métricas formales de evaluación (ROC, F1) | ⏳ Confirmar si se ve en clase | T25 | D9: forma de calcularlas y presentarlas |
+| Métricas formales de evaluación (ROC, F1) | ✅ Visto en la clase 20 (2026-11-05): matriz de confusión, accuracy, precisión, recall, F1, especificidad, tasa de falsos positivos, promedios macro y micro, y la advertencia sobre datos desbalanceados. La ROC no se vio en esa clase | T25, T26 | D9 y D15: se agregan las métricas por clase y los promedios macro y micro (T26) |
+| Clasificación supervisada (KNN con distancias euclidiana, Manhattan, Chebyshev, Mahalanobis y Minkowski; SVM; Naive Bayes; validación holdout y K-fold) y no supervisada (K-means con método del codo, clustering jerárquico con enlace simple, completo, promedio y Ward y dendrograma, DBSCAN, autoencoders) (clase 20, 2026-11-05) | ✅ Visto | T17b, T26, T45 (y la lectura de T71, T72) | D15: clasificadores supervisados sobre los descriptores (T45), K-fold agrupado por bloques, clustering de las cámaras de Medellín (T17b) |
 | Otros temas que anuncie la profesora | ⏳ | Por definir | Por definir |
 
 ---
@@ -384,9 +394,9 @@ Cuando se vea un tema nuevo, se revisa esta tabla y se ajustan las tareas y deci
 | La captura regional puede registrar personas (Ley 1581 de 2012, protección de datos personales) | Protocolo de T80: evitar terceros identificables o pedir consentimiento, y nunca publicar imágenes con personas; los datos propios no se versionan |
 | El sabotaje sintético de Medellín no es idéntico al sabotaje real | Complementarlo con la muestra pequeña de sabotaje real de la captura en Armenia (T81, T83) y explicar la diferencia en T76 |
 | Las imágenes de Medellín contienen peatones (Ley 1581 de 2012) | Preferir imágenes sin personas identificables en primer plano (T17); no republicar imágenes con personas; los datos no se versionan |
-| Las cámaras de Medellín no se pueden identificar y ORB necesita referencias de la misma cámara | Agrupar por similitud visual o evaluar la rotación con la orientación de Hough, sin referencias (T17) |
+| Las cámaras de Medellín no se pueden identificar y ORB necesita referencias de la misma cámara | Recuperar la cámara con clustering no supervisado (Ward con dendrograma o K-means con el codo, T17b, D15); como alternativa, evaluar la rotación con la orientación de Hough, sin referencias (T17) |
 | El método clásico falla en la cámara de la demo porque sus referencias ORB son de otra cámara | Calibración con 8 referencias de la escena en vivo al iniciar la demo (T82) |
-| Fuga de datos por imágenes casi idénticas | División por bloques de tiempo (T13, T14) con prueba de no solapamiento; la ubicación 2 queda aparte como cámara no vista (T19) |
+| Fuga de datos por imágenes casi idénticas | División por bloques de tiempo (T13, T14) con prueba de no solapamiento; la ubicación 2 queda aparte como cámara no vista (T19); toda validación cruzada K-fold se agrupa por bloque (`GroupKFold`, D15, T45) |
 | Desbalance de clases en la ubicación 2 (solo 167 giradas frente a 753 normales) | Reportar F1 macro y la matriz de confusión por clase, no solo el accuracy (T25) |
 | ORB pierde coincidencias con poca luz o ruido (clase 11) | Medirlo (T77) y tener preparada la corrección: CLAHE o cambio a KAZE (T38, T91) |
 | Poco tiempo | Tareas pequeñas; T10–T44 no dependen de temas pendientes y se pueden avanzar ya; MATLAB quedó como opcional (D8) |
@@ -401,14 +411,14 @@ Cada integrante es dueño de un bloque completo del flujo, para que pueda explic
 encarga de la ruta crítica: justificación regional, datos de Bremen, métricas, módulo clásico y auditoría
 (artificial y física). Santiago se encarga de perturbaciones, CNN, dataset regional de Medellín, captura en
 Armenia y demo, además de la galería de datos (T12) y el análisis de errores del clásico (T44), que se movieron
-para equilibrar la carga. Las horas que liberó MATLAB (D8) pasaron al dataset regional (T16–T18, T76). La defensa
+para equilibrar la carga. Las tareas de la clase 20 (D15) se repartieron así: T26 y T45 a Cristhian, que va adelantado, y T17b a Santiago, dueño de Medellín. Las horas que liberó MATLAB (D8) pasaron al dataset regional (T16–T18, T76). La defensa
 y el informe son compartidos. El detalle está en [docs/PLAN_CRISTHIAN.md](PLAN_CRISTHIAN.md) y
 [docs/PLAN_SANTIAGO.md](PLAN_SANTIAGO.md).
 
 | Integrante | Tareas propias | Horas propias (estimadas) | Fases principales |
 |---|---|---|---|
-| Cristhian | 31 (T00 y T10 ya hechas): T00, T02, T06, T10, T11, T13–T15, T19, T25, T30–T38, T40–T43, T70–T75, T92, T100 | ≈ 63 h | Contexto regional, datos, métricas, clásico, auditoría |
-| Santiago | 27 (T04 ya hecha): T04, T07, T12, T16–T18, T20–T23, T44, T60–T66, T76, T77, T80–T85, T91 | ≈ 61 h, más el estudio propio de Keras | Perturbaciones, CNN, dataset regional, captura y demo |
+| Cristhian | 33 (T00 y T10 ya hechas): T00, T02, T06, T10, T11, T13–T15, T19, T25, T26, T30–T38, T40–T43, T45, T70–T75, T92, T100 | ≈ 68 h | Contexto regional, datos, métricas, clásico, auditoría |
+| Santiago | 28 (T04 ya hecha): T04, T07, T12, T16–T18, T17b, T20–T23, T44, T60–T66, T76, T77, T80–T85, T91 | ≈ 63,5 h, más el estudio propio de Keras | Perturbaciones, CNN, dataset regional, captura y demo |
 | Ambos | 8 compartidas: T01, T03, T90, T93, T94, T101, T102, T103 | ≈ 15 h cada uno | Defensa e informe |
 | Opcional (Santiago) | 6: T05, T50–T54 (MATLAB) | ≈ 12 h, fuera de los totales | Solo si sobra tiempo |
 

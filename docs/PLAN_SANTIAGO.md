@@ -34,7 +34,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - **Día 1 (mar 3 nov):** T01, T03 (con Cristhian), T07, T20, T21; empezar el estudio de Keras y transfer learning.
 - **Día 2 (mié 4 nov):** T80, T81 (captura en Armenia, con el conjunto de luz real), T60 después de que Cristhian termine T14 (si no está, pasa al día 3).
 - **Día 3 (jue 5 nov):** T61, T62.
-- **Día 4 (vie 6 nov):** T66, T63.
+- **Día 4 (vie 6 nov):** T66, T63, T17b (P2; T16 ya está en el PR #2).
 - **Día 5 (sáb 7 nov):** T64, T65, T82.
 - **Día 6 (dom 8 nov):** T91 primero (T85 la necesita), T85, T84.
 - **Día 7 (lun 9 nov):** T16, T17, T18 (P2).
@@ -80,12 +80,19 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Cómo verificar:** 6324 imágenes JPG de 1280×720; licencia y cita escritas.
 - [ ] **T17 ⛔ P2** Seleccionar ≈600 imágenes normales de Medellín repartidas entre cámaras.
   - **Qué hacer:** excluir, si es posible, las imágenes con personas identificables en primer plano; documentar el criterio en `docs/datos.md`.
-  - **Riesgo:** ORB necesita referencias de la **misma** cámara. Si la cámara no se deduce del nombre de archivo, agrupar por similitud visual o evaluar la rotación en Medellín con la orientación de Hough, que no usa referencias.
+  - **Riesgo:** ORB necesita referencias de la **misma** cámara. La cámara no se deduce del nombre de archivo: se recupera con clustering en T17b; como alternativa, evaluar la rotación en Medellín con la orientación de Hough, que no usa referencias.
   - **Cómo verificar:** ≈600 imágenes repartidas entre cámaras, con el criterio escrito.
+- [ ] **T17b ⛔ P2** Agrupar las imágenes de Medellín por cámara con clustering no supervisado (clase 20, D15).
+  - **Qué hacer:** descriptor global compacto (miniatura en gris de 32×18 o histograma de color); clustering jerárquico de Ward con dendrograma (o K-means con método del codo) para elegir el número de grupos (cerca de 80 cámaras); verificación visual de una muestra de grupos; descarte de grupos con menos de 10 imágenes; apartar 8 referencias por grupo como en `calibration_split`. Resuelve el bloqueo de la revisión del PR #2: Medellín no tiene referencias de la misma cámara y el módulo clásico las necesita.
+  - **Entregable:** `src/medellin.py` (o un módulo nuevo), `data/splits/medellin_grupos.csv`, nota en `docs/datos.md`.
+  - **Cómo verificar:** dendrograma (o curva del codo) guardado con el número de grupos justificado; muestra de grupos revisada a mano; cada grupo conservado tiene 10 o más imágenes y 8 referencias apartadas.
+  - **Esperas a:** tu tarea T16 (en el PR #2).
+  - **Quién te espera:** tú mismo (T18, T76).
 - [ ] **T18 ⛔ P2** `src/synthetic_tampering.py`: sabotaje sintético sobre el subconjunto.
   - **Qué hacer:** generar desenfocada (desenfoque gaussiano), girada (rotación con recorte) y tapada (oclusión total y parcial) con semilla fija, como en el dataset UHCTD; salida en `data/medellin_sintetico/` (no versionado) con un script reproducible.
   - **Entregable:** `src/synthetic_tampering.py`, `tests/test_synthetic_tampering.py`.
   - **Cómo verificar:** `pytest` pasa y la misma semilla regenera el mismo conjunto.
+  - **Esperas a:** tus tareas T17 y T17b.
   - **Quién te espera:** tú mismo (T76).
 
 ### Fase 2. Perturbaciones
@@ -166,7 +173,7 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 ### Fase 9. Auditoría (tu parte)
 
 - [ ] **T76 ⛔ P2** Evaluación regional cruzada: entrenados en Bremen, evaluados en Medellín.
-  - **Esperas a:** Cristhian (T43, clásico evaluado); tus tareas T18 y T64.
+  - **Esperas a:** Cristhian (T43, clásico evaluado); tus tareas T17b, T18 y T64, y las correcciones de la revisión del PR #2.
   - **Qué hacer:** matriz de confusión, F1 y tasa de falsos positivos de ambos modelos en Medellín; comparar con el resultado en Bremen y explicar la diferencia.
   - **Entregable:** `results/regional/` y sección en `notebooks/06_auditoria.ipynb`.
   - **Quién te espera:** Cristhian (T90, diagnóstico del clásico; T101, informe); tú mismo (T90, CNN).
@@ -195,7 +202,7 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 | T90, parte CNN (diagnóstico) | T93 (guía de defensa) |
 | T91 (correcciones) | T92 (antes/después) |
 | T85 (filtros en la demo) | T94 (ensayo de la defensa) |
-| T76 (prueba regional en Medellín) | T90 (diagnóstico del clásico) y T101 (informe) |
+| T76 (prueba regional en Medellín; antes necesitas tu T17b y las correcciones de la revisión del PR #2) | T90 (diagnóstico del clásico) y T101 (informe) |
 | T77 (robustez de descriptores) | T90 y T93 (argumento de defensa sobre descriptores) |
 
 | No empieces… | Hasta que Cristhian termine… |
