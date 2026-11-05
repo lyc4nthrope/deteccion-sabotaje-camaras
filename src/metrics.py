@@ -84,6 +84,57 @@ def time_per_image(predict: Callable, images: Sequence) -> dict:
     }
 
 
+def _ratio(numerator: float, denominator: float) -> float:
+    return float(numerator / denominator) if denominator else 0.0
+
+
+def binary_metrics(tp: int, tn: int, fp: int, fn: int) -> dict:
+    """Metrics of a 2x2 confusion matrix, with the formulas of class 20 (slides 25-27).
+
+    A division by zero gives 0 (for example, the precision of a model that never predicts positive).
+    """
+    precision, recall = _ratio(tp, tp + fp), _ratio(tp, tp + fn)
+    return {
+        "accuracy": _ratio(tp + tn, tp + tn + fp + fn),
+        "precision": precision,
+        "recall": recall,
+        "specificity": _ratio(tn, tn + fp),
+        "fpr": _ratio(fp, fp + tn),
+        "f1": _ratio(2 * precision * recall, precision + recall),
+    }
+
+
+def per_class_report(y_true: Sequence[str], y_pred: Sequence[str]) -> pd.DataFrame:
+    """Precision, recall, specificity, F1 and support per class (one vs rest), plus macro and micro rows (T26).
+
+    - macro: plain mean over the classes, so a rare class weighs as much as a frequent one;
+    - micro: the counts of every class are pooled before computing each metric. In single-label multiclass
+      classification micro precision, recall and F1 all equal the accuracy.
+    Only classes present in y_true or y_pred are reported, as in f1_macro.
+    """
+    _check_labels(y_true, y_pred)
+    present = [label for label in LABELS if label in set(y_true) | set(y_pred)]
+    matrix = confusion(y_true, y_pred).loc[present, present].to_numpy()
+    total = matrix.sum()
+    rows, pooled = {}, np.zeros(4)
+    for i, label in enumerate(present):
+        tp = matrix[i, i]
+        fp = matrix[:, i].sum() - tp
+        fn = matrix[i, :].sum() - tp
+        tn = total - tp - fp - fn
+        pooled += (tp, tn, fp, fn)
+        m = binary_metrics(tp, tn, fp, fn)
+        rows[label] = {k: m[k] for k in ("precision", "recall", "specificity", "f1")} | {"support": int(tp + fn)}
+    report = pd.DataFrame.from_dict(rows, orient="index")
+    columns = ["precision", "recall", "specificity", "f1"]
+    macro = report[columns].mean().to_dict() | {"support": int(total)}
+    micro = {k: v for k, v in binary_metrics(*pooled).items() if k in columns} | {"support": int(total)}
+    report.loc["macro"] = macro
+    report.loc["micro"] = micro
+    report["support"] = report["support"].astype(int)
+    return report[columns + ["support"]]
+
+
 def summary(y_true: Sequence[str], y_pred: Sequence[str], scores: Sequence[float] | None = None) -> dict:
     """Rubric metrics in one row: accuracy, macro F1, false positive rate on normals and binary AUC."""
     y_true_arr, y_pred_arr = np.asarray(y_true), np.asarray(y_pred)
