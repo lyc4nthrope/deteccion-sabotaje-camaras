@@ -33,7 +33,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - **Día 1 (mar 3 nov):** T01, T03 (con Santiago), T02, T10 ✅, T11, T13.
 - **Día 2 (mié 4 nov):** T14 a primera hora (Santiago la espera para T60), T15, T19, T25.
 - **Día 3 (jue 5 nov):** T30, T31, T32, T33, T37.
-- **Día 4 (vie 6 nov):** T35, T40, T41.
+- **Día 4 (vie 6 nov):** T35, T40, T41, T26 (P2) y T45 (P2): aportes de la clase 20 (D15); vas adelantado y la auditoría espera las perturbaciones de Santiago (T20).
 - **Día 5 (sáb 7 nov):** T42, T43.
 - **Día 6 (dom 8 nov):** T70, T71.
 - **Día 7 (lun 9 nov):** T72, T73, T38 (P2; Santiago la espera para T77).
@@ -108,6 +108,12 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Entregable:** `src/metrics.py`, `tests/test_metrics.py`.
   - **Cómo verificar:** pruebas con ejemplos de resultado conocido pasan.
   - **Quién te espera:** Santiago (T64, evaluación de la CNN); tú mismo (T43, T71).
+- [ ] **T26 🟢 P2** Métricas por clase y promedios macro y micro (clase 20, D15).
+  - **Qué hacer:** ampliar `src/metrics.py` con precisión, recall y especificidad por clase y sus promedios macro y micro (diapositivas 25–29 de la clase 20). Con datos desbalanceados el accuracy engaña: reportarlas junto al F1 macro.
+  - **Entregable:** `src/metrics.py`, `tests/test_metrics.py`.
+  - **Cómo verificar:** `pytest` pasa con ejemplos calculados a mano (por ejemplo, VP=40, VN=50, FP=10, FN=20 → accuracy 0,75, precisión 0,80, recall 0,67, como en la diapositiva de clase).
+  - **Esperas a:** tu tarea T25 (hecha).
+  - **Quién te espera:** tú mismo (reportes de T71 y T72); no bloquea a nadie.
 
 ### Fase 4. Módulo clásico: descriptores
 
@@ -157,6 +163,12 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Entregable:** `results/clasico/`.
   - **Cómo verificar:** métricas de test guardadas.
   - **Quién te espera:** Santiago (T44, análisis de errores; T76, prueba regional; T83, generalización).
+- [ ] **T45 🟢 P2** Clasificadores supervisados KNN, SVM y Naive Bayes sobre los descriptores (clase 20, D15).
+  - **Qué hacer:** entrenar sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`) con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala); elegir hiperparámetros con `GroupKFold` por la columna `block` de `data/splits/split.csv`, solo sobre train (un K-fold aleatorio filtraría frames casi idénticos); evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros.**
+  - **Entregable:** `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md`.
+  - **Cómo verificar:** `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues no comparten bloques.
+  - **Esperas a:** tus tareas T35 y T43 (hechas); la comparación con la CNN se agrega cuando Santiago termine T64, sin bloquear.
+  - **Quién te espera:** nadie; aporta evidencia al informe (T101) y a la defensa.
 
 ### Fase 9. Auditoría de robustez
 
@@ -208,7 +220,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 | T75 (auditoría física) | T81 (captura regional e iluminación física) |
 | T93 (guía de defensa) | T83 (generalización) y su parte de T90 |
 | T94 (ensayo con la demo) | T85 (filtros en la demo) |
-| T90 (diagnóstico del clásico) y T101 (informe) | T76 (prueba regional en Medellín) |
+| T90 (diagnóstico del clásico) y T101 (informe) | T76 (prueba regional en Medellín), que a su vez espera T17b (grupos por cámara) y las correcciones de la revisión del PR #2 |
 | T90 y T93 (argumento de defensa sobre descriptores) | T77 (robustez de descriptores) |
 
 ## Tareas compartidas
