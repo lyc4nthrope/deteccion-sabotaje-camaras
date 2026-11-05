@@ -1,0 +1,14 @@
+{
+  "name": "lr1e-2_b32_frozen_aug_drop05",
+  "learning_rate": 0.01,
+  "batch": 32,
+  "trainable_layers": 0,
+  "augment": true,
+  "dropout": 0.5,
+  "epochs_run": 5,
+  "best_epoch": 2,
+  "best_val_loss": 0.2629556357860565,
+  "best_val_accuracy": 0.9602272510528564,
+  "seconds": 161.5,
+  "seed": 0
+}

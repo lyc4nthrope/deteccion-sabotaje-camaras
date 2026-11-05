@@ -28,7 +28,7 @@ Cada corrida: `results/cnn/<corrida>/run.json`. Tabla completa en `results/cnn/h
 
 **Elección:** tasa 1e-2, lote 32, base congelada. Es la de menor pérdida de validación y converge en 3 épocas. Tasa 1e-4 queda claramente peor: aprende despacio y con 15 épocas no alcanza. Descongelar 10 capas con tasa 1e-4 mejora sobre la base congelada con la misma tasa, pero no supera a 1e-2.
 
-**Limitación:** la validación de la ubicación 1 casi no discrimina. Casi todas las corridas dan 97–100 % de accuracy, porque las imágenes de validación son de la misma cámara y escena que el entrenamiento. La elección de hiperparámetros se confirmará con la cámara no vista (T64), no con esta tabla.
+**Limitación:** la validación de la ubicación 1 casi no discrimina. Casi todas las corridas dan 97–100 % de accuracy, porque las imágenes de validación son de la misma cámara y escena que el entrenamiento. La elección se hizo solo con la pérdida de validación de la ubicación 1 (la menor, lr 1e-2). La cámara no vista no se usó para elegir: se evaluó después, en T64.
 
 ## Evaluación en test y cámara no vista (T64)
 
