@@ -345,7 +345,7 @@ qué falla el modelo y qué filtro lo corrige, con la mejora medida.
 |---|---|---|---|---|---|---|---|
 | T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | ⬜ |
 | T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | ⬜ |
-| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | ⬜ |
+| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | En curso: hecho salvo brillo claro, que espera el PR #18 (`docs/auditoria.md`, sección 4) |
 | T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | ⬜ |
 | T94 | Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa | Ambos | T85, T93 | 🟢 | — | Ambos explican cualquier ataque sin leer | ⬜ |
 
