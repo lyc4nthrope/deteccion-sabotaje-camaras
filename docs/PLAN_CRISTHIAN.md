@@ -170,6 +170,13 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Esperas a:** tus tareas T35 y T43 (hechas); la comparación con la CNN se agrega cuando Santiago termine T64, sin bloquear.
   - **Quién te espera:** nadie; aporta evidencia al informe (T101) y a la defensa.
 
+### Fase 8. Captura propia (tu parte)
+
+- [ ] **T86 🟢 P2** `src/anonymize.py`: difuminar a las personas en la captura propia con YOLOv8n preentrenado (clase 17, D16).
+  - **Qué hacer:** detectar la clase `person` de COCO y aplicar un desenfoque gaussiano fuerte sobre cada caja; los pesos y las fotos no se suben al repositorio.
+  - **Cómo verificar:** prueba con imágenes con personas (ninguna caja `person` queda sin difuminar) y sin personas (la imagen sale idéntica).
+  - **Quién te espera:** Santiago (T81), para guardar las fotos sin terceros identificables.
+
 ### Fase 9. Auditoría de robustez
 
 - [x] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).

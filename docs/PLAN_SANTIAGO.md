@@ -132,22 +132,26 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
   - **Entregable:** tabla de diferencias en `results/matlab/`.
   - **Cómo verificar:** diferencias por debajo de una tolerancia definida y explicada.
 
-### Fase 7. Aprendizaje profundo (⏳ ajustable: empieza ya y ajusta con la clase, D14)
+### Fase 7. Aprendizaje profundo (arquitectura confirmada en la clase 17, D16)
 
-- [ ] **T60 ⏳ ajustable ⛔ P1** Cargar datos desde `data/splits/split.csv` (224×224, normalización).
-  - **Esperas a:** Cristhian (T14, división). No esperes el tema de CNN: estudia Keras por tu cuenta y ajusta cuando se vea en clase.
-- [ ] **T61 ⏳ ajustable ⛔ P1** Modelo: MobileNetV2 congelado y cabeza de 4 clases (o la arquitectura vista en clase).
-- [ ] **T62 ⏳ ajustable ⛔ P1** Entrenar con early stopping; guardar curvas de loss y accuracy (train y val) en `results/cnn/`.
-- [ ] **T66 ⏳ ajustable ⛔ P1** Comparación pequeña de hiperparámetros (orden: T62 → T66 → T63 → T64).
+- [ ] **T60 ⛔ P1** Cargar datos desde `data/splits/split.csv` (224×224, normalización).
+  - **Esperas a:** Cristhian (T14, división).
+- [ ] **T61 ⛔ P1** Modelo: MobileNetV2 congelado y cabeza de 4 clases (confirmada en la clase 17, D16).
+- [ ] **T62 ⛔ P1** Entrenar con early stopping; guardar curvas de loss y accuracy (train y val) en `results/cnn/`.
+- [ ] **T66 ⛔ P1** Comparación pequeña de hiperparámetros (orden: T62 → T66 → T63 → T64).
   - **Qué hacer:** probar tasa de aprendizaje 1e-2, 1e-3 y 1e-4; tamaño de lote 16 y 32; número de capas descongeladas. Comparar las curvas de validación.
   - **Entregable:** `results/cnn/hiperparametros.csv` y sección en `docs/cnn.md` con el porqué de cada valor.
   - **Cómo verificar:** cada valor elegido tiene su curva y su justificación (la rúbrica califica como básico elegirlos al azar).
-- [ ] **T63 ⏳ ajustable ⛔ P1** Diagnosticar sobreajuste y ajustar con aumentación de datos y dropout (después de T66).
+- [ ] **T66b 🟢 P2** Probar la tasa 1e-1 (lote 32, base congelada). Tu mejor tasa, 1e-2, quedó en el borde de la grilla, y la clase 17 dice explorar por décadas (D16).
+  - **Cómo verificar:** fila nueva en `hiperparametros.csv`; si 1e-1 gana, rehaces T63 y T64; si diverge, lo documentas.
+- [ ] **T63 ⛔ P1** Diagnosticar sobreajuste y ajustar con aumentación de datos y dropout (después de T66).
   - **Cómo verificar:** las curvas de train y val no se separan de forma severa.
-- [ ] **T64 ⏳ ajustable ⛔ P1** Evaluar en test y en la cámara no vista (ubicación 2) con `src/metrics.py` y medir tiempo por frame.
+- [ ] **T64 ⛔ P1** Evaluar en test y en la cámara no vista (ubicación 2) con `src/metrics.py` y medir tiempo por frame.
   - **Esperas a:** Cristhian (T25, métricas; T19, cámara no vista).
   - **Quién te espera:** Cristhian (T71, auditoría).
-- [ ] **T65 ⏳ ajustable 🟢 P1** `docs/cnn.md`: arquitectura, parámetros y decisiones, para explicarlos en la defensa.
+- [ ] **T65 🟢 P1** `docs/cnn.md`: arquitectura, parámetros y decisiones, para explicarlos en la defensa.
+  - **Qué agregar (clase 17, D16):** parámetros de la cabeza (1280 × 4 + 4 = 5124), tamaño de salida con stride y padding, bloques residuales de MobileNetV2 frente a ResNet y por qué no VGG-16 ni AlexNet.
+  - **Cómo verificar:** los números coinciden con `model.summary()`.
 - [ ] **T67 🟢 P2** Explicabilidad de la CNN con Grad-CAM (o LIME/SHAP).
   - **Qué hacer:** mapas de calor sobre al menos 4 ejemplos por clase en test y en la cámara no vista; escribir si el modelo mira el sabotaje (la tapa, el desenfoque, el cambio de escena) o el contexto (iluminación, cielo, vegetación). Es lo que pide la actividad evaluativa 3 de IA (SHAP y LIME sobre el contexto).
   - **Entregable:** `notebooks/05_explicabilidad_cnn.ipynb`, `results/figuras/gradcam_*.png` y una sección en `docs/cnn.md`.
@@ -161,6 +165,7 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
   - **Protección de datos:** cumplir la Ley 1581 de 2012: evitar terceros identificables o pedir su consentimiento, y nunca publicar imágenes con personas.
   - **Cómo verificar:** el protocolo cubre las 4 clases, el conjunto de iluminación y las reglas de protección de datos.
 - [ ] **T81 ⛔ P1** Capturar ~100 imágenes por clase y el conjunto de iluminación física en `data/propios/` (no se suben al repositorio).
+  - **Antes de guardar:** pasa cada foto por `src/anonymize.py` (T86, de Cristhian) si aparece alguien.
   - **Cómo verificar:** conteo de ~100 por clase, conjunto de iluminación completo y sin personas identificables.
   - **Quién te espera:** Cristhian (T75, auditoría física); tú mismo (T83); ambos (T93).
 - [ ] **T82 🟢 P1** `src/demo.py`: webcam → clasificación clásica en vivo con FPS en pantalla.
