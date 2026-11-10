@@ -110,25 +110,40 @@ def estimate_rotation(source: np.ndarray, target: np.ndarray) -> tuple[float, in
     return math.degrees(math.atan2(transform[1, 0], transform[0, 0])), count
 
 
+# Keypoint detectors compared in T38, configured as in the class 11 notebook. SIFT uses an exhaustive matcher
+# instead of the class FLANN matcher: FLANN is approximate and can vary between runs.
+DETECTORS = {
+    "orb": {"create": lambda: cv2.ORB_create(nfeatures=ORB_FEATURES), "norm": cv2.NORM_HAMMING, "ratio": LOWE_RATIO},
+    "sift": {"create": cv2.SIFT_create, "norm": cv2.NORM_L2, "ratio": 0.7},
+    "kaze": {"create": cv2.KAZE_create, "norm": cv2.NORM_L2, "ratio": 0.7},
+}
+
+
 class ReferenceMatcher:
-    """ORB matching against the normal reference views of one camera (T33).
+    """Keypoint matching against the normal reference views of one camera (T33, T38).
 
     For each test image it keeps the reference with the most good matches (Lowe ratio test) and, when there
-    are enough matches, estimates the rotation between both views with a RANSAC similarity transform.
+    are enough matches, estimates the rotation between both views with a RANSAC similarity transform. ORB is
+    the default; SIFT and KAZE are available for the comparison of T38. The output keys keep the "orb_" prefix
+    whatever the detector, so every downstream table has the same columns.
     """
 
-    def __init__(self, references_gray: Sequence[np.ndarray]):
+    def __init__(self, references_gray: Sequence[np.ndarray], method: str = "orb"):
         if len(references_gray) == 0:
             raise ValueError("At least one reference image is needed.")
-        self.orb = cv2.ORB_create(nfeatures=ORB_FEATURES)
-        self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
+        if method not in DETECTORS:
+            raise ValueError(f"Unknown detector {method!r}; use one of {sorted(DETECTORS)}.")
+        self.method = method
+        self.ratio = DETECTORS[method]["ratio"]
+        self.orb = DETECTORS[method]["create"]()
+        self.matcher = cv2.BFMatcher(DETECTORS[method]["norm"])
         self.references = [self.orb.detectAndCompute(gray, None) for gray in references_gray]
 
     def _good_matches(self, descriptors: np.ndarray, reference_descriptors: np.ndarray | None) -> list:
         if reference_descriptors is None or len(reference_descriptors) < 2:
             return []
         pairs = self.matcher.knnMatch(descriptors, reference_descriptors, k=2)
-        return [p[0] for p in pairs if len(p) == 2 and p[0].distance < LOWE_RATIO * p[1].distance]
+        return [p[0] for p in pairs if len(p) == 2 and p[0].distance < self.ratio * p[1].distance]
 
     def match(self, gray: np.ndarray) -> dict:
         result = {"orb_matches": 0, "orb_inliers": 0, "angle": float("nan"), "best_reference": -1}
