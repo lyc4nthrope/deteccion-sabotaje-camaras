@@ -38,7 +38,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - **Día 5 (sáb 7 nov):** T64, T65, T82.
 - **Día 6 (dom 8 nov):** T91 primero (T85 la necesita), T85, T84.
 - **Día 7 (lun 9 nov):** T16, T17, T18 (P2).
-- **Día 8 (mar 10 nov):** T76, T77 (después de T38 de Cristhian), T83 (P2).
+- **Día 8 (mar 10 nov):** T76, T77 (después de T38 de Cristhian), T83 (P2), T67 (P2).
 - **Día 9 (mié 11 nov):** ajustes de T91; T90 y T93 con Cristhian.
 - **Día 10 (jue 12 nov):** T94 y T101 con Cristhian.
 - **Día 11 (vie 13 nov):** T101, T102.
@@ -152,6 +152,11 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 - [ ] **T65 🟢 P1** `docs/cnn.md`: arquitectura, parámetros y decisiones, para explicarlos en la defensa.
   - **Qué agregar (clase 17, D16):** parámetros de la cabeza (1280 × 4 + 4 = 5124), tamaño de salida con stride y padding, bloques residuales de MobileNetV2 frente a ResNet y por qué no VGG-16 ni AlexNet.
   - **Cómo verificar:** los números coinciden con `model.summary()`.
+- [ ] **T67 🟢 P2** Explicabilidad de la CNN con Grad-CAM (o LIME/SHAP).
+  - **Qué hacer:** mapas de calor sobre al menos 4 ejemplos por clase en test y en la cámara no vista; escribir si el modelo mira el sabotaje (la tapa, el desenfoque, el cambio de escena) o el contexto (iluminación, cielo, vegetación). Es lo que pide la actividad evaluativa 3 de IA (SHAP y LIME sobre el contexto).
+  - **Entregable:** `notebooks/05_explicabilidad_cnn.ipynb`, `results/figuras/gradcam_*.png` y una sección en `docs/cnn.md`.
+  - **Cómo verificar:** cada figura con su conclusión; la sección explica la caída de F1 de 0,97 (test) a 0,58 (cámara no vista).
+  - **Esperas a:** tu T64. **Quién te espera:** T90 y T93 (diagnóstico y guía de la defensa, ambos).
 
 ### Fase 8. Captura en Armenia y demo
 
