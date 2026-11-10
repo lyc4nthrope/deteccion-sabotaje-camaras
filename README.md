@@ -162,7 +162,11 @@ Las imágenes de Medellín contienen peatones: no se republican imágenes con pe
 ## Cómo trabajamos
 
 - Una rama por tarea, con el ID del plan: por ejemplo `feat/T14-division-datos`.
-- Cada tarea se integra con un Pull Request a `main`, revisado por el otro integrante.
+- Cada tarea se integra con un Pull Request a `main`.
+- **No se hace merge sin revisión:** ningún PR se une hasta que el otro integrante lo apruebe en GitHub
+  ("Approve"). Aplica a todo, incluida la documentación. Nadie sube cambios directo a `main`.
+- Quien revisa: ejecuta `pytest`, comprueba que el PR se une sin conflictos y deja sus comentarios.
+- Quien une el PR es su autor, después de la aprobación.
 - Commits convencionales (`feat:`, `fix:`, `docs:`, `test:`…).
 - `main` siempre debe ejecutarse sin errores.
 - Nunca se suben datos ni modelos entrenados.
