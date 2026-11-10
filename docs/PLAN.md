@@ -354,7 +354,7 @@ Consolidar todo en el informe técnico y la presentación final.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T100 | Estructura del informe | Cristhian | T01 | 🟢 | `informe/` | Índice con todas las secciones | ⬜ |
+| T100 | Estructura del informe | Cristhian | T01 | 🟢 | `informe/` | Índice con todas las secciones | ✅ |
 | T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | ⬜ |
 | T102 | Presentación | Ambos | T101 | 🟢 | `informe/` | Presentación completa | ⬜ |
 | T103 | Revisión cruzada final | Ambos | T93, T101, T102 | ⛔ (entrega) | — | Cada uno revisa las secciones del otro | ⬜ |
