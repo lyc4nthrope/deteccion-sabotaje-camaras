@@ -45,9 +45,61 @@ sabiendo **que hay sabotaje**, pero se equivoca en **cuál** es.
 Ya se había visto en el experimento de `docs/clasico.md` (sección 7): ningún suavizado gaussiano protege la regla
 de nitidez del ruido. Por eso la corrección es no lineal.
 
-## 4. Pendiente
+## 4. Correcciones: antes y después (T92)
+
+Código: `src/corrections_audit.py`. Resultados: `results/auditoria/correcciones.csv` (todas las métricas) y
+`results/auditoria/correcciones_antes_despues.csv`. Reproducir con `python -m src.corrections_audit` (≈ 6 minutos).
+
+Cada ataque se corrige con los filtros que propone la teoría (`src/corrections.py`), aplicados **después** de la
+degradación y antes de los descriptores. Además, cada filtro se aplica también a las imágenes **limpias**: en la
+demo en vivo no se sabe de antemano qué ataque hay, así que un filtro no debe dañar las imágenes normales.
+
+### 4.1 Resultados (F1 macro, antes → después)
+
+| Ataque | Nivel | Filtro | F1 antes | F1 después | Falsas alarmas antes → después |
+|---|---|---|---|---|---|
+| sal y pimienta | 1 / 2 / 3 | mediana | 0,278 / 0,267 / 0,232 | **0,982 / 0,986** / 0,456 | 0,5 / 7,7 / 27,5 % → 0,5 / 0,5 / 1,1 % |
+| ruido gaussiano | 1 | bilateral | 0,266 | **0,966** | 1,1 % → 1,1 % |
+| ruido gaussiano | 1 | mediana / gaussiano | 0,266 | 0,783 / 0,862 | — |
+| ruido gaussiano | 2 | gaussiano | 0,278 | 0,665 | — |
+| ruido gaussiano | 3 | cualquiera | 0,277 | ≤ 0,331 | — |
+| gamma | 1 / 2 / 3 | gamma inversa del nivel | 0,902 / 0,762 / 0,599 | **0,954 / 0,844 / 0,871** | 1,1 / 3,3 / 18,7 % → 0,5 / 1,1 / 1,1 % |
+| brillo oscuro | 3 | CLAHE | 0,842 | **0,953** | 2,7 % → 0,5 % |
+| brillo oscuro | 1 / 2 | CLAHE | 0,955 / 0,935 | 0,489 / 0,636 | — |
+| gamma | 1 / 2 / 3 | CLAHE | 0,902 / 0,762 / 0,599 | 0,301 / 0,321 / 0,347 | — |
+| JPEG | 1 / 2 / 3 | bilateral | 0,934 / 0,975 / 0,903 | 0,905 / 0,845 / 0,838 | — |
+| brillo claro | 1 / 2 / 3 | inversa del brillo | — | — | Pendiente: llega con el PR #18 |
+
+Filtros aplicados a las imágenes **limpias** (sin ataque), F1 0,954 sin filtro:
+
+| Filtro | F1 | Efecto |
+|---|---|---|
+| mediana | 0,982 | Inofensiva: incluso mejora un poco |
+| bilateral | 0,941 | Casi inofensivo |
+| gaussiano | 0,876 | Daña un poco |
+| **CLAHE** | **0,323** | **Muy dañino** |
+
+### 4.2 Lectura (para la defensa, T90 y T93)
+
+1. **La mediana es la corrección del ruido impulsivo.** Recupera por completo la sal y pimienta de niveles 1 y 2
+   (F1 0,98) y no daña las imágenes limpias. Es la respuesta no lineal que predice la teoría: el valor central de la
+   vecindad ignora los píxeles extremos (0 y 255).
+2. **Para el ruido gaussiano, el bilateral funciona solo si el ruido es leve** (σ = 5: F1 0,966). Con σ = 15 y 30
+   ningún filtro de 3×3 a 9×9 recupera la regla de nitidez: el ruido fuerte se confunde con los bordes reales. Es un
+   **límite del método clásico** basado en el Laplaciano.
+3. **La gamma inversa del nivel corrige la oscuridad por potencia** y baja las falsas alarmas de 18,7 % a 1,1 %.
+4. **CLAHE es peligroso si se aplica sin saber el ataque.** Realza el contraste local también en las imágenes
+   borrosas y tapadas: el Laplaciano de una desenfocada sube de 3,9 a 31,7 y el de una tapada de 2,5 a 24,1, por
+   encima del umbral de 18,9, así que el clásico las cree nítidas y las manda a "girada" (129 de 327 imágenes
+   limpias). Solo ayuda en la oscuridad extrema (brillo oscuro nivel 3: 0,842 → 0,953). Una corrección aplicada a
+   ciegas puede hacer más daño que el ataque.
+5. **Consecuencia para la demo (T85):** activar cada filtro solo ante su ataque (mediana ante ruido impulsivo,
+   gamma inversa o CLAHE ante oscuridad), nunca CLAHE de forma permanente. La mediana sí podría ir siempre activa,
+   pero esa decisión tendría que validarse con **val**, no con test.
+
+## 5. Pendiente
 
 - **CNN:** el mismo conjunto degradado, con `audit.degrade`, cuando se una el PR #11 (T64).
 - **T72–T74:** matrices de confusión cruzadas, curvas ROC por condición y F1 frente a severidad, comparando ambos
   modelos.
-- **T92:** aplicar las correcciones de la tabla anterior y medir el antes y el después.
+- **Brillo claro (T92):** volver a correr `python -m src.corrections_audit` cuando se una el PR #18.
