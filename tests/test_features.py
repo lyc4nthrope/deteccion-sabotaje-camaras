@@ -212,3 +212,53 @@ def test_noise_inflates_the_laplacian_of_a_blurred_image():
     blurred = cv2.GaussianBlur(cv2.cvtColor(_texture(5), cv2.COLOR_BGR2GRAY), (0, 0), 6)
     noisy = np.clip(blurred + np.random.default_rng(0).normal(0, 15, blurred.shape), 0, 255).astype(np.uint8)
     assert features.sharpness(noisy) > 20 * features.sharpness(blurred)
+
+
+# ---------------------------------------------------------------- other detectors (T38)
+
+
+@pytest.mark.parametrize("method", ["sift", "kaze"])
+def test_other_detectors_match_the_same_scene_and_not_a_different_one(method):
+    matcher = features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]], method=method)
+    same = matcher.match(features.preprocess(_texture(10))["gray"])
+    other = matcher.match(features.preprocess(_texture(99))["gray"])
+    assert same["orb_matches"] > 50 and abs(same["angle"]) < 2
+    assert other["orb_matches"] < same["orb_matches"] / 5
+
+
+@pytest.mark.parametrize("method", ["sift", "kaze"])
+def test_other_detectors_report_the_rotation(method):
+    matcher = features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]], method=method)
+    result = matcher.match(features.preprocess(_rotate(_texture(10), 30))["gray"])
+    assert abs(abs(result["angle"]) - 30) < 3
+
+
+def test_detector_configuration_follows_class_11():
+    assert features.DETECTORS["orb"]["ratio"] == 0.75 and features.DETECTORS["orb"]["norm"] == cv2.NORM_HAMMING
+    for method in ("sift", "kaze"):
+        assert features.DETECTORS[method]["ratio"] == 0.7 and features.DETECTORS[method]["norm"] == cv2.NORM_L2
+
+
+def test_default_detector_is_orb():
+    matcher = features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]])
+    assert matcher.method == "orb"
+
+
+def test_unknown_detector_is_rejected():
+    with pytest.raises(ValueError, match="detector"):
+        features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]], method="surf")
+
+
+@pytest.mark.parametrize("method,size,dtype", [("orb", 32, np.uint8), ("sift", 128, np.float32), ("kaze", 64, np.float32)])
+def test_each_detector_produces_its_own_descriptor(method, size, dtype):
+    matcher = features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]], method=method)
+    descriptors = matcher.references[0][1]
+    assert descriptors.shape[1] == size and descriptors.dtype == dtype
+
+
+@pytest.mark.parametrize("method", ["orb", "sift", "kaze"])
+def test_matcher_applies_its_own_ratio(method):
+    matcher = features.ReferenceMatcher([features.preprocess(_texture(10))["gray"]], method=method)
+    assert matcher.ratio == features.DETECTORS[method]["ratio"]
+    matcher.ratio = 0.0  # no match can pass a ratio of zero
+    assert matcher.match(features.preprocess(_texture(10))["gray"])["orb_matches"] == 0

@@ -61,7 +61,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [ ] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
   - **Qué hacer:** crear un entorno virtual e instalar `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
-- [ ] **T06 🟢 P1** Justificación regional en `docs/contexto_regional.md`.
+- [x] **T06 🟢 P1** Justificación regional en `docs/contexto_regional.md`.
   - **Qué hacer:** verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío; anotar fecha de consulta. Incluir la nota aprobada por la profesora: no se encontró un dataset público regional de sabotaje de cámaras; Bremen se usó para entender y desarrollar el trabajo; el método se aplica igual a un dataset regional. Citar el dataset de Medellín (D12, Zenodo, DOI 10.5281/zenodo.7935299, CC BY 4.0) como dato regional usado. No dar por ciertas las cifras hasta verificarlas. Fuentes de partida:
     - https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10
     - https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006
@@ -133,7 +133,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Qué hacer:** saturación media, dispersión del matiz y proporción de píxeles en rango de tono de piel (mano tapando la cámara); sirve para separar "tapada" de una escena nocturna oscura.
   - **Entregable:** `src/features.py`.
   - **Cómo verificar:** una imagen sintética de tono piel da proporción alta y una gris da saturación cercana a 0.
-- [ ] **T38 🟢 P2** Comparar ORB, SIFT y KAZE como descriptor geométrico.
+- [x] **T38 🟢 P2** Comparar ORB, SIFT y KAZE como descriptor geométrico.
   - **Qué hacer:** en train y val, medir acierto en "girada", buenas coincidencias y tiempo por frame con la configuración de clase (KAZE: `NORM_L2`, razón 0,7; SIFT: FLANN KD-tree `trees=5`, `checks=50`, razón 0,7); elegir y justificar (ORB para tiempo real, KAZE para robustez).
   - **Entregable:** sección en `notebooks/03_descriptores.ipynb`, `results/clasico/comparacion_descriptores.csv`.
   - **Quién te espera:** Santiago (T77, robustez de descriptores).
@@ -179,7 +179,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 9. Auditoría de robustez
 
-- [ ] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
+- [x] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
   - **Esperas a:** Santiago (T20, perturbaciones).
   - **Cómo verificar:** el número de imágenes coincide con test × 6 × 3 (brillo oscuro y claro por separado).
 - [ ] **T71 ⛔ P1** Ejecutar ambos modelos en cada condición: F1, tasa de falsos positivos y tiempo.
@@ -236,7 +236,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [ ] **T03 🟢 P1** Entorno Python (ver Fase 0).
 - [ ] **T93 ⛔ P1** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte del clásico.
 - [ ] **T94 🟢 P1** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere T85 de Santiago).
-- [ ] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
+- [x] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
 - [ ] **T101 🟢 P1** Tus secciones del informe: contexto regional (a partir de T06), datos, clásico y auditoría.
 - [ ] **T102 🟢 P1** Presentación.
 - [ ] **T103 ⛔ P1** Revisión cruzada final: revisas las secciones de Santiago.
