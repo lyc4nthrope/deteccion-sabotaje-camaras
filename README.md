@@ -59,8 +59,7 @@ Todo el proceso se implementa en **Python**; una réplica en MATLAB queda como e
 
    Un árbol de reglas (tapada → desenfocada → girada → normal) decide la clase, y un puntaje continuo de
    sabotaje permite trazar la curva ROC.
-4. **Módulo CNN** ⏳: transfer learning con MobileNetV2 y una cabeza de 4 clases (se confirma cuando se vea el
-   tema en clase), con una comparación pequeña de hiperparámetros para justificar cada valor.
+4. **Módulo CNN:** transfer learning con MobileNetV2 y una cabeza de 4 clases (confirmada en la clase 17), con una comparación pequeña de hiperparámetros para justificar cada valor.
 5. **Auditoría:** perturbaciones de brillo (oscurecer y aclarar), corrección gamma, ruido gaussiano, sal y
    pimienta y compresión JPEG, en 3 niveles y con semilla fija (degradación artificial), más la captura con
    cambios reales de luz: luz apagada, lámpara y contraluz de ventana (degradación física). El desenfoque no se
