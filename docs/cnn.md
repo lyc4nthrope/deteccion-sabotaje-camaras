@@ -66,3 +66,10 @@ Corrida `lr1e-2_b32_frozen_aug_drop05`: misma configuración de T66 con aumentac
 
 ## Sobreajuste (T63)
 Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mínima en la época 3 y sube después, y la parada temprana corta en la época 6 (pérdida de entrenamiento 0,0002 frente a validación 0,007). Con tasa 1e-3 y lote 32 las dos curvas siguen bajando hasta la época 15 (0,0027 frente a 0,0143): aún no hay sobreajuste, pero la brecha crece. Aumentación y dropout (T63) se aplican solo si la cámara no vista muestra caída.
+
+## Honestidad de la evaluación (nota para la defensa)
+
+- **Elección de hiperparámetros (T66):** se hizo solo con la pérdida de validación de la ubicación 1. La cámara no vista se miró después, en T64.
+- **Lo que sí contaminó el examen:** la corrida de aumentación y dropout (T63) se evaluó en la cámara no vista y su resultado (caída a 221 de 251 desenfocadas como normal) decidió no probar más variantes. Por eso el 0,58 de la cámara no vista debe leerse como una cifra ya mirada: es optimista si se compara con una selección hecha a ciegas.
+- **Sobreajuste:** con tasa 1e-2 la pérdida de validación sube después de la época 3 mientras la de entrenamiento baja (0,0002 frente a 0,007 al cortar). La parada temprana restaura la época 3, así que el modelo reportado no es el sobreajustado. Con tasa 1e-3 todavía no hay sobreajuste, pero la brecha crece.
+- **Atajos:** la validación no detecta que la red aprende el contexto de cada día de grabación (train, val y test comparten días). Es la explicación más probable de la caída en la cámara no vista. Queda pendiente demostrarlo con Grad-CAM (T67).
