@@ -156,7 +156,7 @@ para atrasos y revisión final. Cada día respeta las dependencias de la secció
 | 5 | sáb 7 nov | T42, T43 | T64, T65, T82 | — |
 | 6 | dom 8 nov | T70, T71 | T91, T85, T84 | — |
 | 7 | lun 9 nov | T72, T73, T38 (P2) | T16, T17, T18 (P2) | — |
-| 8 | mar 10 nov | T74, T75 (P2), T06 | T76 (P2), T77 (P2), T83 (P2) | — |
+| 8 | mar 10 nov | T74, T75 (P2), T06 | T76 (P2), T77 (P2), T83 (P2), T67 (P2) | — |
 | 9 | mié 11 nov | T92 | Ajustes de T91 | T90, T93 (al final del día) |
 | 10 | jue 12 nov | T100 | — | T94 (ensayo), T101 |
 | 11 | vie 13 nov | — | — | T101, T102 |
@@ -302,6 +302,7 @@ eligen con evidencia, no al azar).
 | T63 | Diagnosticar sobreajuste y ajustar (aumentación de datos, dropout) | Santiago | T66 | ⏳ ajustable ⛔ | `results/cnn/` | Las curvas de train y val no se separan de forma severa | ⬜ |
 | T64 | Evaluar en test y en la cámara no vista con `src/metrics.py` y medir el tiempo por frame | Santiago | T19, T25, T63 | ⏳ ajustable ⛔ (para T71) | `results/cnn/` | Las métricas de test quedan guardadas | ⬜ |
 | T65 | Documentar la arquitectura para explicarla en la defensa | Santiago | T63 | ⏳ ajustable 🟢 | `docs/cnn.md` | Capas, parámetros y decisiones explicadas | ⬜ |
+| T67 | Explicabilidad de la CNN con Grad-CAM (o LIME/SHAP, como en la actividad evaluativa 3 de IA): mapas de calor sobre ejemplos de cada clase en test y en la cámara no vista, para ver si el modelo mira el sabotaje (la tapa, el desenfoque, el cambio de escena) o el contexto (iluminación, cielo, vegetación, fecha). Explica la caída de F1 de 0,97 en test a 0,58 en la cámara no vista | Santiago | T64 | 🟢 P2 | `notebooks/05_explicabilidad_cnn.ipynb`, `results/figuras/gradcam_*.png`, sección en `docs/cnn.md` | Al menos 4 ejemplos por clase y cámara, con una conclusión escrita sobre qué zonas usa el modelo; alimenta T90 y T93 | ⬜ |
 
 ### Fase 8. Captura propia y demo
 
