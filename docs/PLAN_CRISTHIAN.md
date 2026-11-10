@@ -61,7 +61,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [ ] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
   - **Qué hacer:** crear un entorno virtual e instalar `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
-- [ ] **T06 🟢 P1** Justificación regional en `docs/contexto_regional.md`.
+- [x] **T06 🟢 P1** Justificación regional en `docs/contexto_regional.md`.
   - **Qué hacer:** verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío; anotar fecha de consulta. Incluir la nota aprobada por la profesora: no se encontró un dataset público regional de sabotaje de cámaras; Bremen se usó para entender y desarrollar el trabajo; el método se aplica igual a un dataset regional. Citar el dataset de Medellín (D12, Zenodo, DOI 10.5281/zenodo.7935299, CC BY 4.0) como dato regional usado. No dar por ciertas las cifras hasta verificarlas. Fuentes de partida:
     - https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10
     - https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006
