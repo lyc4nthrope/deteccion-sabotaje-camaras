@@ -32,7 +32,7 @@ Columnas de las tablas de tareas:
 - **Tipo:** ⛔, 🟢 o ⏳.
 - **Entregable:** archivo o resultado que queda en el repositorio.
 - **Verificación:** cómo se comprueba que la tarea quedó bien.
-- **Estado:** ✅ o ⬜.
+- **Estado:** ✅ hecha (con el PR que la entregó), En curso (qué falta) o ⬜ pendiente.
 
 **Regla:** una tarea = un objetivo pequeño (1 a 3 horas), con un entregable concreto y una verificación.
 Cada tarea termina así: verificación → commit → Pull Request a `main` revisado por el otro integrante (D10).
@@ -205,9 +205,9 @@ cambios de forma ordenada.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T00 | Crear repositorio, estructura de carpetas y plan inicial | Cristhian | — | ⛔ | Repositorio en GitHub | El repositorio existe en GitHub | ✅ |
-| T01 | Leer y acordar este plan entre los dos | Ambos | T00 | ⛔ | Comentario o acuerdo en el PR del plan | Ambos aprueban | ⬜ |
-| T02 | Agregar a Santiago como colaborador y acordar el flujo de ramas (D10) | Cristhian | T00 | ⛔ (Santiago no puede subir cambios sin esto) | Acceso al repositorio | Santiago hace un PR de prueba | En curso: invitación enviada a Shuh3n (2026-11-03), pendiente de aceptar |
-| T03 | Configurar el entorno Python (local o Colab) con `requirements.txt` | Ambos | T00 | 🟢 | Entorno funcionando | `pytest` se ejecuta y `import cv2` funciona | ⬜ |
+| T01 | Leer y acordar este plan entre los dos | Ambos | T00 | ⛔ | Comentario o acuerdo en el PR del plan | Ambos aprueban | ✅ (planes aprobados y unidos: #3, #14, #22) |
+| T02 | Agregar a Santiago como colaborador y acordar el flujo de ramas (D10) | Cristhian | T00 | ⛔ (Santiago no puede subir cambios sin esto) | Acceso al repositorio | Santiago hace un PR de prueba | ✅ |
+| T03 | Configurar el entorno Python (local o Colab) con `requirements.txt` | Ambos | T00 | 🟢 | Entorno funcionando | `pytest` se ejecuta y `import cv2` funciona | ✅ (260 pruebas pasan) |
 | T04 | Confirmar con la profesora: (a) fecha de entrega, (b) temas pendientes, (c) si la CNN también debe hacerse en MATLAB y (d) si es aceptable entrenar con un dataset extranjero. **Respuesta (2026-10-29):** (c) el proyecto puede hacerse solo en Python, solo en MATLAB o en ambos; (d) se acepta Bremen si el informe dice que no se encontró un dataset público regional de sabotaje, que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional. (a) y (b): por registrar | Santiago | — | ⛔ (definió D2 y D8) | Respuestas en este plan | Respuestas (c) y (d) escritas | ✅ |
 | T05 | **Opcional.** Confirmar versión de MATLAB y toolboxes disponibles (Image Processing, Computer Vision, Deep Learning); solo si se hace la Fase 6 | Santiago | — | 🟢 Opcional | Nota en `docs/matlab.md` | Lista de toolboxes escrita | ⬜ |
 | T06 | Justificación regional: verificar y citar fuentes sobre cámaras fuera de servicio o vandalizadas en Colombia y su relevancia en Armenia, Quindío. Incluir en el informe la nota aprobada por la profesora (no se encontró un dataset público regional de sabotaje; Bremen se usó para entender y desarrollar el trabajo; el método se aplica igual a un dataset regional) y citar el dataset de Medellín (D12) como dato regional usado. Fuentes de partida (verificar antes de citar cifras): [Blu Radio, Bucaramanga 808 cámaras](https://www.bluradio.com/regiones/santanderes/videovigilancia-en-bucaramanga-de-808-camaras-sirven-526-rg10), [El Tiempo, Bogotá](https://www.eltiempo.com/bogota/camaras-de-seguridad-fuera-de-servicio-por-robo-vandalismo-y-obras-706006), [Blu Radio, robo de cable](https://www.bluradio.com/regiones/santanderes/robaron-2-000-metros-de-cable-de-camaras-de-seguridad-en-bucaramanga-rg10), [Alcaldía de Armenia](https://armenia.gov.co/alcaldia-de-armenia-rechaza-actos-vandalicos-contra-red-semaforica-y-llama-a-la-ciudadania-a-proteger-la-infraestructura-publica), [Pulzo, Armenia](https://www.pulzo.com/nacion/robo-de-30-millones-en-armenia-camaras-mapas-de-calor-y-reaccion-policial-permiten-captura-PP5150773A) | Cristhian | — | 🟢 (alimenta T101) | `docs/contexto_regional.md` | Cada afirmación tiene su fuente verificada y fecha de consulta | ✅ |
@@ -240,8 +240,8 @@ dependen de los datos, así que se pueden hacer desde el inicio.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T20 | Implementar brillo, gamma, ruido gaussiano, sal y pimienta y JPEG, con 3 niveles y semilla | Santiago | T03 | ⛔ (para T70) | `src/perturbations.py` | Las pruebas de T21 pasan | ⬜ |
-| T21 | Pruebas: conserva forma, `dtype` uint8, rango 0–255 y reproducible con la misma semilla | Santiago | T20 | ⛔ (aceptación de T20) | `tests/test_perturbations.py` | `pytest` pasa | ⬜ |
+| T20 | Implementar brillo, gamma, ruido gaussiano, sal y pimienta y JPEG, con 3 niveles y semilla | Santiago | T03 | ⛔ (para T70) | `src/perturbations.py` | Las pruebas de T21 pasan | ✅ (#7) |
+| T21 | Pruebas: conserva forma, `dtype` uint8, rango 0–255 y reproducible con la misma semilla | Santiago | T20 | ⛔ (aceptación de T20) | `tests/test_perturbations.py` | `pytest` pasa | ✅ (#7) |
 | T22 | Grilla visual perturbación × nivel | Santiago | T20 | 🟢 | `notebooks/02_perturbaciones.ipynb` | La grilla muestra los 6 tipos de perturbación en 3 niveles | ⬜ |
 | T23 | Justificar los niveles elegidos (qué situación real simula cada uno) | Santiago | T20 | 🟢 | Sección en `notebooks/02_perturbaciones.ipynb` | Cada nivel tiene su justificación escrita | ⬜ |
 
@@ -252,7 +252,7 @@ Un solo módulo de métricas para los dos modelos garantiza que se comparen con 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T25 | Matriz de confusión, F1 macro, tasa de falsos positivos (normal predicha como saboteada), ROC binaria con AUC y tiempo por imagen en ms | Cristhian | T03 | ⛔ (para T43, T64, T71) | `src/metrics.py`, `tests/test_metrics.py` | Las pruebas con ejemplos de resultado conocido pasan | ✅ |
-| T26 | Ampliar `src/metrics.py` con precisión, recall y especificidad por clase y promedios macro y micro (clase 20, diapositivas 25–29; D15). Con datos desbalanceados el accuracy engaña: se reportan junto al F1 macro. Alimenta los reportes de T71 y T72 | Cristhian | T25 | 🟢 | `src/metrics.py`, `tests/test_metrics.py` | `pytest` pasa con ejemplos calculados a mano (por ejemplo, VP=40, VN=50, FP=10, FN=20 → accuracy 0,75, precisión 0,80, recall 0,67, como en la diapositiva de clase) | ⬜ |
+| T26 | Ampliar `src/metrics.py` con precisión, recall y especificidad por clase y promedios macro y micro (clase 20, diapositivas 25–29; D15). Con datos desbalanceados el accuracy engaña: se reportan junto al F1 macro. Alimenta los reportes de T71 y T72 | Cristhian | T25 | 🟢 | `src/metrics.py`, `tests/test_metrics.py` | `pytest` pasa con ejemplos calculados a mano (por ejemplo, VP=40, VN=50, FP=10, FN=20 → accuracy 0,75, precisión 0,80, recall 0,67, como en la diapositiva de clase) | ✅ (#15) |
 
 ### Fase 4. Módulo clásico: descriptores
 
@@ -283,7 +283,7 @@ de la rúbrica (tiempo por frame y tasa de falsos positivos).
 | T42 | Puntaje continuo de sabotaje para poder trazar la ROC | Cristhian | T41 | ⛔ (para T71) | `src/classic.py` | El puntaje es mayor, en promedio, para las saboteadas que para las normales | ✅ |
 | T43 | Evaluar en val (ajuste) y luego una sola vez en test y en la cámara no vista: matriz, F1, tasa de falsos positivos y tiempo por frame | Cristhian | T19, T25, T42 | ⛔ | `results/clasico/` | Las métricas de test quedan guardadas | ✅ |
 | T44 | Análisis de errores con las imágenes mal clasificadas y su causa | Santiago | T43 | 🟢 | `notebooks/04_clasico.ipynb` | Cada tipo de error tiene ejemplos y causa escrita | ⬜ |
-| T45 | Clasificadores supervisados KNN, SVM y Naive Bayes (clase 20, D15) entrenados sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`), con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala). Hiperparámetros elegidos con `GroupKFold` por la columna `block` solo sobre train; evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros** | Cristhian | T35, T43 | 🟢 | `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md` | `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues de `GroupKFold` no comparten bloques | ⬜ |
+| T45 | Clasificadores supervisados KNN, SVM y Naive Bayes (clase 20, D15) entrenados sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`), con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala). Hiperparámetros elegidos con `GroupKFold` por la columna `block` solo sobre train; evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros** | Cristhian | T35, T43 | 🟢 | `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md` | `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues de `GroupKFold` no comparten bloques | ✅ (#16) |
 
 ### Fase 6. MATLAB (opcional)
 
@@ -307,14 +307,14 @@ eligen con evidencia, no al azar).
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T60 | Cargar los datos desde la división (224×224, normalización) | Santiago | T14 | ⛔ | `src/cnn.py` | Los lotes tienen la forma y el rango esperados | ⬜ |
-| T61 | Modelo: MobileNetV2 congelado y cabeza de 4 clases (confirmada en la clase 17, D16) | Santiago | T60 | ⛔ | `src/cnn.py` | El resumen del modelo muestra la salida de 4 clases | ⬜ |
-| T62 | Entrenar con early stopping y guardar las curvas de loss y accuracy en train y val | Santiago | T61 | ⛔ | `results/cnn/` | Las curvas quedan guardadas | ⬜ |
-| T66 | Comparación pequeña de hiperparámetros: tasa de aprendizaje 1e-2, 1e-3 y 1e-4; tamaño de lote 16 y 32; número de capas descongeladas. Comparar las curvas de validación y documentar por qué se elige cada valor | Santiago | T62 | ⛔ | `results/cnn/hiperparametros.csv`, sección en `docs/cnn.md` | Cada valor elegido tiene su curva de validación y su justificación | ⬜ |
+| T60 | Cargar los datos desde la división (224×224, normalización) | Santiago | T14 | ⛔ | `src/cnn.py` | Los lotes tienen la forma y el rango esperados | ✅ (#11) |
+| T61 | Modelo: MobileNetV2 congelado y cabeza de 4 clases (confirmada en la clase 17, D16) | Santiago | T60 | ⛔ | `src/cnn.py` | El resumen del modelo muestra la salida de 4 clases | ✅ (#11) |
+| T62 | Entrenar con early stopping y guardar las curvas de loss y accuracy en train y val | Santiago | T61 | ⛔ | `results/cnn/` | Las curvas quedan guardadas | ✅ (#11) |
+| T66 | Comparación pequeña de hiperparámetros: tasa de aprendizaje 1e-2, 1e-3 y 1e-4; tamaño de lote 16 y 32; número de capas descongeladas. Comparar las curvas de validación y documentar por qué se elige cada valor | Santiago | T62 | ⛔ | `results/cnn/hiperparametros.csv`, sección en `docs/cnn.md` | Cada valor elegido tiene su curva de validación y su justificación | ✅ (#11) |
 | T66b | Probar la tasa de aprendizaje 1e-1 con lote 32 y base congelada, la década siguiente a la mejor de T66 (D16). Si gana, se reemplaza la elección y se rehacen T63 y T64 | Santiago | T66 | 🟢 | Corrida en `results/cnn/`, fila nueva en `hiperparametros.csv` | La elección final ya no queda en el borde de la grilla, o se documenta por qué 1e-1 diverge | ⬜ |
-| T63 | Diagnosticar sobreajuste y ajustar (aumentación de datos, dropout) | Santiago | T66 | ⛔ | `results/cnn/` | Las curvas de train y val no se separan de forma severa | ⬜ |
-| T64 | Evaluar en test y en la cámara no vista con `src/metrics.py` y medir el tiempo por frame | Santiago | T19, T25, T63 | ⛔ (para T71) | `results/cnn/` | Las métricas de test quedan guardadas | ⬜ |
-| T65 | Documentar la arquitectura para explicarla en la defensa con las herramientas de la clase 17 (D16): parámetros entrenables de la cabeza (1280 × 4 + 4 = 5124), tamaño de salida de las capas con stride, bloques residuales de MobileNetV2 frente a ResNet y por qué no VGG-16 ni AlexNet (parámetros y velocidad en CPU) | Santiago | T63 | 🟢 | `docs/cnn.md` | Capas, parámetros y decisiones explicadas; los números coinciden con `model.summary()` | ⬜ |
+| T63 | Diagnosticar sobreajuste y ajustar (aumentación de datos, dropout) | Santiago | T66 | ⛔ | `results/cnn/` | Las curvas de train y val no se separan de forma severa | ✅ (#11) |
+| T64 | Evaluar en test y en la cámara no vista con `src/metrics.py` y medir el tiempo por frame | Santiago | T19, T25, T63 | ⛔ (para T71) | `results/cnn/` | Las métricas de test quedan guardadas | ✅ (#11) |
+| T65 | Documentar la arquitectura para explicarla en la defensa con las herramientas de la clase 17 (D16): parámetros entrenables de la cabeza (1280 × 4 + 4 = 5124), tamaño de salida de las capas con stride, bloques residuales de MobileNetV2 frente a ResNet y por qué no VGG-16 ni AlexNet (parámetros y velocidad en CPU) | Santiago | T63 | 🟢 | `docs/cnn.md` | Capas, parámetros y decisiones explicadas; los números coinciden con `model.summary()` | En curso: arquitectura en `docs/cnn.md` (#11); faltan las fórmulas de la clase 17 (D16) |
 | T67 | Explicabilidad de la CNN con Grad-CAM (o LIME/SHAP, como en la actividad evaluativa 3 de IA): mapas de calor sobre ejemplos de cada clase en test y en la cámara no vista, para ver si el modelo mira el sabotaje (la tapa, el desenfoque, el cambio de escena) o el contexto (iluminación, cielo, vegetación, fecha). Explica la caída de F1 de 0,97 en test a 0,58 en la cámara no vista | Santiago | T64 | 🟢 P2 | `notebooks/05_explicabilidad_cnn.ipynb`, `results/figuras/gradcam_*.png`, sección en `docs/cnn.md` | Al menos 4 ejemplos por clase y cámara, con una conclusión escrita sobre qué zonas usa el modelo; alimenta T90 y T93 | ⬜ |
 
 ### Fase 8. Captura propia y demo
@@ -342,7 +342,7 @@ principal frente al artículo de referencia y la base de la defensa.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T70 | Generar los conjuntos de prueba degradados (test × perturbación × nivel) | Cristhian | T14, T20 | ⛔ | Conjuntos degradados (no versionados) y su script | El número de imágenes coincide con test × 6 × 3 (6 tipos: brillo oscuro y claro por separado, D7) | ✅ |
-| T71 | Ejecutar ambos modelos en cada condición: tabla de F1, tasa de falsos positivos y tiempo | Cristhian | T19, T43, T64, T70 | ⛔ | `results/auditoria/tabla.csv` | La tabla cubre todas las condiciones y ambos modelos | En curso: módulo clásico hecho (`docs/auditoria.md`); falta la CNN (PR #11) |
+| T71 | Ejecutar ambos modelos en cada condición: tabla de F1, tasa de falsos positivos y tiempo | Cristhian | T19, T43, T64, T70 | ⛔ | `results/auditoria/tabla.csv` | La tabla cubre todas las condiciones y ambos modelos | En curso: módulo clásico hecho (`docs/auditoria.md`); falta la CNN. El #11 ya está en `main`, pero el modelo no se versiona: hay que reentrenarlo (`python -m src.train_cnn`) o recibir el archivo `model.keras` |
 | T72 | Matrices de confusión cruzadas (modelo × condición crítica) | Cristhian | T71 | ⛔ | `results/auditoria/` | Una matriz por modelo y condición crítica | ⬜ |
 | T73 | Curvas ROC por condición y curvas de F1 frente a severidad | Cristhian | T71 | ⛔ | `results/auditoria/` | Las curvas quedan guardadas | ⬜ |
 | T74 | Notebook de auditoría con la interpretación de los resultados | Cristhian | T72, T73 | ⛔ (para T90) | `notebooks/06_auditoria.ipynb` | Cada condición crítica tiene su interpretación escrita | ⬜ |
@@ -358,7 +358,7 @@ qué falla el modelo y qué filtro lo corrige, con la mejora medida.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
-| T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | ⬜ |
+| T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | En curso: `src/corrections.py` en `main` (#7); falta la corrección de sobreexposición (PR #18) |
 | T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | En curso: hecho salvo brillo claro, que espera el PR #18 (`docs/auditoria.md`, sección 4) |
 | T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
 | T94 | Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa | Ambos | T85, T93 | 🟢 | — | Ambos explican cualquier ataque sin leer | ⬜ |
@@ -370,7 +370,7 @@ Consolidar todo en el informe técnico y la presentación final.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T100 | Estructura del informe | Cristhian | T01 | 🟢 | `informe/` | Índice con todas las secciones | ✅ |
-| T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | ⬜ |
+| T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | En curso: borradores de Cristhian en los PR #23, #24 y #25; faltan las secciones de Santiago |
 | T102 | Presentación | Ambos | T101 | 🟢 | `informe/` | Presentación completa | ⬜ |
 | T103 | Revisión cruzada final | Ambos | T93, T101, T102 | ⛔ (entrega) | — | Cada uno revisa las secciones del otro | ⬜ |
 

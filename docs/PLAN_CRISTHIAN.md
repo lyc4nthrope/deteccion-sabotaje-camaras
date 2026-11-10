@@ -49,16 +49,16 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 ### Fase 0. Organización
 
 - [x] **T00 ⛔** Repositorio, estructura y plan inicial.
-- [ ] **T01 ⛔ P1** Leer y acordar este plan con Santiago.
+- [x] **T01 ⛔ P1** Leer y acordar este plan con Santiago.
   - **Qué hacer:** leer el plan general y los dos planes personales; anotar dudas o cambios en el PR del plan.
   - **Entregable:** acuerdo escrito en el PR.
   - **Cómo verificar:** ambos aprueban el PR.
-- [ ] **T02 ⛔ P1** Agregar a Santiago como colaborador y acordar el flujo de ramas (D10).
+- [x] **T02 ⛔ P1** Agregar a Santiago como colaborador y acordar el flujo de ramas (D10).
   - **Qué hacer:** invitarlo en GitHub (Settings → Collaborators); explicar el flujo: rama por tarea, PR a `main`, revisión del otro.
   - **Entregable:** acceso de Santiago al repositorio.
   - **Cómo verificar:** Santiago abre un PR de prueba y tú lo revisas.
   - **Quién te espera:** Santiago, para subir cualquier tarea suya.
-- [ ] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
+- [x] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
   - **Qué hacer:** crear un entorno virtual e instalar `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
 - [x] **T06 🟢 P1** Justificación regional en `docs/contexto_regional.md`.
@@ -108,7 +108,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Entregable:** `src/metrics.py`, `tests/test_metrics.py`.
   - **Cómo verificar:** pruebas con ejemplos de resultado conocido pasan.
   - **Quién te espera:** Santiago (T64, evaluación de la CNN); tú mismo (T43, T71).
-- [ ] **T26 🟢 P2** Métricas por clase y promedios macro y micro (clase 20, D15).
+- [x] **T26 🟢 P2** Métricas por clase y promedios macro y micro (clase 20, D15).
   - **Qué hacer:** ampliar `src/metrics.py` con precisión, recall y especificidad por clase y sus promedios macro y micro (diapositivas 25–29 de la clase 20). Con datos desbalanceados el accuracy engaña: reportarlas junto al F1 macro.
   - **Entregable:** `src/metrics.py`, `tests/test_metrics.py`.
   - **Cómo verificar:** `pytest` pasa con ejemplos calculados a mano (por ejemplo, VP=40, VN=50, FP=10, FN=20 → accuracy 0,75, precisión 0,80, recall 0,67, como en la diapositiva de clase).
@@ -163,7 +163,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Entregable:** `results/clasico/`.
   - **Cómo verificar:** métricas de test guardadas.
   - **Quién te espera:** Santiago (T44, análisis de errores; T76, prueba regional; T83, generalización).
-- [ ] **T45 🟢 P2** Clasificadores supervisados KNN, SVM y Naive Bayes sobre los descriptores (clase 20, D15).
+- [x] **T45 🟢 P2** Clasificadores supervisados KNN, SVM y Naive Bayes sobre los descriptores (clase 20, D15).
   - **Qué hacer:** entrenar sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`) con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala); elegir hiperparámetros con `GroupKFold` por la columna `block` de `data/splits/split.csv`, solo sobre train (un K-fold aleatorio filtraría frames casi idénticos); evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros.**
   - **Entregable:** `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md`.
   - **Cómo verificar:** `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues no comparten bloques.
@@ -232,8 +232,8 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ## Tareas compartidas
 
-- [ ] **T01 ⛔ P1** Acordar el plan (ver Fase 0).
-- [ ] **T03 🟢 P1** Entorno Python (ver Fase 0).
+- [x] **T01 ⛔ P1** Acordar el plan (ver Fase 0).
+- [x] **T03 🟢 P1** Entorno Python (ver Fase 0).
 - [ ] **T93 ⛔ P1** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte del clásico.
 - [ ] **T94 🟢 P1** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere T85 de Santiago).
 - [x] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
