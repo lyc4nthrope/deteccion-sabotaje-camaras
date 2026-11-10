@@ -160,7 +160,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 9. Auditoría de robustez
 
-- [ ] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
+- [x] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
   - **Esperas a:** Santiago (T20, perturbaciones).
   - **Cómo verificar:** el número de imágenes coincide con test × 6 × 3 (brillo oscuro y claro por separado).
 - [ ] **T71 ⛔ P1** Ejecutar ambos modelos en cada condición: F1, tasa de falsos positivos y tiempo.
