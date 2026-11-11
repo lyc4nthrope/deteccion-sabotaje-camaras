@@ -10,7 +10,8 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from src.perturbations import GAMMA_VALUES
+from src import perturbations as P
+from src.perturbations import BRIGHTNESS_FACTORS, GAMMA_VALUES
 
 
 def _check_uint8(image: np.ndarray) -> None:
@@ -71,10 +72,28 @@ def bilateral(image: np.ndarray, diameter: int = 9, sigma_color: float = 75, sig
 GAMMA_INVERSE = {f"gamma_inverso_nivel_{k}": (lambda g: lambda image: gamma_correct(image, 1 / g))(g)
                  for k, g in enumerate(GAMMA_VALUES, start=1)}
 
+def unbrighten(image: np.ndarray, level: int) -> np.ndarray:
+    """Undo the lightening perturbation of T20 by dividing by its gain.
+
+    Pixels that were clipped at 255 by the perturbation cannot be recovered: this only restores the
+    unsaturated part of the scene. Use it together with a check of the saturated share.
+    """
+    _check_uint8(image)
+    if level not in P.LEVELS:
+        raise ValueError(f"level must be one of {P.LEVELS}, got {level!r}")
+    gain = BRIGHTNESS_FACTORS["lighten"][level - 1]
+    return np.clip(np.round(image.astype(np.float32) / gain), 0, 255).astype(np.uint8)
+
+
+# Inverse of the lightening perturbation for each level of T20 (overexposure, T92).
+UNBRIGHTEN = {f"brillo_claro_inverso_nivel_{k}": (lambda lv: lambda image: unbrighten(image, lv))(k)
+              for k in P.LEVELS}
+
 # Corrections the demo can toggle (T85) and the audit compares (T92): name -> function(image).
 CORRECTIONS = {
     "clahe": clahe,
     **GAMMA_INVERSE,
+    **UNBRIGHTEN,
     "mediana": median,
     "gaussiano": gaussian,
     "bilateral": bilateral,
