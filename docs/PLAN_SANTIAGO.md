@@ -69,7 +69,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 1. Datos (tu parte)
 
-- [ ] **T12 🟢 P3** Galería: 5 imágenes por clase y cámara.
+- [x] **T12 🟢 P3** Galería: 5 imágenes por clase y cámara.
   - **Esperas a:** Cristhian (T10 descarga y T11 inventario).
   - **Qué hacer:** leer `results/inventario.csv` y armar una figura con 5 imágenes por clase y cámara.
   - **Entregable:** `results/figuras/galeria.png`.
@@ -105,8 +105,8 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [x] **T21 ⛔ P1** `tests/test_perturbations.py`.
   - **Qué hacer:** probar que cada perturbación conserva forma, `dtype` uint8, rango 0–255 y es reproducible con la misma semilla.
   - **Cómo verificar:** `pytest` pasa.
-- [ ] **T22 🟢 P2** `notebooks/02_perturbaciones.ipynb`: grilla perturbación × nivel.
-- [ ] **T23 🟢 P2** Justificar los niveles: qué situación real simula cada uno (anochecer, contraluz, sensor ruidoso, transmisión comprimida…).
+- [x] **T22 🟢 P2** `notebooks/02_perturbaciones.ipynb`: grilla perturbación × nivel.
+- [x] **T23 🟢 P2** Justificar los niveles: qué situación real simula cada uno (anochecer, contraluz, sensor ruidoso, transmisión comprimida…).
 
 ### Fase 5. Clásico (tu parte)
 
@@ -168,14 +168,14 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
   - **Antes de guardar:** pasa cada foto por `src/anonymize.py` (T86, de Cristhian) si aparece alguien.
   - **Cómo verificar:** conteo de ~100 por clase, conjunto de iluminación completo y sin personas identificables.
   - **Quién te espera:** Cristhian (T75, auditoría física); tú mismo (T83); ambos (T93).
-- [ ] **T82 🟢 P1** `src/demo.py`: webcam → clasificación clásica en vivo con FPS en pantalla.
+- [x] **T82 🟢 P1** `src/demo.py`: webcam → clasificación clásica en vivo con FPS en pantalla.
   - **Qué hacer:** empezar con un paso de calibración que capture 8 frames normales de referencia de la escena en vivo (el método clásico compara ORB contra referencias de la **misma** cámara; las de Bremen no sirven para otra cámara; 8 como en el artículo).
   - **Esperas a:** Cristhian (T40, reglas); tu tarea T07.
 - [ ] **T83 ⛔ P2** Evaluar ambos modelos sobre los datos propios; ajuste fino de la CNN si falla.
   - **Esperas a:** Cristhian (T43); tus tareas T64 y T81.
   - **Quién te espera:** ambos (T93, guía de defensa).
-- [ ] **T84 🟢 P1** Agregar la CNN a la demo.
-- [ ] **T85 ⛔ P1** Teclas en la demo para activar y desactivar los filtros de T91 (CLAHE, gamma, mediana). Hazla primero con el módulo clásico (depende de T82 y T91); la CNN se agrega cuando T84 esté lista, así el ensayo T94 no espera el tema de CNN.
+- [x] **T84 🟢 P1** Agregar la CNN a la demo.
+- [x] **T85 ⛔ P1** Teclas en la demo para activar y desactivar los filtros de T91 (CLAHE, gamma, mediana). Hazla primero con el módulo clásico (depende de T82 y T91); la CNN se agrega cuando T84 esté lista, así el ensayo T94 no espera el tema de CNN.
   - **Qué hacer:** mostrar la predicción antes y después del filtro, con los FPS.
   - **Esperas a:** tus tareas T82 y T91 (T84 solo para agregar la CNN después).
   - **Quién te espera:** ambos (T94, ensayo de la defensa).
@@ -197,7 +197,7 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 
 - [ ] **T90 ⛔ P1** Diagnóstico de los fallos de la CNN: qué canal o patrón se altera con cada perturbación y por qué.
   - **Esperas a:** Cristhian (T74 y T75, auditoría artificial y física).
-- [ ] **T91 ⛔ P1** `src/corrections.py`: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral.
+- [x] **T91 ⛔ P1** `src/corrections.py`: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral.
   - **Cómo verificar:** pruebas de forma y `dtype`.
   - **Quién te espera:** Cristhian (T92, antes/después).
 

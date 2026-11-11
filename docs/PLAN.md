@@ -223,7 +223,7 @@ sobre esa división.
 |---|---|---|---|---|---|---|---|
 | T10 | Descargar el dataset de Bremen y registrar las condiciones de uso. Método: WebDAV público, `curl -u "GCsBcswrQf9kBXC:" https://nc.uni-bremen.de/public.php/webdav/<ruta>`; 1,46 GB en 2 ubicaciones × 4 zips (Normal, Blur, Rotated, Noimage) a `data/raw/bremen/zips/`; cada zip trae una carpeta superior (por ejemplo `Location1_Normal`) que se extrae en `data/raw/bremen/` | Cristhian | T00 | ⛔ | `data/README.md` actualizado | Los 8 zips descargados y extraídos; condiciones de uso escritas | ✅ |
 | T11 | Inventario: conteo por ubicación y clase, resolución y formato | Cristhian | T10 | ⛔ | `src/data.py`, `results/inventario.csv` | Ubicación 1: 1800/600/600/600 (normal/desenfocada/girada/tapada); ubicación 2: 753/260/167/251; total 5031 | ✅ |
-| T12 | Galería: 5 imágenes por clase y cámara | Santiago | T10, T11 | 🟢 | `results/figuras/galeria.png` | La figura muestra todas las clases y cámaras | ⬜ |
+| T12 | Galería: 5 imágenes por clase y cámara | Santiago | T10, T11 | 🟢 | `results/figuras/galeria.png` | La figura muestra todas las clases y cámaras | ✅ (#9) |
 | T13 | Analizar nombres y fechas de archivos para detectar casi-duplicados y definir el criterio de división por bloques de tiempo dentro de la ubicación 1 | Cristhian | T11 | ⛔ | Nota en `docs/datos.md` | Criterio de división escrito | ✅ |
 | T14 | Crear la división 70/15/15 por bloques de tiempo dentro de la ubicación 1, la función `load_split` y una prueba de no solapamiento | Cristhian | T13 | ⛔ | `data/splits/split.csv`, `src/data.py`, `tests/test_data.py` | `pytest` pasa | ✅ |
 | T15 | Elegir imágenes de referencia normales por cámara (para ORB), solo del conjunto train, y documentarlas | Cristhian | T14 | ⛔ (para T33) | Lista en `docs/datos.md` | Cada cámara tiene sus referencias y todas pertenecen a train | ✅ |
@@ -242,8 +242,8 @@ dependen de los datos, así que se pueden hacer desde el inicio.
 |---|---|---|---|---|---|---|---|
 | T20 | Implementar brillo, gamma, ruido gaussiano, sal y pimienta y JPEG, con 3 niveles y semilla | Santiago | T03 | ⛔ (para T70) | `src/perturbations.py` | Las pruebas de T21 pasan | ✅ (#7) |
 | T21 | Pruebas: conserva forma, `dtype` uint8, rango 0–255 y reproducible con la misma semilla | Santiago | T20 | ⛔ (aceptación de T20) | `tests/test_perturbations.py` | `pytest` pasa | ✅ (#7) |
-| T22 | Grilla visual perturbación × nivel | Santiago | T20 | 🟢 | `notebooks/02_perturbaciones.ipynb` | La grilla muestra los 6 tipos de perturbación en 3 niveles | ⬜ |
-| T23 | Justificar los niveles elegidos (qué situación real simula cada uno) | Santiago | T20 | 🟢 | Sección en `notebooks/02_perturbaciones.ipynb` | Cada nivel tiene su justificación escrita | ⬜ |
+| T22 | Grilla visual perturbación × nivel | Santiago | T20 | 🟢 | `notebooks/02_perturbaciones.ipynb` | La grilla muestra los 6 tipos de perturbación en 3 niveles | ✅ (#12) |
+| T23 | Justificar los niveles elegidos (qué situación real simula cada uno) | Santiago | T20 | 🟢 | Sección en `notebooks/02_perturbaciones.ipynb` | Cada nivel tiene su justificación escrita | ✅ (#12) |
 
 ### Fase 3. Métricas
 
@@ -327,10 +327,10 @@ y es la herramienta principal de la defensa.
 |---|---|---|---|---|---|---|---|
 | T80 | Protocolo de captura regional: cámara fija (webcam o celular) en una escena real de Armenia, Quindío (entrada de una casa, edificio o local, con permiso); cómo simular cada sabotaje (tapar con mano, cinta o tela; desenfocar; girar el soporte); conjunto de iluminación física (luz apagada, lámpara, contraluz de ventana) para escenas normales y saboteadas; cumplimiento de la Ley 1581 de 2012: evitar terceros identificables o pedir su consentimiento, y nunca publicar imágenes con personas | Santiago | — | ⛔ (para T81) | `docs/captura.md` | El protocolo cubre las 4 clases, el conjunto de iluminación y las reglas de protección de datos | ⬜ |
 | T81 | Capturar ~100 imágenes por clase y el conjunto de iluminación física | Santiago | T80 | ⛔ (para T75, T83, T93) | `data/propios/` (no versionado) | Conteo de ~100 por clase y conjunto de iluminación completo, sin personas identificables | ⬜ |
-| T82 | Demo: webcam → clasificación clásica en vivo con FPS en pantalla. Empieza con un paso de calibración que captura 8 frames normales de referencia de la escena en vivo (el método clásico compara ORB contra referencias de la **misma** cámara; las de Bremen no sirven para otra cámara; 8 como en el artículo) | Santiago | T07, T40 | 🟢 | `src/demo.py` | La demo calibra, corre en vivo y muestra la clase y los FPS | ⬜ |
+| T82 | Demo: webcam → clasificación clásica en vivo con FPS en pantalla. Empieza con un paso de calibración que captura 8 frames normales de referencia de la escena en vivo (el método clásico compara ORB contra referencias de la **misma** cámara; las de Bremen no sirven para otra cámara; 8 como en el artículo) | Santiago | T07, T40 | 🟢 | `src/demo.py` | La demo calibra, corre en vivo y muestra la clase y los FPS | ✅ (#13) |
 | T83 | Evaluar ambos modelos sobre los datos propios (generalización a otra cámara); ajuste fino de la CNN si falla | Santiago | T43, T64, T81 | ⛔ (para T93) | `results/propios/` | Métricas de ambos modelos sobre los datos propios | ⬜ |
-| T84 | Agregar la CNN a la demo | Santiago | T64, T82 | 🟢 | `src/demo.py` | La demo permite elegir el modelo | ⬜ |
-| T85 | Teclas en la demo para activar y desactivar los filtros correctivos de T91 (CLAHE, gamma, mediana) y mostrar la predicción antes y después, con los FPS. Se hace primero con el módulo clásico; la CNN se agrega cuando T84 esté lista, sin bloquear el ensayo | Santiago | T82, T91 | ⛔ (para T94) | `src/demo.py` | Cada tecla activa su filtro y la pantalla muestra ambas predicciones y los FPS | ⬜ |
+| T84 | Agregar la CNN a la demo | Santiago | T64, T82 | 🟢 | `src/demo.py` | La demo permite elegir el modelo | ✅ (#13) |
+| T85 | Teclas en la demo para activar y desactivar los filtros correctivos de T91 (CLAHE, gamma, mediana) y mostrar la predicción antes y después, con los FPS. Se hace primero con el módulo clásico; la CNN se agrega cuando T84 esté lista, sin bloquear el ensayo | Santiago | T82, T91 | ⛔ (para T94) | `src/demo.py` | Cada tecla activa su filtro y la pantalla muestra ambas predicciones y los FPS | ✅ (#13) |
 | T86 | Script que difumina a las personas antes de guardar una imagen de la captura propia: detector preentrenado YOLOv8n (clase 17, D16), clase `person` de COCO, desenfoque gaussiano fuerte sobre cada caja. Pesos y fotos no se suben al repositorio; `ultralytics` es AGPL-3.0, válido para uso académico | Cristhian | T03 | 🟢 (se usa en T81) | `src/anonymize.py` y su prueba | En imágenes de prueba con personas no queda ninguna caja `person` sin difuminar; una imagen sin personas sale idéntica | ⬜ |
 
 ### Fase 9. Auditoría de robustez
@@ -358,8 +358,8 @@ qué falla el modelo y qué filtro lo corrige, con la mejora medida.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
-| T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | En curso: `src/corrections.py` en `main` (#7); falta la corrección de sobreexposición (PR #18) |
-| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | En curso: hecho salvo brillo claro, que espera el PR #18 (`docs/auditoria.md`, sección 4) |
+| T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | ✅ (#7, #18) |
+| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | En curso: hecho salvo brillo claro; la corrección de sobreexposición ya está en `main` (#18), falta volver a correr `python -m src.corrections_audit` y actualizar `docs/auditoria.md`, sección 4 |
 | T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
 | T94 | Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa | Ambos | T85, T93 | 🟢 | — | Ambos explican cualquier ataque sin leer | ⬜ |
 
