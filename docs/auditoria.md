@@ -39,7 +39,7 @@ sabiendo **que hay sabotaje**, pero se equivoca en **cuál** es.
 | **Ruido gaussiano** (incluso σ = 5) | El ruido crea bordes falsos: el Laplaciano de una desenfocada sube de 4,7 a 230,9, por encima del umbral de 18,9 | Las 68 desenfocadas y las 68 tapadas pasan a "girada" (imagen "nítida" sin coincidencias) | Filtro de **mediana** o **bilateral** antes de medir la nitidez |
 | **Sal y pimienta** | El Laplaciano de una desenfocada llega a 33 130 (nivel 3) | Igual que el ruido, y además 50 de 182 normales dan falsa alarma | Filtro de **mediana** (no lineal), la corrección clásica para este ruido |
 | **Gamma** (nivel 3, escena muy oscura) | Pierde contraste: ORB encuentra menos coincidencias y los colores pierden saturación | 34 normales dan falsa alarma (18,7 %) y 42 de 68 tapadas pasan a desenfocadas | **Gamma inversa** del nivel o **CLAHE** |
-| **Brillo claro** (nivel 3) | La saturación a blanco borra la textura | 10 normales pasan a "girada" | Inversa del brillo (PR #18); no recupera lo saturado |
+| **Brillo claro** (nivel 3) | La saturación a blanco borra la textura | 10 normales pasan a "girada" | Ninguna: la inversa del brillo (#18) empeora (sección 4.2, punto 6) |
 | **Brillo oscuro y JPEG** | Cambios pequeños | El módulo resiste (F1 ≥ 0,84) | — |
 
 Ya se había visto en el experimento de `docs/clasico.md` (sección 7): ningún suavizado gaussiano protege la regla
@@ -68,7 +68,7 @@ demo en vivo no se sabe de antemano qué ataque hay, así que un filtro no debe 
 | brillo oscuro | 1 / 2 | CLAHE | 0,955 / 0,935 | 0,489 / 0,636 | — |
 | gamma | 1 / 2 / 3 | CLAHE | 0,902 / 0,762 / 0,599 | 0,301 / 0,321 / 0,347 | — |
 | JPEG | 1 / 2 / 3 | bilateral | 0,934 / 0,975 / 0,903 | 0,905 / 0,845 / 0,838 | — |
-| brillo claro | 1 / 2 / 3 | inversa del brillo | — | — | Pendiente: llega con el PR #18 |
+| brillo claro | 1 / 2 / 3 | inversa del brillo del nivel | 0,971 / 0,966 / 0,852 | 0,954 / 0,946 / **0,795** | 0,5 / 1,1 / 5,5 % → 0,5 / 0,5 / **9,3 %** |
 
 Filtros aplicados a las imágenes **limpias** (sin ataque), F1 0,954 sin filtro:
 
@@ -96,10 +96,17 @@ Filtros aplicados a las imágenes **limpias** (sin ataque), F1 0,954 sin filtro:
 5. **Consecuencia para la demo (T85):** activar cada filtro solo ante su ataque (mediana ante ruido impulsivo,
    gamma inversa o CLAHE ante oscuridad), nunca CLAHE de forma permanente. La mediana sí podría ir siempre activa,
    pero esa decisión tendría que validarse con **val**, no con test.
+6. **La inversa del brillo claro no corrige: empeora** (nivel 3: F1 0,852 → 0,795; falsas alarmas 5,5 → 9,3 %;
+   "girada" 19 → 24). El ataque multiplica el brillo y **corta en 255**: con × 2,0 queda saturado el 40,5 % de los
+   píxeles, frente al 0,6 % de la imagen original (muestra fija de 40 imágenes de test;
+   `python -m src.corrections_audit --saturacion` → `results/auditoria/saturacion_brillo_claro.csv`). Dividir después no devuelve
+   lo que se cortó: todo lo saturado queda en el mismo gris (255 / 2), y en esas zonas la imagen corregida queda en
+   promedio a 21 niveles de gris de la original. Es **pérdida de información**, no un cambio reversible, así que
+   ningún filtro posterior la recupera; la defensa está en la captura (exposición automática de la cámara). En los
+   niveles 1 y 2 el ataque casi no afecta al clásico (F1 0,971 y 0,966, frente a 0,954 sin ataque).
 
 ## 5. Pendiente
 
 - **CNN:** el mismo conjunto degradado, con `audit.degrade`, cuando se una el PR #11 (T64).
 - **T72–T74:** matrices de confusión cruzadas, curvas ROC por condición y F1 frente a severidad, comparando ambos
   modelos.
-- **Brillo claro (T92):** volver a correr `python -m src.corrections_audit` cuando se una el PR #18.

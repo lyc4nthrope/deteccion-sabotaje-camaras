@@ -68,3 +68,19 @@ def test_before_after_table_pairs_each_correction_with_its_baseline():
     assert row["f1_antes"] == pytest.approx(0.3) and row["f1_despues"] == pytest.approx(0.9)
     assert row["mejora_f1"] == pytest.approx(0.6)
     assert row["fpr_antes"] == pytest.approx(0.2) and row["fpr_despues"] == pytest.approx(0.01)
+
+
+def test_saturation_is_total_and_unrecoverable_when_the_attack_clips_everything():
+    image = np.full((720, 1280, 3), 200, np.uint8)  # x 2.0 -> 400, clipped to 255 everywhere
+    out = CA.saturation(image, 3)
+    assert out["saturados"] == 1.0
+    assert out["saturados_original"] == 0.0
+    assert out["error_en_saturados"] == pytest.approx(72.0)  # 255 / 2 rounds to 128, the original was 200
+
+
+def test_saturation_is_zero_and_the_inverse_is_exact_when_nothing_clips():
+    image = np.full((720, 1280, 3), 100, np.uint8)  # x 1.3 -> 130, no clipping
+    out = CA.saturation(image, 1)
+    assert out["saturados"] == 0.0
+    assert out["error_medio"] == 0.0
+    assert out["error_en_saturados"] == 0.0
