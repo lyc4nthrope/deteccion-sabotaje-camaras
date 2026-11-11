@@ -103,6 +103,9 @@ hay, así que un filtro no debe dañar las imágenes normales.
 | Gamma | 1 | Gamma inversa del nivel | 0,902 | 0,954 | +0,051 | 1,1 % → 0,5 % |
 | Gamma | 2 | Gamma inversa del nivel | 0,762 | 0,844 | +0,082 | 3,3 % → 1,1 % |
 | Gamma | 3 | Gamma inversa del nivel | 0,599 | 0,871 | +0,272 | 18,7 % → 1,1 % |
+| Brillo claro | 1 | Inversa del brillo del nivel | 0,971 | 0,954 | −0,017 | 0,5 % → 0,5 % |
+| Brillo claro | 2 | Inversa del brillo del nivel | 0,966 | 0,946 | −0,020 | 1,1 % → 0,5 % |
+| Brillo claro | 3 | Inversa del brillo del nivel | 0,852 | 0,795 | −0,058 | 5,5 % → 9,3 % |
 
 **Lectura:**
 
@@ -124,7 +127,12 @@ hay, así que un filtro no debe dañar las imágenes normales.
    imágenes limpias (0,954 → 0,982), pero dejarla siempre activa es una decisión que se debe validar con el
    conjunto de validación, no con el de prueba (sección 11).
 
-La corrección del brillo claro (inversa del brillo) se agrega cuando se una su implementación.
+6. **La inversa del brillo claro no corrige: empeora** (nivel 3: F1 0,852 → 0,795; falsas alarmas 5,5 % →
+   9,3 %). El ataque multiplica el brillo y corta en 255: con × 2,0 queda saturado el 40,5 % de los píxeles,
+   frente al 0,6 % de la imagen original (muestra fija de 40 imágenes de prueba,
+   `results/auditoria/saturacion_brillo_claro.csv`). Dividir después no devuelve lo que se cortó: todo lo
+   saturado queda en el mismo gris, a 21 niveles de gris en promedio de la imagen original. Es **pérdida de
+   información**: ningún filtro posterior la recupera, y la defensa está en la captura (exposición automática).
 
 ## 9.5 Diagnóstico de la CNN
 
