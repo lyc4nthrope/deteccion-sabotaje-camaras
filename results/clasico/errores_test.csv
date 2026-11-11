@@ -1,4 +1,4 @@
-path,label,pred,descriptor_principal,valor,tipico_clase
-Location1_Normal/image_2024-07-17_12-13-09.jpg,normal,girada,hue_std,112.764,40.408
-Location1_Rotated/image_2024-08-24_20-57-07.jpg,girada,normal,orb_inliers,15.0,3.0
-Location1_Rotated/image_2024-08-24_20-57-09.jpg,girada,normal,orb_inliers,17.0,3.0
+path,label,pred,regla,resultado,descriptor_decisivo,valor,umbral,margen
+Location1_Normal/image_2024-07-17_12-13-09.jpg,normal,girada,sin_coincidencias_y_nitida,girada,lap_var,672.229,18.856,653.373
+Location1_Rotated/image_2024-08-24_20-57-07.jpg,girada,normal,coincide_y_giro_dentro_del_limite,normal,orb_matches,19.0,12.5,6.5
+Location1_Rotated/image_2024-08-24_20-57-09.jpg,girada,normal,coincide_y_giro_dentro_del_limite,normal,orb_matches,24.0,12.5,11.5
