@@ -1,0 +1,5 @@
+# Optional: only to blur people in the own capture (T86, src/anonymize.py).
+# Kept apart because ultralytics pulls PyTorch (hundreds of MB) and is AGPL-3.0 (fine for academic use).
+# The -r line keeps the pins of the project: alone, ultralytics installs OpenCV 5, which removed KAZE.
+-r requirements.txt
+ultralytics
