@@ -61,3 +61,6 @@ data/raw/bremen/
 - Cámara fija (webcam o celular) en una escena real, con permiso y sin personas identificables.
 - ~100 imágenes por clase y un conjunto con cambios reales de iluminación.
 - **Ubicación local:** `data/propios/`, una carpeta por clase. Protocolo en `docs/captura.md` (tarea T80).
+- **Cómo capturar (T81):** `python -m src.capture capturar --clase tapada --luz contraluz --n 50` toma una ráfaga con la webcam, nombra
+  los archivos como pide el protocolo y anota la hoja de sesión (`data/propios/hoja_sesion.csv`). Después,
+  `python -m src.capture anonimizar` difumina a las personas en `data/propios_anonimas/` (requiere `requirements-anonymize.txt`).
