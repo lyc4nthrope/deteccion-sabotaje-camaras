@@ -49,13 +49,18 @@ las matrices de las tablas 7.2 y 7.3; su F1 macro coincide con el de la tabla 7.
 | Cámara no vista | desenfocada | 1,000 | 0,861 | 1,000 | 0,925 | 251 |
 | Cámara no vista | girada | 0,887 | 0,844 | 0,982 | 0,865 | 167 |
 
-**Lectura.** Los errores no se reparten al azar; tienen dos causas concretas:
+**Lectura.** Los errores no se reparten al azar; salen de las ramas del árbol que las decidieron:
 
 1. **Giros pequeños** (2 giradas en prueba y 26 en la cámara no vista, predichas como normales): la cámara giró
    menos que `angle_max` (0,94°), el umbral que tolera la vibración normal. Bajarlo convertiría el viento en
    falsas alarmas.
-2. **Desenfocadas nocturnas de la cámara no vista** (18 como normales y 17 como giradas): de noche hay pocos
-   puntos ORB y el Laplaciano es bajo incluso en escenas nítidas, así que la nitidez separa peor.
+2. **Desenfocadas de la cámara no vista** (18 como normales y 17 como giradas), por dos ramas distintas del árbol
+   (análisis de errores, T44):
+   - **18 como normales:** el desenfoque no rompe la coincidencia ORB (mediana de 66,5 coincidencias, muy sobre
+     `match_min` = 12,5) y su giro queda bajo `angle_max`, así que el árbol las toma por la misma vista. Es la
+     misma causa que en el punto 1: la regla de coincidencias y ángulo se evalúa antes que la nitidez.
+   - **17 como giradas:** 12 por nitidez (`lap_var` ≥ `blur_max`, aunque la imagen esté borrosa), 3 por giro grande
+     y 2 porque no hay ángulo confiable.
 
 La clase girada de prueba tiene solo 9 imágenes: un error cambia su recall en 11 puntos. Por eso su resultado
 principal es el de la cámara no vista, con 167 giradas.
