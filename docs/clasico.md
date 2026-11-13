@@ -60,7 +60,7 @@ reales por una revisión independiente).
 | **Cámara no vista** | 1163 | **0,947** | **0,920** | **0,1 %** | **0,979** |
 
 **Tiempo por frame** (descriptores + reglas sobre la imagen ya decodificada, 100 imágenes de test, con una
-llamada de calentamiento descartada): media **13,5 ms**, mediana 10,6 ms (unos 70 cuadros por segundo).
+llamada de calentamiento descartada): media **12,6 ms**, mediana 10,4 ms (unos 79 cuadros por segundo; `results/clasico/tiempo.json`, medido de nuevo con OpenCV 4).
 
 Matriz de confusión de test (filas = real, columnas = predicho):
 

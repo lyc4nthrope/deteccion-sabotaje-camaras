@@ -172,7 +172,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 8. Captura propia (tu parte)
 
-- [ ] **T86 🟢 P2** `src/anonymize.py`: difuminar a las personas en la captura propia con YOLOv8n preentrenado (clase 17, D16).
+- [x] **T86 🟢 P2** `src/anonymize.py`: difuminar a las personas en la captura propia con YOLOv8n preentrenado (clase 17, D16).
   - **Qué hacer:** detectar la clase `person` de COCO y aplicar un desenfoque gaussiano fuerte sobre cada caja; los pesos y las fotos no se suben al repositorio.
   - **Cómo verificar:** prueba con imágenes con personas (ninguna caja `person` queda sin difuminar) y sin personas (la imagen sale idéntica).
   - **Quién te espera:** Santiago (T81), para guardar las fotos sin terceros identificables.
