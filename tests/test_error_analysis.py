@@ -22,11 +22,11 @@ def test_summary_counts_errors_by_pair_and_rule():
             "label": ["girada", "girada", "normal"],
             "pred": ["normal", "normal", "girada"],
             "regla": ["coincide_y_giro_dentro_del_limite"] * 2 + ["coincide_pero_giro_grande"],
-            "descriptor_decisivo": ["orb_matches", "orb_matches", "angle"],
+            "descriptor_decisivo": ["angle", "angle", "angle"],
         }
     )
     out = E.summary(errors)
-    girada = out[(out["label"] == "girada") & (out["descriptor_decisivo"] == "orb_matches")]
+    girada = out[(out["label"] == "girada") & (out["descriptor_decisivo"] == "angle")]
     assert int(girada["n"].iloc[0]) == 2
     assert int(out["n"].sum()) == 3
 
@@ -36,13 +36,14 @@ def test_summary_of_no_errors_is_empty():
     assert E.summary(empty).empty
 
 
-def test_girada_predicted_normal_is_explained_by_matches_not_by_skin_ratio():
-    # Small rotation (0.37 < 0.94) and enough matches: the tree decided normal by the matches rule.
-    rule = E.decisive_rule(_image(label="girada", angle=0.37, orb_matches=30.0), T)
+def test_girada_predicted_normal_is_explained_by_angle_not_by_skin_ratio():
+    # Matches are fine (30 >= 12.5); what fails is the rotation: 0.5 deg is under angle_max (0.94),
+    # so the tree accepts it as the same view. The negative margin is how far it fell short.
+    rule = E.decisive_rule(_image(label="girada", angle=0.5, orb_matches=30.0), T)
     assert rule["regla"] == "coincide_y_giro_dentro_del_limite"
-    assert rule["descriptor_decisivo"] == "orb_matches"
+    assert rule["descriptor_decisivo"] == "angle"
     assert rule["resultado"] == "normal"
-    assert rule["margen"] == 17.5
+    assert rule["margen"] == round(0.5 - 0.94, 3)
 
 
 def test_large_rotation_is_explained_by_angle():
@@ -83,4 +84,4 @@ def test_analyse_lists_only_errors_with_the_rule_that_decided_them():
     )
     errors = E.analyse(table, T, "test")
     assert list(errors["path"]) == ["a.jpg"]
-    assert errors["descriptor_decisivo"].iloc[0] == "orb_matches"
+    assert errors["descriptor_decisivo"].iloc[0] == "angle"

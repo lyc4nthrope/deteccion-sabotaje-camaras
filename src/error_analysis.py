@@ -49,7 +49,7 @@ def decisive_rule(row: pd.Series, t: classic.Thresholds) -> dict:
             return _rule("coincide_sin_angulo_fiable", "girada", "angle", np.nan, t.angle_max)
         if angle > t.angle_max:
             return _rule("coincide_pero_giro_grande", "girada", "angle", angle, t.angle_max)
-        return _rule("coincide_y_giro_dentro_del_limite", "normal", "orb_matches", matches, t.match_min)
+        return _rule("coincide_y_giro_dentro_del_limite", "normal", "angle", angle, t.angle_max)
     lap = float(row["lap_var"])
     if lap >= t.blur_max:
         return _rule("sin_coincidencias_y_nitida", "girada", "lap_var", lap, t.blur_max)

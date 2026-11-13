@@ -1,6 +1,6 @@
 label,pred,regla,descriptor_decisivo,n
-girada,normal,coincide_y_giro_dentro_del_limite,orb_matches,26
-desenfocada,normal,coincide_y_giro_dentro_del_limite,orb_matches,18
+girada,normal,coincide_y_giro_dentro_del_limite,angle,26
+desenfocada,normal,coincide_y_giro_dentro_del_limite,angle,18
 desenfocada,girada,sin_coincidencias_y_nitida,lap_var,12
 desenfocada,girada,coincide_pero_giro_grande,angle,3
 desenfocada,girada,coincide_sin_angulo_fiable,angle,2
