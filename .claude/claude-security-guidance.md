@@ -20,5 +20,8 @@ Academic computer-vision project. Python code reads downloaded image datasets an
 
 - Paths: build them from `src.data.ROOT` / `BREMEN_ROOT`; read images with `cv2.imread` and check for `None`.
 - Data loading: `src.data.load_split()` for the split; never re-split ad hoc in notebooks.
+- Own capture: run `python -m src.anonymize <raw> <output>` before an image is used or shared; it never writes
+  into the raw folder. Only the official YOLOv8n weights downloaded by ultralytics are loaded: a `.pt` file is a
+  pickle and can run code, so never load weights from another source.
 - Webcam demo: local only (`cv2.VideoCapture`); do not save frames unless the capture protocol (docs/captura.md)
   allows it.
