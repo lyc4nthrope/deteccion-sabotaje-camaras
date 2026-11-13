@@ -73,3 +73,13 @@ Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mín
 - **Lo que sí contaminó el examen:** la corrida de aumentación y dropout (T63) se evaluó en la cámara no vista y su resultado (caída a 221 de 251 desenfocadas como normal) decidió no probar más variantes. Por eso el 0,58 de la cámara no vista debe leerse como una cifra ya mirada: es optimista si se compara con una selección hecha a ciegas.
 - **Sobreajuste:** con tasa 1e-2 la pérdida de validación sube después de la época 3 mientras la de entrenamiento baja (0,0002 frente a 0,007 al cortar). La parada temprana restaura la época 3, así que el modelo reportado no es el sobreajustado. Con tasa 1e-3 todavía no hay sobreajuste, pero la brecha crece.
 - **Atajos:** la validación no detecta que la red aprende el contexto de cada día de grabación (train, val y test comparten días). Es la explicación más probable de la caída en la cámara no vista. Queda pendiente demostrarlo con Grad-CAM (T67).
+
+## Explicabilidad con Grad-CAM (T67)
+
+Código: `src/explain_cnn.py` (`python -m src.explain_cnn`). Figuras: `results/figuras/gradcam_test.png` y `gradcam_camara_no_vista.png` (4 ejemplos por clase y conjunto, semilla fija). Atención media por clase y acierto: `results/cnn/lr1e-2_b32_frozen/gradcam_resumen.csv`. Interpretación completa en `notebooks/05_explicabilidad_cnn.ipynb`.
+
+- **Mira el centro, sin importar la clase.** El tercio medio de la imagen concentra entre 0,57 y 0,73 de la atención en todas las clases y en las dos cámaras; el tercio superior (el cielo), entre 0,01 y 0,30. La hipótesis del cielo no se sostiene, y no aparece una zona propia del sabotaje.
+- **No se puede afirmar que "mira el sabotaje".** En test la atención sigue el contenido de la escena (carretera y autos en las normales) o una mancha central en las desenfocadas y tapadas; en las tapadas es casi el mismo dibujo en imágenes distintas, probablemente un efecto de la estructura de la red (hipótesis no probada).
+- **Los errores de la cámara no vista son seguros:** probabilidad media de 0,86 en las desenfocadas mal clasificadas y 0,90 en las giradas mal clasificadas. Es cambio de dominio (otra escena y otra luz), no incertidumbre.
+- **La oscuridad no es la causa:** oscurecer las imágenes de la ubicación 1 casi no degrada la CNN (F1 0,993 con brillo × 0,3, `docs/auditoria.md`).
+- **Límites:** mapa grueso (7×7), una corrida y una semilla, solo la clase predicha; sin LIME ni SHAP.
