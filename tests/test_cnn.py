@@ -67,3 +67,29 @@ def test_model_unfreezes_the_last_layers_on_request():
     assert base.trainable is True
     assert any(layer.trainable for layer in base.layers[-5:])
     assert not any(layer.trainable for layer in base.layers[:-5])
+
+
+def test_parameter_counts_match_the_architecture_section_of_docs_cnn():
+    """docs/cnn.md (T65) quotes these numbers for the defense: if the model changes, the document must change."""
+    import numpy as np
+
+    model = cnn.build_model(weights=None)
+    count = lambda weights: sum(int(np.prod(w.shape)) for w in weights)
+    assert model.count_params() == 2_263_108
+    assert count(model.trainable_weights) == 5_124 == 1280 * len(cnn.CLASSES) + len(cnn.CLASSES)
+    assert count(model.non_trainable_weights) == 2_257_984
+
+
+def test_base_downsamples_by_32_with_five_stride_2_layers_and_ten_residual_blocks():
+    import tensorflow as tf
+
+    base = cnn.build_model(weights=None).layers[0]
+    strided = [
+        layer.output.shape[1]
+        for layer in base.layers
+        if isinstance(layer, (tf.keras.layers.Conv2D, tf.keras.layers.DepthwiseConv2D))
+        and tuple(layer.get_config()["strides"]) == (2, 2)
+    ]
+    assert strided == [112, 56, 28, 14, 7]  # 224 / 2**5 = 7
+    assert tuple(base.get_layer("out_relu").output.shape[1:]) == (7, 7, 1280)
+    assert sum(isinstance(layer, tf.keras.layers.Add) for layer in base.layers) == 10
