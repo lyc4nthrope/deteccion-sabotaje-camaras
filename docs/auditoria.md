@@ -128,7 +128,15 @@ Tiempo por cuadro (mediana de las condiciones): clásico 12,4 ms, CNN 51,9 ms.
 robusta en todo**: con sal y pimienta da muchas falsas alarmas (22 a 34 %) y con JPEG fuerte cae a 0,575, donde el
 clásico resiste. Y la mediana arregla la sal y pimienta del clásico (sección 4), algo que la CNN no tiene.
 
-## 6. Pendiente
+## 6. Matrices cruzadas, ROC y F1 frente a severidad (T72–T74)
 
-- **T72–T74:** matrices de confusión cruzadas, curvas ROC por condición y F1 frente a severidad, comparando ambos
-  modelos.
+Código: `src/audit_figures.py` (`python -m src.audit_figures`, solo lee los resultados ya calculados). Figuras en
+`results/figuras/`: `auditoria_matrices.png` (cada modelo en la original y en el nivel 3 de cada perturbación;
+conteos en `results/auditoria/matrices_cruzadas.csv`), `auditoria_roc.png` y `auditoria_f1_severidad.png`. La
+interpretación completa está en `notebooks/06_auditoria.ipynb`.
+
+- **El AUC casi no cae aunque el F1 sí:** en 36 de las 38 combinaciones de modelo y condición el AUC es ≥ 0,96. Los dos
+  modelos siguen detectando **que** hay sabotaje; lo que fallan es el **tipo**. Las excepciones son la CNN con sal y
+  pimienta (0,94 en el nivel 2 y 0,87 en el nivel 3), que coinciden con sus falsas alarmas.
+- **Hacia dónde se equivocan:** con ruido, el clásico manda casi todo a "girada" (Laplaciano inflado y sin
+  coincidencias); la CNN con JPEG 3 manda 28 desenfocadas y 50 tapadas a "girada".
