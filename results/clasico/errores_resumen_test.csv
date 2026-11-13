@@ -1,0 +1,3 @@
+label,pred,regla,descriptor_decisivo,n
+girada,normal,coincide_y_giro_dentro_del_limite,angle,2
+normal,girada,sin_coincidencias_y_nitida,lap_var,1

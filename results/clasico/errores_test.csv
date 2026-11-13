@@ -1,0 +1,4 @@
+path,label,pred,regla,resultado,descriptor_decisivo,valor,umbral,margen
+Location1_Normal/image_2024-07-17_12-13-09.jpg,normal,girada,sin_coincidencias_y_nitida,girada,lap_var,672.229,18.856,653.373
+Location1_Rotated/image_2024-08-24_20-57-07.jpg,girada,normal,coincide_y_giro_dentro_del_limite,normal,angle,0.122,0.94,-0.817
+Location1_Rotated/image_2024-08-24_20-57-09.jpg,girada,normal,coincide_y_giro_dentro_del_limite,normal,angle,0.281,0.94,-0.659
