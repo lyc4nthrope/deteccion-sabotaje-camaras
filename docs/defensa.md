@@ -43,8 +43,9 @@ Entonces, para una imagen desenfocada (nitidez propia ≈ 4,7):
 | 15 | 2016 | 2019 |
 | 30 | 8050 | 8051 |
 
-**Consecuencia:** basta σ ≥ **1,45** niveles de gris (ruido casi invisible) para que la nitidez supere el umbral de
-18,9 y una imagen desenfocada o tapada parezca nítida.
+**Consecuencia:** una imagen desenfocada cruza el umbral de 18,9 con σ ≈ **1,26** niveles de gris, ruido casi
+invisible: 4,7 + 8,94 × 1,26² ≈ 18,9. El ruido solo, sin contar la nitidez propia de la imagen, lo cruza con σ ≈ 1,45.
+Desde ese punto una imagen desenfocada o tapada parece nítida.
 
 ### 2.2 El brillo escala el Laplaciano al cuadrado
 
@@ -89,7 +90,7 @@ una tapada de 2,5 a 24,1, por encima de 18,9. El clásico las cree nítidas y la
 |---|---|---|
 | **Apaga la luz o tapa la lámpara** | Las coincidencias bajan pero el clásico casi siempre sigue diciendo "normal"; en oscuridad extrema puede dar alarma | "El Laplaciano escala con g² y ORB pierde puntos por bajo contraste, pero la decisión normal/saboteada usa las coincidencias contra las referencias de esta cámara. Si cae demasiado, CLAHE o gamma inversa lo recuperan (0,84 → 0,95)" |
 | **Le pone una linterna o contraluz** | Algunas normales pasan a "girada" | "La saturación en 255 borra textura y ORB pierde coincidencias (214 → 37). Se corrige con la inversa del brillo, aunque lo saturado ya no se recupera" |
-| **Agrega ruido digital** | Las desenfocadas y tapadas pasan a "girada" | "El ruido infla el Laplaciano: varianza ≈ 4,7 + 8,94 σ². Con σ = 5 da 228; medimos 231. Basta σ = 1,45 para cruzar el umbral. Se corrige con bilateral o mediana antes de medir la nitidez" |
+| **Agrega ruido digital** | Las desenfocadas y tapadas pasan a "girada" | "El ruido infla el Laplaciano: varianza ≈ 4,7 + 8,94 σ². Con σ = 5 da 228; medimos 231. Basta σ ≈ 1,3 para cruzar el umbral. Se corrige con bilateral o mediana antes de medir la nitidez" |
 | **Tapa la cámara con la mano** | **No medido** (Bremen no tiene tapas con la mano; se prueba con la captura propia, T81) | Hipótesis: "Sin coincidencias y sin bordes; la piel es un solo tono, así que la dispersión del matiz es baja y sale tapada. Si la mano deja pasar luz con textura, podría salir desenfocada". Confirmarlo en el ensayo (T94) |
 | **Gira o mueve la cámara** | Pocas coincidencias, o ángulo > 0,94° | "Si apunta a otra escena, las coincidencias contra las referencias caen; si el giro es parcial, RANSAC estima el ángulo y supera 0,94°, el percentil 99 de las normales" |
 | **"¿Por qué no usaron solo la CNN?"** | — | "En test la CNN rinde igual (F1 0,967 frente a 0,954), pero en una cámara nunca vista cae a 0,58 y el clásico se mantiene en 0,92. Todo modelo que aprende de una sola cámara memoriza esa cámara; las reglas deciden con señales relativas a la cámara" |
