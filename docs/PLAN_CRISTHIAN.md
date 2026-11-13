@@ -200,7 +200,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 - [ ] **T90 ⛔ P1** Diagnóstico de los fallos del clásico: qué descriptor se altera con cada perturbación y por qué.
   - **Esperas a:** Santiago (T76, prueba regional en Medellín; T77, robustez de descriptores); tus tareas T74 y T75.
-- [ ] **T92 ⛔ P1** Re-evaluar con las correcciones: tabla antes y después.
+- [x] **T92 ⛔ P1** Re-evaluar con las correcciones: tabla antes y después.
   - **Esperas a:** Santiago (T91, correcciones).
   - **Entregable:** `results/defensa/`.
 
@@ -237,6 +237,6 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [ ] **T93 ⛔ P1** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte del clásico.
 - [ ] **T94 🟢 P1** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere T85 de Santiago).
 - [x] **T100 🟢 P1** Estructura del informe en `informe/` (tuya).
-- [ ] **T101 🟢 P1** Tus secciones del informe: contexto regional (a partir de T06), datos, clásico y auditoría.
+- [x] **T101 🟢 P1** Tus secciones del informe: contexto regional (a partir de T06), datos, clásico y auditoría.
 - [ ] **T102 🟢 P1** Presentación.
 - [ ] **T103 ⛔ P1** Revisión cruzada final: revisas las secciones de Santiago.

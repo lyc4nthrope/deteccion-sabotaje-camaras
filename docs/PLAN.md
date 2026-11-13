@@ -282,7 +282,7 @@ de la rúbrica (tiempo por frame y tasa de falsos positivos).
 | T41 | Calibrar los umbrales con train (percentiles de las normales) y justificarlos con una gráfica | Cristhian | T40 | ⛔ | `results/clasico/umbrales.json` y figura | Cada umbral tiene su gráfica y su justificación | ✅ |
 | T42 | Puntaje continuo de sabotaje para poder trazar la ROC | Cristhian | T41 | ⛔ (para T71) | `src/classic.py` | El puntaje es mayor, en promedio, para las saboteadas que para las normales | ✅ |
 | T43 | Evaluar en val (ajuste) y luego una sola vez en test y en la cámara no vista: matriz, F1, tasa de falsos positivos y tiempo por frame | Cristhian | T19, T25, T42 | ⛔ | `results/clasico/` | Las métricas de test quedan guardadas | ✅ |
-| T44 | Análisis de errores con las imágenes mal clasificadas y su causa | Santiago | T43 | 🟢 | `notebooks/04_clasico.ipynb` | Cada tipo de error tiene ejemplos y causa escrita | ⬜ |
+| T44 | Análisis de errores con las imágenes mal clasificadas y su causa | Santiago | T43 | 🟢 | `notebooks/04_clasico.ipynb` | Cada tipo de error tiene ejemplos y causa escrita | En curso: entregado en el PR #10, aprobado; falta fusionarlo |
 | T45 | Clasificadores supervisados KNN, SVM y Naive Bayes (clase 20, D15) entrenados sobre los vectores de descriptores ya calculados (`results/clasico/descriptores_*.csv`), con estandarización de características (KNN y SVM se basan en distancias y son sensibles a la escala). Hiperparámetros elegidos con `GroupKFold` por la columna `block` solo sobre train; evaluar en val, test y la cámara no vista con `src/metrics.py`; comparar con las reglas (T43) y después con la CNN (T64): F1, tasa de falsos positivos y tiempo por frame. **No usar la cámara no vista para elegir hiperparámetros** | Cristhian | T35, T43 | 🟢 | `src/ml_clasico.py`, `tests/test_ml_clasico.py`, `results/clasico/clasificadores.csv`, sección en `docs/clasico.md` | `pytest` pasa; la tabla compara los tres clasificadores con las reglas en val, test y cámara no vista; los pliegues de `GroupKFold` no comparten bloques | ✅ (#16) |
 
 ### Fase 6. MATLAB (opcional)
@@ -342,7 +342,7 @@ principal frente al artículo de referencia y la base de la defensa.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T70 | Generar los conjuntos de prueba degradados (test × perturbación × nivel) | Cristhian | T14, T20 | ⛔ | Conjuntos degradados (no versionados) y su script | El número de imágenes coincide con test × 6 × 3 (6 tipos: brillo oscuro y claro por separado, D7) | ✅ |
-| T71 | Ejecutar ambos modelos en cada condición: tabla de F1, tasa de falsos positivos y tiempo | Cristhian | T19, T43, T64, T70 | ⛔ | `results/auditoria/tabla.csv` | La tabla cubre todas las condiciones y ambos modelos | En curso: módulo clásico hecho (`docs/auditoria.md`); falta la CNN. El #11 ya está en `main`, pero el modelo no se versiona: hay que reentrenarlo (`python -m src.train_cnn`) o recibir el archivo `model.keras` |
+| T71 | Ejecutar ambos modelos en cada condición: tabla de F1, tasa de falsos positivos y tiempo | Cristhian | T19, T43, T64, T70 | ⛔ | `results/auditoria/tabla.csv` | La tabla cubre todas las condiciones y ambos modelos | En curso: clásico en `main` (`docs/auditoria.md`); la CNN está en el PR #29 (en revisión), con el modelo reentrenado con la misma semilla |
 | T72 | Matrices de confusión cruzadas (modelo × condición crítica) | Cristhian | T71 | ⛔ | `results/auditoria/` | Una matriz por modelo y condición crítica | ⬜ |
 | T73 | Curvas ROC por condición y curvas de F1 frente a severidad | Cristhian | T71 | ⛔ | `results/auditoria/` | Las curvas quedan guardadas | ⬜ |
 | T74 | Notebook de auditoría con la interpretación de los resultados | Cristhian | T72, T73 | ⛔ (para T90) | `notebooks/06_auditoria.ipynb` | Cada condición crítica tiene su interpretación escrita | ⬜ |
@@ -357,10 +357,10 @@ qué falla el modelo y qué filtro lo corrige, con la mejora medida.
 
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
-| T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
+| T90 | Diagnóstico de cada fallo: qué descriptor o canal se altera y por qué (Cristhian: clásico; Santiago: CNN) | Ambos | T74, T75, T76 | ⛔ | Notas en `docs/defensa.md` | Cada fallo tiene su causa escrita | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN (sus resultados están en el PR #29) |
 | T91 | Correcciones: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral | Santiago | T20 | ⛔ (para T92) | `src/corrections.py` | Pruebas: conserva forma y `dtype` | ✅ (#7, #18) |
-| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | En curso: hecho salvo brillo claro; la corrección de sobreexposición ya está en `main` (#18), falta volver a correr `python -m src.corrections_audit` y actualizar `docs/auditoria.md`, sección 4 |
-| T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN |
+| T92 | Re-evaluar con las correcciones: tabla antes y después | Cristhian | T71, T91 | ⛔ | `results/defensa/` | Tabla antes/después por perturbación | ✅ (#20, #28) |
+| T93 | Guía de defensa: ataque → síntoma → causa matemática → filtro → mejora medida | Ambos | T83, T90, T92 | ⛔ | `docs/defensa.md` | Cubre todas las perturbaciones de D7 | En curso: parte del clásico hecha (`docs/defensa.md`); falta la CNN (sus resultados están en el PR #29) |
 | T94 | Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa | Ambos | T85, T93 | 🟢 | — | Ambos explican cualquier ataque sin leer | ⬜ |
 
 ### Fase 11. Informe y presentación
@@ -370,7 +370,7 @@ Consolidar todo en el informe técnico y la presentación final.
 | ID | Tarea | Responsable | Depende de | Tipo | Entregable | Verificación | Estado |
 |---|---|---|---|---|---|---|---|
 | T100 | Estructura del informe | Cristhian | T01 | 🟢 | `informe/` | Índice con todas las secciones | ✅ |
-| T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | En curso: borradores de Cristhian en los PR #23, #24 y #25; faltan las secciones de Santiago |
+| T101 | Redactar secciones: contexto regional (con la nota aprobada por la profesora), datos, clásico y auditoría (Cristhian); perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo (Santiago) | Ambos | T06, T76, T100 | 🟢 | `informe/` | Cada sección con sus figuras y métricas | En curso: secciones de Cristhian en `main` (#23, #24, #25); faltan las de Santiago |
 | T102 | Presentación | Ambos | T101 | 🟢 | `informe/` | Presentación completa | ⬜ |
 | T103 | Revisión cruzada final | Ambos | T93, T101, T102 | ⛔ (entrega) | — | Cada uno revisa las secciones del otro | ⬜ |
 
