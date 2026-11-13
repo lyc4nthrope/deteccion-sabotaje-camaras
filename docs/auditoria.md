@@ -105,8 +105,38 @@ Filtros aplicados a las imágenes **limpias** (sin ataque), F1 0,954 sin filtro:
    ningún filtro posterior la recupera; la defensa está en la captura (exposición automática de la cámara). En los
    niveles 1 y 2 el ataque casi no afecta al clásico (F1 0,971 y 0,966, frente a 0,954 sin ataque).
 
-## 5. Pendiente
+## 5. CNN frente al clásico (T71)
 
-- **CNN:** el mismo conjunto degradado, con `audit.degrade`, cuando se una el PR #11 (T64).
-- **T72–T74:** matrices de confusión cruzadas, curvas ROC por condición y F1 frente a severidad, comparando ambos
-  modelos.
+Código: `src/audit_cnn.py` (`python -m src.audit_cnn --run <corrida>`). Mismas 327 imágenes y mismas 19 condiciones,
+con la misma degradación y semilla que el clásico (una prueba lo comprueba píxel a píxel); la imagen degradada se
+reduce a 224×224 como en `cnn.load_images`. Resultados: filas `cnn` de `results/auditoria/tabla.csv` y
+`predicciones_cnn_test_degradado.csv`. En la original la CNN da F1 0,967, igual que en `results/cnn/` (T64).
+
+| Ataque | Nivel | F1 clásico | F1 CNN | Falsas alarmas clásico / CNN |
+|---|---|---|---|---|
+| original | — | 0,954 | 0,967 | 0,5 % / 0,0 % |
+| brillo oscuro | 3 | 0,842 | **0,993** | 2,7 % / 0,0 % |
+| brillo claro | 3 | 0,852 | **0,935** | 5,5 % / 0,5 % |
+| gamma | 3 | 0,599 | **0,820** | 18,7 % / 0,0 % |
+| ruido gaussiano | 1 / 2 / 3 | 0,266 / 0,278 / 0,277 | **0,985 / 0,764** / 0,416 | ≈ 1 % / ≈ 1 % |
+| sal y pimienta | 1 / 2 / 3 | 0,278 / 0,267 / 0,232 | 0,694 / 0,244 / 0,221 | 0,5 / 7,7 / 27,5 % / **22,0 / 25,3 / 33,5 %** |
+| JPEG | 3 | **0,903** | 0,575 | 2,2 % / 0,5 % |
+
+Tiempo por cuadro (mediana de las condiciones): clásico 12,4 ms, CNN 51,9 ms.
+
+**Lectura:** la CNN resiste mucho mejor la luz y el ruido gaussiano, y casi no da falsas alarmas, pero **no es más
+robusta en todo**: con sal y pimienta da muchas falsas alarmas (22 a 34 %) y con JPEG fuerte cae a 0,575, donde el
+clásico resiste. Y la mediana arregla la sal y pimienta del clásico (sección 4), algo que la CNN no tiene.
+
+## 6. Matrices cruzadas, ROC y F1 frente a severidad (T72–T74)
+
+Código: `src/audit_figures.py` (`python -m src.audit_figures`, solo lee los resultados ya calculados). Figuras en
+`results/figuras/`: `auditoria_matrices.png` (cada modelo en la original y en el nivel 3 de cada perturbación;
+conteos en `results/auditoria/matrices_cruzadas.csv`), `auditoria_roc.png` y `auditoria_f1_severidad.png`. La
+interpretación completa está en `notebooks/06_auditoria.ipynb`.
+
+- **El AUC casi no cae aunque el F1 sí:** en 36 de las 38 combinaciones de modelo y condición el AUC es ≥ 0,96. Los dos
+  modelos siguen detectando **que** hay sabotaje; lo que fallan es el **tipo**. Las excepciones son la CNN con sal y
+  pimienta (0,94 en el nivel 2 y 0,87 en el nivel 3), que coinciden con sus falsas alarmas.
+- **Hacia dónde se equivocan:** con ruido, el clásico manda casi todo a "girada" (Laplaciano inflado y sin
+  coincidencias); la CNN con JPEG 3 manda 28 desenfocadas y 50 tapadas a "girada".
