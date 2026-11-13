@@ -1,0 +1,12 @@
+conjunto,label,acierto,centro_x,centro_y,tercio_superior,tercio_medio,tercio_inferior,concentracion,prob,n
+camara_no_vista,desenfocada,False,0.427,0.573,0.053,0.725,0.223,0.192,0.864,171
+camara_no_vista,desenfocada,True,0.451,0.568,0.102,0.649,0.249,0.265,0.805,80
+camara_no_vista,girada,False,0.419,0.578,0.095,0.619,0.286,0.134,0.901,102
+camara_no_vista,girada,True,0.467,0.614,0.051,0.611,0.338,0.187,0.774,65
+camara_no_vista,normal,False,0.504,0.474,0.23,0.63,0.14,0.186,0.69,31
+camara_no_vista,normal,True,0.491,0.636,0.012,0.642,0.346,0.146,0.949,714
+test,desenfocada,True,0.549,0.492,0.177,0.673,0.15,0.106,1.0,68
+test,girada,False,0.495,0.532,0.102,0.699,0.199,0.166,0.825,2
+test,girada,True,0.487,0.433,0.299,0.572,0.129,0.06,0.796,7
+test,normal,True,0.617,0.593,0.068,0.647,0.285,0.14,0.999,182
+test,tapada,True,0.47,0.51,0.129,0.717,0.155,0.104,1.0,68
