@@ -126,16 +126,15 @@ def pick_examples(table: pd.DataFrame, per_class: int = 4, seed: int = 0) -> pd.
 # ---------------------------------------------------------------- figures and run
 
 
-def explain_table(model, table: pd.DataFrame) -> pd.DataFrame:
-    """Grad-CAM of the predicted class for every image of the table, with its prediction and attention stats."""
+def explain_table(model, table: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
+    """Grad-CAM of the predicted class for every image: a table (prediction, attention stats) and the heat maps."""
     images = cnn.load_images(table["path"].tolist())
     result = grad_cam(model, images)
     out = table[["path", "label"]].reset_index(drop=True).copy()
     out["pred"] = [cnn.CLASSES[i] for i in result["pred"]]
     out["prob"] = result["proba"].max(axis=1)
     out = pd.concat([out, attention_stats(result["heatmaps"])], axis=1)
-    out.attrs["heatmaps"] = result["heatmaps"]
-    return out
+    return out, result["heatmaps"]
 
 
 def plot_grid(rows: list[tuple[str, pd.DataFrame, np.ndarray]], per_row: int, title: str):
@@ -184,8 +183,7 @@ def main() -> None:
 
     summaries = []
     for name, table in sets.items():
-        explained = explain_table(model, table)
-        heat = explained.attrs["heatmaps"]
+        explained, heat = explain_table(model, table)
         explained["conjunto"] = name
         explained["acierto"] = explained["label"] == explained["pred"]
         summaries.append(explained)
