@@ -98,3 +98,41 @@ def test_every_kept_group_keeps_images_left_to_evaluate():
     out = G.assign_groups(_inventory({1: 10, 2: 30}), min_size=10, n_refs=8)
     kept = out[out["conservado"]]
     assert (kept.groupby("cluster")["es_referencia"].apply(lambda s: (~s).sum()) >= 2).all()
+
+
+# ---------------------------------------------------------------- do the references match their group?
+
+
+class _FakeMatcher:
+    """Stands in for ReferenceMatcher: 30 matches when the image has the same marker as the references, else 2."""
+
+    def __init__(self, references_gray):
+        self.marker = int(references_gray[0][0, 0])
+
+    def match(self, gray):
+        return {"orb_matches": 30 if int(gray[0, 0]) == self.marker else 2}
+
+
+def _loader(markers: dict[str, int]):
+    return lambda name: np.full((360, 640), markers[name], np.uint8)
+
+
+def test_match_rate_is_one_when_every_image_matches_the_references_of_its_group():
+    groups = G.assign_groups(_inventory({1: 20}), min_size=10, n_refs=8)
+    rates = G.match_rate_per_group(groups, _loader({n: 7 for n in groups["archivo"]}), _FakeMatcher, match_min=12.5)
+    assert rates.loc[1, "tasa"] == pytest.approx(1.0) and rates.loc[1, "evaluadas"] == 12
+
+
+def test_match_rate_drops_when_a_group_mixes_two_scenes():
+    groups = G.assign_groups(_inventory({1: 20}), min_size=10, n_refs=8)
+    ordered = groups.sort_values("instante")
+    foreign = ordered[~ordered["es_referencia"]].head(6)["archivo"]
+    markers = {n: (99 if n in set(foreign) else 7) for n in groups["archivo"]}
+    rates = G.match_rate_per_group(groups, _loader(markers), _FakeMatcher, match_min=12.5)
+    assert rates.loc[1, "tasa"] == pytest.approx(0.5)
+
+
+def test_match_rate_samples_at_most_the_requested_images_and_skips_discarded_groups():
+    groups = G.assign_groups(_inventory({1: 50, 2: 5}), min_size=10, n_refs=8)
+    rates = G.match_rate_per_group(groups, _loader({n: 7 for n in groups["archivo"]}), _FakeMatcher, sample=10)
+    assert list(rates.index) == [1] and rates.loc[1, "evaluadas"] == 10

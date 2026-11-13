@@ -133,3 +133,35 @@ Código: `src/synthetic_tampering.py`. Cada imagen normal produce 4 variantes (`
 - **La zona nueva de la girada es un reflejo**, no una escena nueva: tiene textura pero sus puntos no coinciden con la referencia, que es lo que haría una parte de la escena que no se vio. No es una escena real.
 - **La `tapada_parcial` casi nunca se llama «tapada» con las reglas del clásico:** el resto de la escena que queda visible es nítido y no coincide con la referencia, así que cae en «girada». Esta clase se evalúa como **sabotaje frente a normal** (la prueba exige que no se llame «normal» más del 10 % de las veces), no por su etiqueta.
 - Sigue siendo sabotaje sintético: mide la generalización a otras cámaras, no la apariencia de un sabotaje real.
+
+## 7. Cámaras de Medellín por clustering (T17b)
+
+El nombre de archivo no identifica la cámara (sección 6), así que se recupera con clustering no supervisado
+(clase 20, D15). Código: `src/medellin_groups.py`; se reproduce con `python -m src.medellin_groups`.
+
+- **Descriptor:** miniatura en gris de 32×18 estandarizada (media 0, varianza 1). Estandarizar hace que la vista de
+  día y la de noche de una misma escena queden cerca; el color y los vehículos (que cambian) pesan poco frente a la
+  estructura fija de la calle.
+- **Método:** clustering jerárquico de Ward sobre las 6324 imágenes. Dendrograma y curva de altura de fusión en
+  `results/figuras/medellin_dendrograma.png`; silhouette y acuerdo con el grupo por nombre para k = 20 a 160 en
+  `results/medellin_k.csv`.
+- **Número de grupos: k = 80.** Es el número de cámaras que declara el dataset. Los datos no lo imponen: el
+  silhouette baja de forma continua con k (0,154 con 20, 0,086 con 80) y la curva de fusiones no tiene una rodilla
+  clara cerca de 80 (se aplana desde k ≈ 25). Se eligió 80 porque con 100 o más grupos ya aparecen grupos de menos de
+  10 imágenes que hay que descartar (8 imágenes con k = 100, 78 con k = 160), mientras que con 80 no se descarta
+  ninguna y la coincidencia con las referencias casi no mejora al subir k (en una corrida exploratoria, no guardada:
+  93,1 % con k = 40, 94,5 % con 80 y 96,9 % con 160).
+- **Referencias:** 8 por grupo, repartidas en el tiempo como en `calibration_split`: 640 en total. Cada grupo
+  conserva al menos 10 imágenes; con k = 80 no se descarta ninguna. Lista en `data/splits/medellin_grupos.csv`.
+- **Verificación objetiva:** qué parte de las imágenes de cada grupo (hasta 20 por grupo) coincide por ORB con las
+  referencias de su propio grupo (`orb_matches` ≥ 12,5, el umbral del clásico). Global: **94,5 %**.
+- **Verificación visual:** montaje de 12 grupos al azar (semilla 0). La mayoría son una sola cámara, con dos
+  problemas: el grupo 52 mezcla escenas distintas y los grupos 2, 4 y 6 parecen ser la misma cámara partida en
+  tres. Partir de más es inofensivo (cada trozo conserva sus propias referencias); mezclar cámaras es lo dañino.
+  El montaje no se versiona porque muestra peatones (Ley 1581 de 2012): se genera en `data/medellin_grupos_muestra.png`.
+- **Grupos dudosos:** 7 grupos tienen una tasa de coincidencia menor de 70 % (11, 25, 47, 49, 52, 61 y 69; 327
+  imágenes) y quedan con `confiable = False`. Quedan **73 grupos confiables (5997 imágenes)**. T76 debe usar solo
+  `confiable = True`.
+- **Límite:** la tasa de coincidencia no prueba que un grupo sea de una sola cámara: si un grupo mezcla escenas, sus
+  8 referencias repartidas en el tiempo pueden cubrir varias y la tasa sale alta. Solo se miró a mano una muestra
+  de 12 grupos.

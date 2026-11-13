@@ -20,11 +20,12 @@ import pandas as pd
 from scipy.cluster.hierarchy import fcluster, linkage
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 
-from src import data
+from src import data, features
 
 THUMB = (32, 18)  # width, height
 MIN_GROUP = 10
 N_REFERENCES = 8
+MIN_MATCH_RATE = 0.7  # below this share of ORB matches with its own references a group is flagged as doubtful
 CHOSEN_K = 80  # set after reading results/medellin_k.csv and the dendrogram (see docs/datos.md, section 7)
 CANDIDATE_K = [20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160]
 
@@ -97,6 +98,31 @@ def assign_groups(inventory: pd.DataFrame, min_size: int = MIN_GROUP, n_refs: in
     return out.sort_values(["cluster", "instante"]).reset_index(drop=True)
 
 
+def match_rate_per_group(
+    groups: pd.DataFrame, load_gray, matcher_cls=features.ReferenceMatcher, sample: int = 20, match_min: float = 12.5
+) -> pd.DataFrame:
+    """Share of each kept group's images that match the group's own references (what the classic module needs).
+
+    `load_gray(name)` returns the 640x360 gray image. At most `sample` non-reference images per group, evenly
+    spaced in time, are matched against the 8 references; a match counts when orb_matches >= match_min.
+    A group that mixes cameras shows a low rate because its references belong to only one of them.
+    """
+    rows = {}
+    for cluster, group in groups[groups["conservado"]].sort_values("instante").groupby("cluster"):
+        refs = group[group["es_referencia"]]["archivo"]
+        rest = group[~group["es_referencia"]]["archivo"].tolist()
+        if len(rest) > sample:
+            rest = [rest[i] for i in np.linspace(0, len(rest) - 1, sample).round().astype(int)]
+        matcher = matcher_cls([load_gray(name) for name in refs])
+        hits = sum(matcher.match(load_gray(name))["orb_matches"] >= match_min for name in rest)
+        rows[cluster] = {"evaluadas": len(rest), "tasa": hits / len(rest) if rest else float("nan")}
+    return pd.DataFrame.from_dict(rows, orient="index").rename_axis("cluster")
+
+
+def _load_gray(name: str) -> np.ndarray:
+    return features.preprocess(features.load_image(IMAGES / name))["gray"]
+
+
 def load_inventory() -> pd.DataFrame:
     inv = pd.read_csv(INVENTORY, dtype={"fecha": str, "hora": str})
     inv["instante"] = inv["fecha"] + inv["hora"]
@@ -116,8 +142,13 @@ def main() -> None:
 
     inventory["cluster"] = cut_tree(tree, CHOSEN_K)
     groups = assign_groups(inventory)
+    rates = match_rate_per_group(groups, _load_gray)
+    groups["tasa_orb_grupo"] = groups["cluster"].map(rates["tasa"])
+    groups["confiable"] = groups["conservado"] & (groups["tasa_orb_grupo"] >= MIN_MATCH_RATE)
+    print(f"ORB match rate with the group's own references: {(rates.tasa * rates.evaluadas).sum() / rates.evaluadas.sum():.3f}")
+    print(f"doubtful groups (< {MIN_MATCH_RATE:.0%}):", rates[rates["tasa"] < MIN_MATCH_RATE].round(2).to_dict("index"))
     data.SPLITS_DIR.mkdir(parents=True, exist_ok=True)
-    groups[["archivo", "grupo_nombre", "cluster", "instante", "conservado", "es_referencia"]].to_csv(
+    groups[["archivo", "grupo_nombre", "cluster", "instante", "conservado", "es_referencia", "tasa_orb_grupo", "confiable"]].to_csv(
         GROUPS_CSV, index=False
     )
     kept = groups[groups["conservado"]]
