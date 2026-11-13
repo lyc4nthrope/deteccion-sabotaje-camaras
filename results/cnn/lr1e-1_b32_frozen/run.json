@@ -1,0 +1,14 @@
+{
+  "name": "lr1e-1_b32_frozen",
+  "learning_rate": 0.1,
+  "batch": 32,
+  "trainable_layers": 0,
+  "augment": false,
+  "dropout": 0.2,
+  "epochs_run": 9,
+  "best_epoch": 6,
+  "best_val_loss": 0.0,
+  "best_val_accuracy": 1.0,
+  "seconds": 305.9,
+  "seed": 0
+}
