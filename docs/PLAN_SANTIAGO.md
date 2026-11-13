@@ -110,7 +110,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 5. Clásico (tu parte)
 
-- [ ] **T44 🟢 P2** `notebooks/04_clasico.ipynb`: análisis de errores del módulo clásico.
+- [x] **T44 🟢 P2** `notebooks/04_clasico.ipynb`: análisis de errores del módulo clásico.
   - **Esperas a:** Cristhian (T43, evaluación del clásico).
   - **Qué hacer:** mostrar las imágenes mal clasificadas, agruparlas por tipo de error y escribir la causa (qué descriptor falló).
   - **Cómo verificar:** cada tipo de error tiene ejemplos y causa escrita.

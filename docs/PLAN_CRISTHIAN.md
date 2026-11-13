@@ -182,12 +182,12 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 - [x] **T70 ⛔ P1** Conjuntos de prueba degradados (test × perturbación × nivel).
   - **Esperas a:** Santiago (T20, perturbaciones).
   - **Cómo verificar:** el número de imágenes coincide con test × 6 × 3 (brillo oscuro y claro por separado).
-- [ ] **T71 ⛔ P1** Ejecutar ambos modelos en cada condición: F1, tasa de falsos positivos y tiempo.
+- [x] **T71 ⛔ P1** Ejecutar ambos modelos en cada condición: F1, tasa de falsos positivos y tiempo.
   - **Esperas a:** Santiago (T64, CNN evaluada).
   - **Entregable:** `results/auditoria/tabla.csv`.
-- [ ] **T72 ⛔ P1** Matrices de confusión cruzadas (modelo × condición crítica).
-- [ ] **T73 ⛔ P1** Curvas ROC por condición y F1 frente a severidad.
-- [ ] **T74 ⛔ P1** `notebooks/06_auditoria.ipynb` con la interpretación.
+- [x] **T72 ⛔ P1** Matrices de confusión cruzadas (modelo × condición crítica).
+- [x] **T73 ⛔ P1** Curvas ROC por condición y F1 frente a severidad.
+- [x] **T74 ⛔ P1** `notebooks/06_auditoria.ipynb` con la interpretación.
   - **Cómo verificar:** cada condición crítica tiene su interpretación (incluida la confusión "oscura ↔ tapada").
   - **Quién te espera:** Santiago (T90, diagnóstico de la CNN).
 - [ ] **T75 ⛔ P2** Auditoría física.
