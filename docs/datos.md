@@ -110,11 +110,11 @@ ubicación 1.
 ## 6. Subconjunto normal de Medellín (T17)
 
 - Fuente: `PedestrianDataSet.zip` (Zenodo, CC BY 4.0). Inventario en `results/inventario_medellin.csv`: 6324 imágenes de 1280×720.
-- Cámara: la cámara **no** se conoce con certeza. Se usa el número `N` de `imagenN_AAAAMMDD_HHMMSS.jpg` como grupo, pero hay 55 grupos y 22 de ellos tienen entre 1 y 4 imágenes.
-- Criterio: ~600 imágenes en total, repartidas por grupo con un tope por grupo (reparto equitativo; los grupos pequeños aportan todas sus imágenes). Dentro de cada grupo, las imágenes se toman a intervalos regulares en el tiempo.
-- Resultado: 600 imágenes en los 55 grupos, sin duplicados. Lista en `data/splits/medellin_normales.csv`. Código en `src/medellin.py`.
+- Cámara: la cámara **no** se conoce con certeza. El número `N` de `imagenN_AAAAMMDD_HHMMSS.jpg` no sirve como grupo (55 grupos, 22 de ellos con 1 a 4 imágenes), así que la cámara se recupera con clustering (sección 7) y el grupo es el **cluster**.
+- Criterio: ~600 imágenes en total, repartidas por cluster con un tope por grupo (reparto equitativo), a intervalos regulares en el tiempo dentro de cada grupo, **solo de grupos confiables, nunca una referencia de su grupo y ninguna a menos de 10 minutos de una referencia** (una imagen comparada consigo misma o con una casi idéntica sale «normal» seguro). Una primera versión agrupaba por nombre y dejó 116 de las 600 como referencias (reseña del #31).
+- Resultado: 600 imágenes en 72 grupos, sin duplicados: de 5413 candidatas (confiables y no referencia), 492 se descartan por estar a menos de 10 minutos de una referencia, y la selección queda a 10 minutos o más (mediana 166 minutos). Un grupo confiable (el 46) queda sin candidatas. Lista en `data/splits/medellin_normales.csv`; `python -m src.medellin` la regenera desde `medellin_grupos.csv`; una prueba comprueba que no hay referencias en la lista.
 - **Pendiente:** excluir imágenes con personas identificables en primer plano. Esto no se ha revisado a mano y no es automatizable de forma fiable; se documenta como limitación antes de publicar cualquier figura.
-- Riesgo ORB: las referencias de la misma cámara (T33) no se pueden garantizar con el nombre de archivo. **Sin resolver:** el clásico necesita referencias de la misma cámara para decidir "normal" (T33). Medellín todavía no tiene referencias por cámara, así que esta selección no basta para T76. Hough sin referencias no está implementado.
+- Riesgo ORB: el clásico necesita referencias de la misma cámara (T33). Se resuelve con el clustering de la sección 7 (8 referencias por grupo), con los límites que ahí se dicen. La alternativa de la orientación de Hough sin referencias **no está implementada**.
 
 ### 6.1 Sabotaje sintético de Medellín (T18)
 
@@ -149,12 +149,14 @@ El nombre de archivo no identifica la cámara (sección 6), así que se recupera
   silhouette baja de forma continua con k (0,154 con 20, 0,086 con 80) y la curva de fusiones no tiene una rodilla
   clara cerca de 80 (se aplana desde k ≈ 25). Se eligió 80 porque con 100 o más grupos ya aparecen grupos de menos de
   10 imágenes que hay que descartar (8 imágenes con k = 100, 78 con k = 160), mientras que con 80 no se descarta
-  ninguna y la coincidencia con las referencias casi no mejora al subir k (en una corrida exploratoria, no guardada:
-  93,1 % con k = 40, 94,5 % con 80 y 96,9 % con 160).
+  ninguna y la tasa de coincidencia ORB con las referencias propias casi no mejora al subir k: 93,1 % con k = 40,
+  94,1 % con 60, 94,5 % con 80, 95,2 % con 100, 96,2 % con 120 y 96,9 % con 160 (columna `tasa_orb_propia` de
+  `results/medellin_k.csv`, que `python -m src.medellin_groups` regenera).
 - **Referencias:** 8 por grupo, repartidas en el tiempo como en `calibration_split`: 640 en total. Cada grupo
   conserva al menos 10 imágenes; con k = 80 no se descarta ninguna. Lista en `data/splits/medellin_grupos.csv`.
 - **Verificación objetiva:** qué parte de las imágenes de cada grupo (hasta 20 por grupo) coincide por ORB con las
-  referencias de su propio grupo (`orb_matches` ≥ 12,5, el umbral del clásico). Global: **94,5 %**.
+  referencias de su propio grupo (`orb_matches` ≥ 12,5, el umbral del clásico). Global: **94,5 %**. Esa cifra sola no
+  prueba que los grupos estén separados: hace falta el control negativo de abajo.
 - **Verificación visual:** montaje de 12 grupos al azar (semilla 0). La mayoría son una sola cámara, con dos
   problemas: el grupo 52 mezcla escenas distintas y los grupos 2, 4 y 6 parecen ser la misma cámara partida en
   tres. Partir de más es inofensivo (cada trozo conserva sus propias referencias); mezclar cámaras es lo dañino.
@@ -162,6 +164,23 @@ El nombre de archivo no identifica la cámara (sección 6), así que se recupera
 - **Grupos dudosos:** 7 grupos tienen una tasa de coincidencia menor de 70 % (11, 25, 47, 49, 52, 61 y 69; 327
   imágenes) y quedan con `confiable = False`. Quedan **73 grupos confiables (5997 imágenes)**. T76 debe usar solo
   `confiable = True`.
-- **Límite:** la tasa de coincidencia no prueba que un grupo sea de una sola cámara: si un grupo mezcla escenas, sus
-  8 referencias repartidas en el tiempo pueden cubrir varias y la tasa sale alta. Solo se miró a mano una muestra
-  de 12 grupos.
+- **Control negativo** (`results/medellin_control_negativo.csv` y `medellin_control_pares.csv`, con las 640 parejas
+  grupo-otro grupo; `python -m src.medellin_groups --control`): las mismas imágenes (10 por grupo) contra las
+  referencias de 5 grupos **cercanos** (centroides más próximos) y de 3 grupos **al azar**, con el mismo umbral de 12,5.
+
+  | Contra | Tasa media de coincidencia | Parejas con 50 % o más |
+  |---|---|---|
+  | su propio grupo | 0,953 | |
+  | 3 grupos al azar | 0,219 | 14,2 % de 240 |
+  | 5 grupos cercanos | 0,616 | 61,8 % de 400 |
+
+  Lectura: (1) las referencias propias discriminan (0,95 frente a 0,22 al azar), en ningún grupo la tasa propia es
+  menor que su media al azar; (2) pero el umbral de 12,5 **no separa limpio** en escenas de calle: ORB coincide con
+  una escena distinta en el 22 % de las imágenes, por calles, rayas y autos parecidos; (3) los clusters cercanos
+  suelen ser **la misma cámara partida** (tasa de 1,0 en los pares 2, 6 y 9, en el 19 y el 20 y en el 70 y el 71;
+  el 49 % de las parejas cercanas, 197 de 400, coincide al 80 % o más): los 80 clusters **no son 80 cámaras**, son
+  más grupos que cámaras. Cota sobre la pureza: si las imágenes de la misma cámara coincidieran siempre
+  (tasa 1), la tasa propia de 0,953 y la de 0,219 contra otra cámara implican como máximo un 6 % de imágenes de otra
+  cámara por grupo; si coinciden menos, es menos. Es una cota, no una medida.
+- **Límite:** no hay una verdad de terreno de la cámara de cada imagen. Los controles acotan la mezcla, no la
+  descartan, y solo se miró a mano una muestra de 12 grupos.
