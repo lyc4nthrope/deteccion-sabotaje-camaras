@@ -53,10 +53,22 @@ def test_gradcam_equals_the_class_activation_map_of_a_global_pooling_head(model,
         np.testing.assert_allclose(out["heatmaps"][i], expected, atol=1e-3)
 
 
-def test_a_chosen_class_explains_that_class_not_the_predicted_one(model, batch):
-    other = [(int(p) + 1) % 4 for p in X.grad_cam(model, batch)["pred"]]
+def test_a_chosen_class_gets_the_map_of_that_class_not_the_predicted_one(model, batch):
+    """The map must be the CAM of the requested class (kernel column), not just an echo of the requested index."""
+    import tensorflow as tf
+
+    base = X.base_of(model)
+    conv = tf.keras.Model(base.input, base.get_layer("out_relu").output)(batch).numpy()
+    kernel = model.layers[-1].get_weights()[0]
+    predicted = X.grad_cam(model, batch)
+    other = [(int(p) + 1) % 4 for p in predicted["pred"]]
     out = X.grad_cam(model, batch, class_index=other)
     assert list(out["explained"]) == other
+    assert not np.allclose(out["heatmaps"], predicted["heatmaps"], atol=1e-3)
+    for i, c in enumerate(other):
+        cam = np.maximum(conv[i] @ kernel[:, c], 0.0)
+        expected = cam / cam.max() if cam.max() > 0 else cam
+        np.testing.assert_allclose(out["heatmaps"][i], expected, atol=1e-3)
 
 
 # ---------------------------------------------------------------- overlay
@@ -83,6 +95,13 @@ def test_attention_stats_locate_a_top_left_blob_in_the_upper_third():
     assert stats.loc[0, "centro_y"] < 0.25 and stats.loc[0, "centro_x"] < 0.25
     assert stats.loc[0, "tercio_superior"] == pytest.approx(1.0)
     assert stats.loc[0, "tercio_superior"] + stats.loc[0, "tercio_medio"] + stats.loc[0, "tercio_inferior"] == pytest.approx(1.0)
+
+
+def test_a_uniform_heatmap_puts_exactly_one_third_in_each_third_of_the_image():
+    """7 rows do not split into 3 whole thirds: the middle row of each boundary is shared proportionally."""
+    stats = X.attention_stats(np.ones((1, 7, 7)))
+    for column in ("tercio_superior", "tercio_medio", "tercio_inferior"):
+        assert stats.loc[0, column] == pytest.approx(1 / 3)
 
 
 def test_attention_stats_of_an_empty_heatmap_do_not_divide_by_zero():

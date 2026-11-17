@@ -85,11 +85,27 @@ def overlay(image: np.ndarray, heatmap: np.ndarray, alpha: float = 0.5) -> np.nd
     return np.clip(image.astype(np.float32) * (1 - weight) + color * weight, 0, 255).astype(np.uint8)
 
 
+def _third_weights(rows: int) -> np.ndarray:
+    """(3, rows) matrix: the part of each row that falls in each vertical third of the image.
+
+    Rows do not split into whole thirds (7 rows are 2, 3 and 2 by their centers), so a row that straddles a
+    boundary is shared in proportion to the area on each side. A uniform map then gives exactly 1/3 per third.
+    """
+    edges = np.arange(rows + 1) / rows
+    weights = np.zeros((3, rows))
+    for third in range(3):
+        low, high = third / 3, (third + 1) / 3
+        weights[third] = np.clip(np.minimum(edges[1:], high) - np.maximum(edges[:-1], low), 0, None) * rows
+    return weights
+
+
 def attention_stats(heatmaps: np.ndarray) -> pd.DataFrame:
-    """Where the attention mass sits: centroid, share per vertical third and concentration (0 uniform, 1 one cell)."""
+    """Where the attention mass sits: centroid, share per vertical third (a uniform map gives 1/3 each) and
+    concentration (0 uniform, 1 one cell)."""
     n, rows, cols = heatmaps.shape
     ys = (np.arange(rows) + 0.5) / rows
     xs = (np.arange(cols) + 0.5) / cols
+    thirds = _third_weights(rows)
     out = []
     for heat in heatmaps:
         mass = float(heat.sum())
@@ -105,9 +121,9 @@ def attention_stats(heatmaps: np.ndarray) -> pd.DataFrame:
                 "masa": mass,
                 "centro_x": float((p.sum(axis=0) * xs).sum()),
                 "centro_y": float((row_share * ys).sum()),
-                "tercio_superior": float(row_share[ys < 1 / 3].sum()),
-                "tercio_medio": float(row_share[(ys >= 1 / 3) & (ys < 2 / 3)].sum()),
-                "tercio_inferior": float(row_share[ys >= 2 / 3].sum()),
+                "tercio_superior": float(thirds[0] @ row_share),
+                "tercio_medio": float(thirds[1] @ row_share),
+                "tercio_inferior": float(thirds[2] @ row_share),
                 "concentracion": 1.0 - entropy / np.log(rows * cols),
             }
         )
