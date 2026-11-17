@@ -113,3 +113,40 @@ def test_anonymize_all_writes_a_copy_per_class_and_keeps_the_raw_folder(tmp_path
     report = C.anonymize_all(raw, out, detector=lambda image: [(10, 10, 60, 60)])
     assert report == {"normal": {"normal.png": 1}, "tapada": {"tapada.png": 1}}
     assert (raw / "normal" / "normal.png").exists() and (out / "tapada" / "tapada.png").exists()
+
+
+# ---------------------------------------------------------------- a burst that is cut still gets its session row
+
+
+def _session(tmp_path, camera, n=5):
+    meta = {"lugar": "Armenia", "camara": "webcam", "soporte": "", "observaciones": ""}
+    return C.capture_and_log(camera, tmp_path, tmp_path / "hoja.csv", "tapada", "apagada", n, 0, (1280, 720), meta,
+                             now=lambda: WHEN, sleep=lambda s: None)
+
+
+def test_a_completed_burst_logs_one_row_with_all_the_images(tmp_path):
+    assert _session(tmp_path, FakeCamera(), n=4) == 4
+    table = pd.read_csv(tmp_path / "hoja.csv", dtype=str, keep_default_na=False)
+    assert table["imagenes"].tolist() == ["4"] and "interrumpida" not in table.loc[0, "observaciones"]
+
+
+def test_a_burst_cut_by_the_camera_logs_the_images_that_were_saved_and_says_so(tmp_path):
+    with pytest.raises(RuntimeError):
+        _session(tmp_path, FakeCamera(fail_after=3), n=5)
+    table = pd.read_csv(tmp_path / "hoja.csv", dtype=str, keep_default_na=False)
+    assert table["imagenes"].tolist() == ["3"]
+    assert "interrumpida" in table.loc[0, "observaciones"] and "3 de 5" in table.loc[0, "observaciones"]
+
+
+def test_a_burst_that_saved_nothing_logs_no_row(tmp_path):
+    with pytest.raises(RuntimeError):
+        _session(tmp_path, FakeCamera(fail_after=0), n=5)
+    assert not (tmp_path / "hoja.csv").exists()
+
+
+def test_only_the_new_images_of_a_second_burst_are_counted(tmp_path):
+    _session(tmp_path, FakeCamera(), n=2)
+    with pytest.raises(RuntimeError):
+        _session(tmp_path, FakeCamera(fail_after=1), n=5)
+    table = pd.read_csv(tmp_path / "hoja.csv", dtype=str, keep_default_na=False)
+    assert table["imagenes"].tolist() == ["2", "1"]

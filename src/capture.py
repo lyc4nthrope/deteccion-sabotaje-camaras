@@ -109,6 +109,43 @@ def log_session(sheet: Path, when: datetime, clase: str, luz: str, count: int, r
         writer.writerow(row)
 
 
+def capture_and_log(
+    camera,
+    root: Path,
+    sheet: Path,
+    clase: str,
+    luz: str,
+    n: int,
+    interval: float,
+    resolution: tuple[int, int],
+    meta: dict,
+    now: Callable[[], datetime] = datetime.now,
+    sleep: Callable[[float], None] = time.sleep,
+) -> int:
+    """capture_burst plus its row in the session sheet, also when the camera cuts the burst.
+
+    The row counts the images actually saved in this burst. A cut burst is noted in `observaciones` and the error
+    is raised again; a burst that saved nothing adds no row.
+    """
+    folder = Path(root) / clase
+    start = next_index(folder, clase, luz)
+    started = now()
+    error = None
+    try:
+        capture_burst(camera, root, clase, luz, n, interval, now=now, sleep=sleep)
+    except RuntimeError as exc:
+        error = exc
+    saved = next_index(folder, clase, luz) - start
+    if saved > 0:
+        note = meta.get("observaciones", "")
+        if error is not None:
+            note = f"{note} | ráfaga interrumpida ({saved} de {n}): {error}".lstrip(" |")
+        log_session(sheet, started, clase, luz, saved, resolution, {**meta, "observaciones": note})
+    if error is not None:
+        raise error
+    return saved
+
+
 def anonymize_all(raw_root: Path, target_root: Path, detector) -> dict[str, dict[str, int]]:
     """Blur the people of every class folder of raw_root into target_root/<class>/ (raw images are kept)."""
     report = {}
@@ -160,11 +197,9 @@ def main() -> None:
         for left in range(args.espera, 0, -1):
             print(f"starting in {left} s...", flush=True)
             time.sleep(1)
-        started = datetime.now()
-        count = capture_burst(camera, ROOT, args.clase, args.luz, args.n, args.intervalo)
+        count = capture_and_log(camera, ROOT, SHEET, args.clase, args.luz, args.n, args.intervalo, resolution, vars(args))
     finally:
         camera.release()
-    log_session(SHEET, started, args.clase, args.luz, count, resolution, vars(args))
     print(f"{count} images in {ROOT / args.clase}; session row added to {SHEET}")
     print("Check that nobody identifiable appears, then run: python -m src.capture anonimizar")
 
