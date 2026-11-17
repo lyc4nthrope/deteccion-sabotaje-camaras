@@ -15,11 +15,14 @@ def test_time_model_discards_the_warm_up_and_returns_the_median_in_milliseconds(
     assert median == pytest.approx(20.0)
 
 
-def test_comparison_table_has_the_ratio_against_the_first_model():
-    table = CA.comparison_table([("A", 100, 10.0), ("B", 400, 25.0)], repetitions=30)
-    assert list(table.columns) == ["modelo", "parametros", "ms_mediana", "veces_el_primero", "repeticiones"]
+def test_comparison_table_keeps_the_median_min_and_max_over_the_rounds_and_the_ratio_to_the_first_model():
+    table = CA.comparison_table([("A", 100, [9.0, 10.0, 12.0]), ("B", 400, [20.0, 25.0, 30.0])], repetitions=30)
+    assert list(table.columns) == ["modelo", "parametros", "ms_mediana", "ms_min", "ms_max", "veces_el_primero",
+                                   "repeticiones", "rondas"]
+    assert table["ms_mediana"].tolist() == [10.0, 25.0]
+    assert table["ms_min"].tolist() == [9.0, 20.0] and table["ms_max"].tolist() == [12.0, 30.0]
     assert table["veces_el_primero"].tolist() == [1.0, 2.5]
-    assert table["repeticiones"].tolist() == [30, 30]
+    assert table["repeticiones"].tolist() == [30, 30] and table["rondas"].tolist() == [3, 3]
 
 
 def test_comparison_table_rejects_an_empty_list():
