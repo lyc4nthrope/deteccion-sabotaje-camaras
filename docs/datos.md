@@ -115,3 +115,21 @@ ubicación 1.
 - Resultado: 600 imágenes en los 55 grupos, sin duplicados. Lista en `data/splits/medellin_normales.csv`. Código en `src/medellin.py`.
 - **Pendiente:** excluir imágenes con personas identificables en primer plano. Esto no se ha revisado a mano y no es automatizable de forma fiable; se documenta como limitación antes de publicar cualquier figura.
 - Riesgo ORB: las referencias de la misma cámara (T33) no se pueden garantizar con el nombre de archivo. **Sin resolver:** el clásico necesita referencias de la misma cámara para decidir "normal" (T33). Medellín todavía no tiene referencias por cámara, así que esta selección no basta para T76. Hough sin referencias no está implementado.
+
+### 6.1 Sabotaje sintético de Medellín (T18)
+
+Código: `src/synthetic_tampering.py`. Cada imagen normal produce 4 variantes (`desenfocada`, `girada`, `tapada_total`, `tapada_parcial`) y un `manifest.csv` con sus parámetros. La semilla de cada imagen sale de su **nombre de archivo** (CRC32), no de su posición en la lista, así que reordenar o filtrar la lista no cambia ninguna variante.
+
+| Variante | Cómo se genera | Por qué |
+|---|---|---|
+| `desenfocada` | Desenfoque gaussiano con σ de 8 a 14 píxeles del original de 1280×720, más ruido de 0,5 a 0,9 niveles | Con σ de 4 a 8, el clásico llamaba «normal» al 88 % de las desenfocadas (reseña del #2): a 640×360 el desenfoque no quitaba los puntos ORB. Las desenfocadas reales conservan un piso de ruido de sensor |
+| `girada` | **Desplazamiento** horizontal de 65 a 90 % del ancho (queda como máximo el 35 % de la vista original) y giro de 0,5° a 6°; la zona nueva se rellena por reflexión | El paneo anterior era un zoom y el clásico lo llamaba «normal» el 92 % de las veces. Los ángulos reales estimados van de 0,5° a 9,7° |
+| `tapada_total` | Color realista con degradado suave y ruido de 0,3 a 0,9 niveles | Con ruido de 4 niveles la nitidez daba ~38 (sobre el umbral de 18,9) y el clásico las llamaba «girada». Las tapadas reales tienen una nitidez de 0,9 a 6,5 |
+| `tapada_parcial` | Un rectángulo de 85 a 95 % del cuadro con la **misma textura** que la cubierta total | Un rectángulo plano junto a una cubierta con ruido sería una pista trivial para la CNN |
+
+**Cómo se comprobó que se parecen a las reales** (`tests/test_synthetic_realism.py`, se omite si no están las imágenes de Bremen): las variantes de 20 imágenes normales de test de Bremen se miden con las referencias y los umbrales reales del clásico y se comparan con el rango (percentiles 10 a 90) de las imágenes reales de la misma clase: las desenfocadas se llaman «desenfocada» en al menos el 85 % de los casos y con pocas coincidencias ORB; la girada se llama «normal» como máximo el 25 % de las veces (real: 2 % a 16 %), con coincidencias y ángulos en el rango real; las tapadas totales se llaman «tapada» en al menos el 90 % con la nitidez de las reales.
+
+**Límites:**
+- **La zona nueva de la girada es un reflejo**, no una escena nueva: tiene textura pero sus puntos no coinciden con la referencia, que es lo que haría una parte de la escena que no se vio. No es una escena real.
+- **La `tapada_parcial` casi nunca se llama «tapada» con las reglas del clásico:** el resto de la escena que queda visible es nítido y no coincide con la referencia, así que cae en «girada». Esta clase se evalúa como **sabotaje frente a normal** (la prueba exige que no se llame «normal» más del 10 % de las veces), no por su etiqueta.
+- Sigue siendo sabotaje sintético: mide la generalización a otras cámaras, no la apariencia de un sabotaje real.
