@@ -44,13 +44,13 @@ Ejemplo de un bloque (`block_2`, entrada y salida de 24 canales, expansión × 6
 MobileNetV2 tiene 17 bloques de residual invertido; 10 llevan la suma `Add` (los de stride 1 con los mismos canales de entrada y salida) y 7 no. Cada bloque hace expansión 1×1 → depthwise 3×3 → proyección 1×1 **lineal** (sin ReLU al final). ResNet usa el orden contrario: reduce con 1×1, convoluciona 3×3 y expande con 1×1, y su atajo une las capas **anchas**; en MobileNetV2 el atajo une las capas **estrechas** (24 canales en el ejemplo), que son las baratas. La idea del atajo es la misma, y ambas redes evitan que el gradiente se desvanezca.
 
 ### Por qué no ResNet-50, VGG-16 ni AlexNet
-Con la cabeza completa de ImageNet, 224×224, CPU, lote 1, mediana de 30 inferencias **medidas en esta máquina con el mismo procedimiento** (sirven para comparar entre sí; no son comparables con el tiempo por cuadro de la auditoría, que usa otro modelo y otro procedimiento):
+Con la cabeza completa de ImageNet, 224×224, CPU, lote 1. Medido con `python -m src.compare_architectures` (resultado en `results/cnn/arquitecturas.csv`): 3 rondas intercaladas de 30 inferencias cada una; la tabla da la mediana de las rondas y, entre paréntesis, el mínimo y el máximo. Los tiempos dependen de la máquina y de su carga: sirven para comparar los modelos entre sí, no son comparables con el tiempo por cuadro de la auditoría (otro modelo y otro procedimiento). Una corrida aislada puede variar con la carga, por eso se repite en rondas; el orden MobileNetV2 < ResNet-50 < VGG-16 se mantuvo en todas las corridas.
 
 | Modelo | Parámetros | Tiempo por imagen | Frente a MobileNetV2 |
 |---|---|---|---|
-| MobileNetV2 | 3 538 984 | 84,8 ms | 1× |
-| ResNet-50 | 25 636 712 | 149,0 ms | 1,8× |
-| VGG-16 | 138 357 544 | 363,1 ms | 4,3× |
+| MobileNetV2 | 3 538 984 | 82,7 ms (82,4 a 83,3) | 1× |
+| ResNet-50 | 25 636 712 | 147,7 ms (147,6 a 148,0) | 1,8× |
+| VGG-16 | 138 357 544 | 355,8 ms (351,5 a 370,6) | 4,3× |
 | AlexNet | ≈ 61 millones (cifra de la literatura; no está en Keras, no se midió) | | |
 
 - **VGG-16:** 39 veces más parámetros y 4,3 veces más lento; el 74 % de sus parámetros está en una sola capa densa (25 088 × 4096). No tiene conexiones residuales.
