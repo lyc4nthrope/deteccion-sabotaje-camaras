@@ -70,19 +70,24 @@ def adjusted_rand(a, b) -> float:
     return float(adjusted_rand_score(a, b))
 
 
-def evaluate_k(tree: np.ndarray, X: np.ndarray, ks: list[int], reference=None) -> pd.DataFrame:
-    """For each candidate k: silhouette of the cut, and agreement (ARI) with the reference grouping if given."""
+def evaluate_k(tree: np.ndarray, X: np.ndarray, ks: list[int], reference=None, extra=None) -> pd.DataFrame:
+    """For each candidate k: silhouette of the cut, and agreement (ARI) with the reference grouping if given.
+
+    extra(k, labels) may return more columns for that k (for example its ORB match rate); it is the way to save in
+    the same table every number that is used to choose k.
+    """
     rows = []
     for k in ks:
         labels = cut_tree(tree, k)
-        rows.append(
-            {
-                "k": k,
-                "silhouette": float(silhouette_score(X, labels)) if 1 < len(set(labels)) < len(X) else np.nan,
-                "ari_vs_nombre": adjusted_rand(reference, labels) if reference is not None else np.nan,
-                "grupos_con_10_o_mas": int((pd.Series(labels).value_counts() >= MIN_GROUP).sum()),
-            }
-        )
+        row = {
+            "k": k,
+            "silhouette": float(silhouette_score(X, labels)) if 1 < len(set(labels)) < len(X) else np.nan,
+            "ari_vs_nombre": adjusted_rand(reference, labels) if reference is not None else np.nan,
+            "grupos_con_10_o_mas": int((pd.Series(labels).value_counts() >= MIN_GROUP).sum()),
+        }
+        if extra is not None:
+            row.update(extra(k, labels))
+        rows.append(row)
     return pd.DataFrame(rows)
 
 
@@ -116,6 +121,62 @@ def match_rate_per_group(
         matcher = matcher_cls([load_gray(name) for name in refs])
         hits = sum(matcher.match(load_gray(name))["orb_matches"] >= match_min for name in rest)
         rows[cluster] = {"evaluadas": len(rest), "tasa": hits / len(rest) if rest else float("nan")}
+    return pd.DataFrame.from_dict(rows, orient="index").rename_axis("cluster")
+
+
+def nearest_clusters(X: np.ndarray, labels: np.ndarray, k: int = 5) -> dict[int, list[int]]:
+    """For each cluster, the k other clusters whose centroids (mean thumbnail descriptor) are closest."""
+    ids = sorted(set(labels))
+    centroids = np.stack([X[labels == c].mean(axis=0) for c in ids])
+    dist = np.linalg.norm(centroids[:, None, :] - centroids[None, :, :], axis=2)
+    out = {}
+    for i, c in enumerate(ids):
+        order = [ids[j] for j in np.argsort(dist[i]) if ids[j] != c]
+        out[c] = [int(o) for o in order[:k]]
+    return out
+
+
+def control_negativo(
+    groups: pd.DataFrame, load_gray, neighbors: dict[int, list[int]], matcher_cls=features.ReferenceMatcher,
+    sample: int = 10, match_min: float = 12.5,
+) -> pd.DataFrame:
+    """Negative control of match_rate_per_group: the same images against the references of OTHER groups.
+
+    A high own rate only means something if the rate against other groups is low. For each kept group, `sample`
+    non-reference images (evenly spaced in time) are matched against the references of its own group and of the
+    groups listed in `neighbors[cluster]`. A foreign rate near the own rate means that both clusters show the same
+    camera (the camera was split in two), not that the group is impure.
+    """
+    kept = groups[groups["conservado"]].sort_values("instante")
+    matchers: dict[int, object] = {}
+
+    def matcher_of(cluster: int):
+        if cluster not in matchers:
+            refs = kept[(kept["cluster"] == cluster) & kept["es_referencia"]]["archivo"]
+            matchers[cluster] = matcher_cls([load_gray(name) for name in refs])
+        return matchers[cluster]
+
+    rows = {}
+    for cluster, group in kept.groupby("cluster"):
+        rest = group[~group["es_referencia"]]["archivo"].tolist()
+        if len(rest) > sample:
+            rest = [rest[i] for i in np.linspace(0, len(rest) - 1, sample).round().astype(int)]
+        others = [c for c in neighbors.get(cluster, []) if c in set(kept["cluster"]) and c != cluster]
+        hits = {c: 0 for c in [cluster] + others}
+        for name in rest:
+            gray = load_gray(name)
+            for c in hits:
+                hits[c] += matcher_of(c).match(gray)["orb_matches"] >= match_min
+        n = len(rest)
+        foreign = {c: hits[c] / n for c in others} if n else {}
+        best = max(foreign, key=foreign.get) if foreign else -1
+        rows[cluster] = {
+            "evaluadas": n,
+            "tasa_propia": hits[cluster] / n if n else float("nan"),
+            "tasa_ajena_media": float(np.mean(list(foreign.values()))) if foreign else float("nan"),
+            "tasa_ajena_max": foreign[best] if foreign else float("nan"),
+            "grupo_ajeno_max": best,
+        }
     return pd.DataFrame.from_dict(rows, orient="index").rename_axis("cluster")
 
 

@@ -136,3 +136,34 @@ def test_match_rate_samples_at_most_the_requested_images_and_skips_discarded_gro
     groups = G.assign_groups(_inventory({1: 50, 2: 5}), min_size=10, n_refs=8)
     rates = G.match_rate_per_group(groups, _loader({n: 7 for n in groups["archivo"]}), _FakeMatcher, sample=10)
     assert list(rates.index) == [1] and rates.loc[1, "evaluadas"] == 10
+
+
+# ---------------------------------------------------------------- negative control and ORB rate per k (review of PR #31)
+
+
+def test_nearest_clusters_are_ranked_by_the_distance_between_their_centroids():
+    X = np.array([[0.0, 0], [0.1, 0], [5, 0], [5.1, 0], [20, 0], [20.1, 0]])
+    labels = np.array([1, 1, 2, 2, 3, 3])
+    near = G.nearest_clusters(X, labels, k=2)
+    assert near[1] == [2, 3] and near[2] == [1, 3] and near[3] == [2, 1]
+
+
+def test_cross_match_rate_is_low_for_other_groups_and_high_for_the_same_camera():
+    groups = G.assign_groups(_inventory({1: 20, 2: 20}), min_size=10, n_refs=8)
+    markers = {n: (7 if n.startswith("c1") else 99) for n in groups["archivo"]}
+    rates = G.control_negativo(groups, _loader(markers), {1: [2], 2: [1]}, _FakeMatcher, sample=5, match_min=12.5)
+    assert rates.loc[1, "tasa_propia"] == pytest.approx(1.0)
+    assert rates.loc[1, "tasa_ajena_max"] == pytest.approx(0.0) and rates.loc[1, "grupo_ajeno_max"] == 2
+
+
+def test_cross_match_rate_flags_two_clusters_that_are_the_same_camera():
+    groups = G.assign_groups(_inventory({1: 20, 2: 20}), min_size=10, n_refs=8)
+    same_scene = _loader({n: 7 for n in groups["archivo"]})  # both clusters show the same scene
+    rates = G.control_negativo(groups, same_scene, {1: [2], 2: [1]}, _FakeMatcher, sample=5, match_min=12.5)
+    assert rates.loc[1, "tasa_ajena_max"] == pytest.approx(1.0)
+
+
+def test_evaluate_k_can_add_extra_columns_computed_from_the_labels():
+    X, truth = _three_cameras()
+    table = G.evaluate_k(G.ward_tree(X), X, [2, 3], reference=truth, extra=lambda k, labels: {"grupos": len(set(labels))})
+    assert table["grupos"].tolist() == [2, 3]
