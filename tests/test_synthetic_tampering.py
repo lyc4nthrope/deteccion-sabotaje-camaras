@@ -68,19 +68,44 @@ def test_blur_lowers_the_sharpness():
     assert _lap(blurred) < _lap(image) / 5
 
 
+def test_blur_is_strong_enough_for_the_640x360_working_size_and_keeps_a_sensor_noise_floor():
+    # sigma is in pixels of the 1280x720 original: halved by the reduction to 640x360 it must still remove the
+    # keypoints (a sigma of 4 to 8 left the classic module calling most blurred images "normal").
+    assert S.BLUR_SIGMA[0] >= 8.0
+    _, params = S.blur(_scene(5), np.random.default_rng(1))
+    assert S.BLUR_SIGMA[0] <= params["sigma"] <= S.BLUR_SIGMA[1]
+    assert S.NOISE_SIGMA[0] <= params["ruido"] <= S.NOISE_SIGMA[1]
+
+
 # ---------------------------------------------------------------- pan (girada)
 
 
-def test_pan_crops_one_edge_and_resizes_back():
+def test_pan_params_describe_a_displacement_with_little_overlap_and_a_small_rotation():
     image = _scene(6, shape=(360, 640, 3))
     out, params = S.pan(image, np.random.default_rng(0))
     assert out.shape == image.shape
     assert params["lado"] in {"left", "right"}
-    assert S.PAN_WINDOW_RANGE[0] <= params["ventana"] <= S.PAN_WINDOW_RANGE[1]
+    assert S.PAN_SHIFT_RANGE[0] <= params["desplazamiento"] <= S.PAN_SHIFT_RANGE[1]
+    assert S.PAN_ROTATION_RANGE[0] <= abs(params["rotacion"]) <= S.PAN_ROTATION_RANGE[1]
+    assert 1 - params["desplazamiento"] <= 0.35  # at most 35 % of the original view stays in the frame
 
 
-def test_pan_creates_no_reflection_borders():
-    # A uniform frame stays uniform after a pan: no reflected or black border appears.
+def test_pan_is_a_displacement_not_a_zoom(monkeypatch):
+    """With no rotation the visible part of the original is copied unscaled, shifted by the stated amount."""
+    monkeypatch.setattr(S, "PAN_ROTATION_RANGE", (0.0, 0.0))
+    image = _scene(6, shape=(360, 640, 3))
+    for seed in range(6):
+        out, params = S.pan(image, np.random.default_rng(seed))
+        shift = params["pixeles"]
+        assert shift == round(params["desplazamiento"] * 640)
+        if params["lado"] == "left":  # the camera turns left: the content moves right
+            assert np.array_equal(out[:, shift:], image[:, : 640 - shift])
+        else:
+            assert np.array_equal(out[:, : 640 - shift], image[:, shift:])
+
+
+def test_pan_creates_no_black_borders():
+    # A uniform frame stays uniform after a pan: the exposed area is filled by reflection, never with black.
     image = np.full((360, 640, 3), 150, np.uint8)
     out, _ = S.pan(image, np.random.default_rng(0))
     assert np.array_equal(out, image)
@@ -110,6 +135,25 @@ def test_partial_occlusion_covers_at_least_85_percent_of_the_frame():
     assert S.PARTIAL_AREA_RANGE[0] >= 0.85
     visible = (out == 200).all(axis=-1).mean()
     assert visible <= 1 - S.PARTIAL_AREA_RANGE[0] + 0.02
+
+
+def test_cover_noise_stays_at_the_sensor_floor_of_real_covers():
+    # Real covers have a Laplacian variance of about 0.9 to 6.5. Noise of 4 gray levels gave 38, above the
+    # sharpness threshold, so the classic module called every synthetic cover "girada".
+    out, params = S.occlude_total(_scene(8), np.random.default_rng(0))
+    assert S.COVER_NOISE[0] <= params["ruido"] <= S.COVER_NOISE[1] and S.COVER_NOISE[1] <= 1.0
+    assert _lap(out) < 18.0
+
+
+def test_partial_occlusion_has_the_same_texture_as_the_total_cover():
+    # A flat rectangle next to a noisy total cover would be a trivial cue: both come from the same function.
+    image = np.full((180, 320, 3), 200, np.uint8)
+    out, params = S.occlude_partial(image, np.random.default_rng(0))
+    top, left = params["top"], params["left"]
+    box = out[top:top + 120, left:left + 200].astype(float)
+    assert np.diff(box, axis=1).std() > 0.4  # the noise is there, the rectangle is not a flat color
+    assert {"color_bgr", "degradado", "ruido"} <= set(params)
+    assert tuple(params["color_bgr"]) in {tuple(map(int, c)) for c in S.COVER_PALETTE}
 
 
 # ---------------------------------------------------------------- generate
@@ -148,3 +192,22 @@ def test_generate_is_reproducible_from_the_same_seed(tmp_path):
         a = cv2.imread(str(tmp_path / "a" / label / "imagen1_20230101_000000.jpg"))
         b = cv2.imread(str(tmp_path / "b" / label / "imagen1_20230101_000000.jpg"))
         assert np.array_equal(a, b)
+
+
+def test_file_seed_depends_on_the_file_name_and_not_on_its_position():
+    assert S.file_seed(0, "a.jpg") == S.file_seed(0, "a.jpg")
+    assert S.file_seed(0, "a.jpg") != S.file_seed(0, "b.jpg")
+    assert S.file_seed(0, "a.jpg") != S.file_seed(1, "a.jpg")
+
+
+def test_reordering_the_list_does_not_change_any_variant(tmp_path):
+    names = [f"imagen1_2023010{i}_000000.jpg" for i in range(3)]
+    images, listing = _write_fixture(tmp_path, names)
+    S.generate(listing, images, tmp_path / "a", seed=0)
+    pd.read_csv(listing).iloc[::-1].to_csv(listing, index=False)
+    S.generate(listing, images, tmp_path / "b", seed=0)
+    for label in S.LABELS:
+        for name in names:
+            a = cv2.imread(str(tmp_path / "a" / label / name))
+            b = cv2.imread(str(tmp_path / "b" / label / name))
+            assert np.array_equal(a, b)
