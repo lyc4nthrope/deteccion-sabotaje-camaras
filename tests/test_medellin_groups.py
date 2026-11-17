@@ -148,19 +148,29 @@ def test_nearest_clusters_are_ranked_by_the_distance_between_their_centroids():
     assert near[1] == [2, 3] and near[2] == [1, 3] and near[3] == [2, 1]
 
 
-def test_cross_match_rate_is_low_for_other_groups_and_high_for_the_same_camera():
-    groups = G.assign_groups(_inventory({1: 20, 2: 20}), min_size=10, n_refs=8)
-    markers = {n: (7 if n.startswith("c1") else 99) for n in groups["archivo"]}
-    rates = G.control_negativo(groups, _loader(markers), {1: [2], 2: [1]}, _FakeMatcher, sample=5, match_min=12.5)
-    assert rates.loc[1, "tasa_propia"] == pytest.approx(1.0)
-    assert rates.loc[1, "tasa_ajena_max"] == pytest.approx(0.0) and rates.loc[1, "grupo_ajeno_max"] == 2
+def test_control_separates_near_groups_from_random_groups_and_saves_every_pair():
+    groups = G.assign_groups(_inventory({1: 20, 2: 20, 3: 20}), min_size=10, n_refs=8)
+    markers = {n: (7 if n.startswith(("c1", "c2")) else 99) for n in groups["archivo"]}  # 1 and 2 are the same camera
+    summary, pairs = G.control_negativo(
+        groups, _loader(markers), near={1: [2], 2: [1], 3: [1]}, random={1: [3], 2: [3], 3: [2]},
+        matcher_cls=_FakeMatcher, sample=5, match_min=12.5,
+    )
+    assert summary.loc[1, "tasa_propia"] == pytest.approx(1.0)
+    assert summary.loc[1, "tasa_cercana_max"] == pytest.approx(1.0) and summary.loc[1, "grupo_cercano_max"] == 2
+    assert summary.loc[1, "tasa_azar_media"] == pytest.approx(0.0)  # a random group of another camera does not match
+    assert set(pairs.columns) == {"cluster", "otro", "tipo", "tasa"}
+    row = pairs[(pairs["cluster"] == 3) & (pairs["otro"] == 1)].iloc[0]
+    assert row["tipo"] == "cercano" and row["tasa"] == pytest.approx(0.0)
+    assert len(pairs) == 6
 
 
-def test_cross_match_rate_flags_two_clusters_that_are_the_same_camera():
-    groups = G.assign_groups(_inventory({1: 20, 2: 20}), min_size=10, n_refs=8)
-    same_scene = _loader({n: 7 for n in groups["archivo"]})  # both clusters show the same scene
-    rates = G.control_negativo(groups, same_scene, {1: [2], 2: [1]}, _FakeMatcher, sample=5, match_min=12.5)
-    assert rates.loc[1, "tasa_ajena_max"] == pytest.approx(1.0)
+def test_control_skips_groups_without_references_and_self_pairs():
+    groups = G.assign_groups(_inventory({1: 20, 2: 5}), min_size=10, n_refs=8)  # group 2 is discarded
+    summary, pairs = G.control_negativo(
+        groups, _loader({n: 7 for n in groups["archivo"]}), near={1: [1, 2]}, random={1: []},
+        matcher_cls=_FakeMatcher, sample=5, match_min=12.5,
+    )
+    assert list(summary.index) == [1] and pairs.empty
 
 
 def test_evaluate_k_can_add_extra_columns_computed_from_the_labels():

@@ -7,8 +7,10 @@ the images are grouped with Ward hierarchical clustering. The number of groups i
 dendrogram, the silhouette and the agreement with the file-name groups. Groups with fewer than 10 images are
 discarded; each kept group sets aside 8 references spread over its time order, as `data.calibration_split` does.
 
-Run:  python -m src.medellin_groups
-Writes: data/splits/medellin_grupos.csv, results/figuras/medellin_dendrograma.png, results/medellin_k.csv.
+Run:  python -m src.medellin_groups            (everything, about 15 minutes)
+      python -m src.medellin_groups --control  (only the negative control, about 5 minutes)
+Writes: data/splits/medellin_grupos.csv, results/figuras/medellin_dendrograma.png, results/medellin_k.csv (with
+the ORB match rate of each k in ORB_KS) and results/medellin_control_negativo.csv. It takes about 15 minutes.
 A montage of sample groups for the visual check goes to data/ (not versioned: it shows pedestrians).
 """
 
@@ -137,17 +139,19 @@ def nearest_clusters(X: np.ndarray, labels: np.ndarray, k: int = 5) -> dict[int,
 
 
 def control_negativo(
-    groups: pd.DataFrame, load_gray, neighbors: dict[int, list[int]], matcher_cls=features.ReferenceMatcher,
-    sample: int = 10, match_min: float = 12.5,
-) -> pd.DataFrame:
+    groups: pd.DataFrame, load_gray, near: dict[int, list[int]], random: dict[int, list[int]],
+    matcher_cls=features.ReferenceMatcher, sample: int = 10, match_min: float = 12.5,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Negative control of match_rate_per_group: the same images against the references of OTHER groups.
 
     A high own rate only means something if the rate against other groups is low. For each kept group, `sample`
-    non-reference images (evenly spaced in time) are matched against the references of its own group and of the
-    groups listed in `neighbors[cluster]`. A foreign rate near the own rate means that both clusters show the same
-    camera (the camera was split in two), not that the group is impure.
+    non-reference images (evenly spaced in time) are matched against the references of its own group, of the
+    clusters listed in `near[cluster]` (the closest ones, where the same camera split in two shows up) and of those
+    in `random[cluster]` (far away, which measure how often ORB matches a different scene by chance).
+    Returns a summary per group and the table of every (group, other group) pair with its match rate.
     """
     kept = groups[groups["conservado"]].sort_values("instante")
+    available = set(kept["cluster"])
     matchers: dict[int, object] = {}
 
     def matcher_of(cluster: int):
@@ -156,28 +160,33 @@ def control_negativo(
             matchers[cluster] = matcher_cls([load_gray(name) for name in refs])
         return matchers[cluster]
 
-    rows = {}
+    summary, pair_rows = {}, []
     for cluster, group in kept.groupby("cluster"):
         rest = group[~group["es_referencia"]]["archivo"].tolist()
         if len(rest) > sample:
             rest = [rest[i] for i in np.linspace(0, len(rest) - 1, sample).round().astype(int)]
-        others = [c for c in neighbors.get(cluster, []) if c in set(kept["cluster"]) and c != cluster]
-        hits = {c: 0 for c in [cluster] + others}
+        kinds = {c: "cercano" for c in near.get(cluster, []) if c in available and c != cluster}
+        kinds.update({c: "azar" for c in random.get(cluster, []) if c in available and c != cluster and c not in kinds})
+        hits = {c: 0 for c in [cluster] + list(kinds)}
         for name in rest:
             gray = load_gray(name)
             for c in hits:
                 hits[c] += matcher_of(c).match(gray)["orb_matches"] >= match_min
         n = len(rest)
-        foreign = {c: hits[c] / n for c in others} if n else {}
-        best = max(foreign, key=foreign.get) if foreign else -1
-        rows[cluster] = {
+        pair_rows += [{"cluster": cluster, "otro": c, "tipo": kind, "tasa": hits[c] / n} for c, kind in kinds.items() if n]
+        near_rates = {c: hits[c] / n for c, k in kinds.items() if k == "cercano" and n}
+        far_rates = [hits[c] / n for c, k in kinds.items() if k == "azar" and n]
+        best = max(near_rates, key=near_rates.get) if near_rates else -1
+        summary[cluster] = {
             "evaluadas": n,
             "tasa_propia": hits[cluster] / n if n else float("nan"),
-            "tasa_ajena_media": float(np.mean(list(foreign.values()))) if foreign else float("nan"),
-            "tasa_ajena_max": foreign[best] if foreign else float("nan"),
-            "grupo_ajeno_max": best,
+            "tasa_cercana_media": float(np.mean(list(near_rates.values()))) if near_rates else float("nan"),
+            "tasa_cercana_max": near_rates[best] if near_rates else float("nan"),
+            "grupo_cercano_max": best,
+            "tasa_azar_media": float(np.mean(far_rates)) if far_rates else float("nan"),
         }
-    return pd.DataFrame.from_dict(rows, orient="index").rename_axis("cluster")
+    pairs = pd.DataFrame(pair_rows, columns=["cluster", "otro", "tipo", "tasa"])
+    return pd.DataFrame.from_dict(summary, orient="index").rename_axis("cluster"), pairs
 
 
 def _load_gray(name: str) -> np.ndarray:
@@ -190,18 +199,65 @@ def load_inventory() -> pd.DataFrame:
     return inv
 
 
+ORB_KS = [40, 60, 80, 100, 120, 160]  # the k values whose ORB match rate is measured (it takes about a minute each)
+CONTROL_NEIGHBORS = 5  # nearest other groups used as hard negatives
+CONTROL_RANDOM = 3  # random other groups, to also test far away ones
+CONTROL_CSV = data.RESULTS_DIR / "medellin_control_negativo.csv"
+CONTROL_PAIRS_CSV = data.RESULTS_DIR / "medellin_control_pares.csv"
+
+
+def run_control(groups: pd.DataFrame, X: np.ndarray, labels: np.ndarray) -> None:
+    """Negative control at the chosen k: 5 nearest groups and 3 random far ones per group; saves summary and pairs."""
+    near = nearest_clusters(X, labels, CONTROL_NEIGHBORS)
+    rng = np.random.default_rng(0)
+    ids = sorted(set(labels))
+    random = {
+        c: [int(o) for o in rng.choice([i for i in ids if i != c and i not in near[c]], CONTROL_RANDOM, replace=False)]
+        for c in ids
+    }
+    summary, pairs = control_negativo(groups, _load_gray, near, random)
+    summary.to_csv(CONTROL_CSV)
+    pairs.to_csv(CONTROL_PAIRS_CSV, index=False)
+    weights = summary["evaluadas"]
+    print(f"negative control, {len(summary)} groups:")
+    print(f"  own rate (weighted): {(summary.tasa_propia * weights).sum() / weights.sum():.3f}")
+    for kind in ("cercano", "azar"):
+        part = pairs[pairs["tipo"] == kind]
+        print(
+            f"  against {kind} groups: mean {part['tasa'].mean():.3f}, {(part['tasa'] >= 0.5).mean():.1%} of "
+            f"{len(part)} pairs at 50 % or more"
+        )
+
+
+def main_control() -> None:
+    """Only the negative control, from the groups already saved in data/splits/medellin_grupos.csv."""
+    inventory = load_inventory()
+    X = build_descriptors(inventory["archivo"].tolist())
+    groups = pd.read_csv(GROUPS_CSV, dtype={"instante": str})
+    labels = inventory["archivo"].map(groups.set_index("archivo")["cluster"]).to_numpy()
+    run_control(groups, X, labels)
+
+
 def main() -> None:
     inventory = load_inventory()
     X = build_descriptors(inventory["archivo"].tolist())
     tree = ward_tree(X)
     names = inventory["grupo_nombre"].str.extract(r"(\d+)")[0].astype(int).to_numpy()
 
-    table = evaluate_k(tree, X, CANDIDATE_K, reference=names)
+    def orb_rate(k: int, labels: np.ndarray) -> dict:
+        if k not in ORB_KS:
+            return {"tasa_orb_propia": np.nan}
+        grouped = assign_groups(inventory.assign(cluster=labels))
+        rates = match_rate_per_group(grouped, _load_gray)
+        return {"tasa_orb_propia": float((rates["tasa"] * rates["evaluadas"]).sum() / rates["evaluadas"].sum())}
+
+    table = evaluate_k(tree, X, CANDIDATE_K, reference=names, extra=orb_rate)
     K_CSV.parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(K_CSV, index=False)
     print(table.round(3).to_string(index=False))
 
-    inventory["cluster"] = cut_tree(tree, CHOSEN_K)
+    labels = cut_tree(tree, CHOSEN_K)
+    inventory["cluster"] = labels
     groups = assign_groups(inventory)
     rates = match_rate_per_group(groups, _load_gray)
     groups["tasa_orb_grupo"] = groups["cluster"].map(rates["tasa"])
@@ -217,6 +273,8 @@ def main() -> None:
         f"k = {CHOSEN_K}: {kept['cluster'].nunique()} groups kept ({len(kept)} images, "
         f"{int(kept['es_referencia'].sum())} references), {int((~groups['conservado']).sum())} images discarded"
     )
+
+    run_control(groups, X, labels)
     plot_dendrogram(tree)
     save_montage(groups)
 
@@ -262,4 +320,6 @@ def save_montage(groups: pd.DataFrame, n_groups: int = 12, per_group: int = 6, s
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main_control() if "--control" in sys.argv[1:] else main()
