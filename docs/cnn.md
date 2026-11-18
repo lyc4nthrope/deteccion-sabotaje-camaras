@@ -135,4 +135,17 @@ Con tasa 1e-2 hay señal leve de sobreajuste: la pérdida de validación es mín
 - **Elección de hiperparámetros (T66):** se hizo solo con la pérdida de validación de la ubicación 1. La cámara no vista se miró después, en T64.
 - **Lo que sí contaminó el examen:** la corrida de aumentación y dropout (T63) se evaluó en la cámara no vista y su resultado (caída a 221 de 251 desenfocadas como normal) decidió no probar más variantes. Por eso el 0,58 de la cámara no vista debe leerse como una cifra ya mirada: es optimista si se compara con una selección hecha a ciegas.
 - **Sobreajuste:** con tasa 1e-2 la pérdida de validación sube después de la época 3 mientras la de entrenamiento baja (0,0002 frente a 0,007 al cortar). La parada temprana restaura la época 3, así que el modelo reportado no es el sobreajustado. Con tasa 1e-3 todavía no hay sobreajuste, pero la brecha crece.
-- **Atajos:** la validación no detecta que la red aprende el contexto de cada día de grabación (train, val y test comparten días). Es la explicación más probable de la caída en la cámara no vista. Queda pendiente demostrarlo con Grad-CAM (T67).
+- **Atajos:** la validación no detecta que la red aprende el contexto de cada día de grabación (train, val y test comparten días). Es la explicación más probable de la caída en la cámara no vista, y **sigue siendo una hipótesis**: Grad-CAM (T67, sección siguiente) no la demuestra, porque los mapas son gruesos y difusos.
+
+## Explicabilidad con Grad-CAM (T67)
+
+Código: `src/explain_cnn.py` (`python -m src.explain_cnn`). Figuras: `results/figuras/gradcam_test.png` y `gradcam_camara_no_vista.png` (4 ejemplos por clase y conjunto, semilla fija). Atención media por clase y acierto: `results/cnn/lr1e-2_b32_frozen/gradcam_resumen.csv`. Interpretación completa en `notebooks/05_explicabilidad_cnn.ipynb`.
+
+El reparto por tercios verticales divide en proporción las 7 filas del mapa (no caben en 3 tercios enteros) y se compara siempre contra la **línea base de un mapa uniforme**: 1/3 por tercio.
+
+- **Sesgo central moderado y atención difusa, sin zona propia del sabotaje.** El tercio medio concentra de 0,442 a 0,585 (1,3 a 1,8 veces el azar) en todas las clases y cámaras, con concentración baja (0,060 a 0,265). Es el sesgo central típico de Grad-CAM (relleno y campo receptivo sobre un mapa de 7×7), así que no prueba por sí solo que la red mire el centro.
+- **Cielo: ni confirmado ni descartado.** El tercio superior queda por debajo del azar en todas las filas salvo test/giradas acertadas (0,373, solo 7 imágenes).
+- **Los errores de la cámara no vista son seguros:** probabilidad media de 0,86 en las desenfocadas mal clasificadas y 0,90 en las giradas mal clasificadas. Es compatible con un cambio de dominio, pero Grad-CAM no lo demuestra.
+- **La oscuridad no es la causa**, y esto viene de la auditoría, no de Grad-CAM: oscurecer las imágenes de la ubicación 1 casi no degrada la CNN (F1 0,993 con brillo × 0,3, `docs/auditoria.md`, sección 5).
+- **No se puede afirmar que la CNN «mire el sabotaje», ni que «mire el contexto».**
+- **Límites:** mapa grueso (7×7), una corrida y una semilla, solo la clase predicha; sin LIME ni SHAP. El `model.keras` no se versiona: para reproducir se reentrena con `python -m src.train_cnn --name lr1e-2_b32_frozen --lr 1e-2 --batch 32 --seed 0` (da métricas idénticas).
