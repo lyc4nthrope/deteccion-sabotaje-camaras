@@ -25,8 +25,18 @@ Cada corrida: `results/cnn/<corrida>/run.json`. Tabla completa en `results/cnn/h
 | lr1e-3_b32_frozen | 1e-3 | 32 | 0 | 15 | 0,0143 | 1,000 |
 | lr1e-4_b32_unfreeze10 | 1e-4 | 32 | 10 | 15 | 0,0408 | 0,977 |
 | lr1e-4_b32_frozen | 1e-4 | 32 | 0 | 15 | 0,0863 | 0,980 |
+| lr1e-1_b32_frozen (T66b) | 1e-1 | 32 | 0 | 6 | 0,0000 | 1,000 |
+| lr1e-1_b32_frozen_seed1 (T66b) | 1e-1 | 32 | 0 | 3 | 0,00007 | 1,000 |
 
 **Elección:** tasa 1e-2, lote 32, base congelada. Es la de menor pérdida de validación y converge en 3 épocas. Tasa 1e-4 queda claramente peor: aprende despacio y con 15 épocas no alcanza. Descongelar 10 capas con tasa 1e-4 mejora sobre la base congelada con la misma tasa, pero no supera a 1e-2.
+
+**T66b, tasa 1e-1 (la década siguiente a la mejor).** Dos corridas, semillas 0 y 1, con lote 32 y base congelada. **No diverge** (no aparecen NaN), pero es inestable, y se mantiene 1e-2:
+
+- La pérdida de validación "gana" solo en apariencia: 0,0000 (semilla 0) y 0,00007 (semilla 1) frente a 0,0041 de 1e-2. Con accuracy de validación 1,000 en las tres corridas, esa pérdida es una probabilidad saturada en 1 (el 0,0 es un desbordamiento por debajo del `float32`), no una mejor generalización.
+- Las curvas oscilan: la pérdida de entrenamiento salta (2,43 en la primera época de la semilla 1; 0,25 y 0,07 en la semilla 0) y la de validación salta de forma errática (1,67 en la época 4 y 0,23 en la 9 de la semilla 0; en la semilla 1 vuelve a 0,22 a 0,29 tras el mejor punto, época 3), con accuracy de validación que cae a 0,957 o 0,986. La corrida de 1e-2 mantiene accuracy 1,000 en todas las épocas.
+- La parada temprana con `restore_best_weights` elige el instante afortunado de una curva ruidosa.
+
+**Qué cambia en la regla:** la elección ya no es solo "la menor pérdida de validación", porque en este régimen esa pérdida se satura y deja de discriminar. Se elige 1e-2 por la menor pérdida entre las corridas **estables**. T63 y T64 no se rehacen. La elección queda dentro de la grilla (1e-1 por encima, 1e-3 y 1e-4 por debajo), ya no en el borde. Sigue valiendo la limitación de abajo: la validación de la ubicación 1 casi no discrimina, y 1e-1 no se evaluó en la cámara no vista porque esa cámara no se usa para elegir.
 
 **Limitación:** la validación de la ubicación 1 casi no discrimina. Casi todas las corridas dan 97–100 % de accuracy, porque las imágenes de validación son de la misma cámara y escena que el entrenamiento. La elección se hizo solo con la pérdida de validación de la ubicación 1 (la menor, lr 1e-2). La cámara no vista no se usó para elegir: se evaluó después, en T64.
 
