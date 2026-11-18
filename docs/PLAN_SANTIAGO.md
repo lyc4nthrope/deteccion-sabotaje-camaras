@@ -49,10 +49,10 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 0. Organización
 
-- [ ] **T01 ⛔ P1** Leer y acordar el plan con Cristhian.
+- [x] **T01 ⛔ P1** Leer y acordar el plan con Cristhian.
   - **Qué hacer:** leer el plan general y los dos planes personales; anotar dudas en el PR del plan.
   - **Cómo verificar:** ambos aprueban el PR.
-- [ ] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
+- [x] **T03 🟢 P1** Configurar el entorno Python (local o Colab) con `requirements.txt`.
   - **Cómo verificar:** `pytest` se ejecuta y `import cv2` funciona.
 - [x] **T04 ⛔** Confirmar con la profesora (hecha, 2026-10-29).
   - **Respuesta:** el proyecto puede hacerse solo en Python, solo en MATLAB o en ambos; se acepta Bremen si el informe dice que no se encontró un dataset público regional de sabotaje, que Bremen se usó para entender y desarrollar el trabajo y que el método funcionaría igual con un dataset regional. Decisión del equipo: solo Python, MATLAB opcional (D8).
@@ -69,7 +69,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 1. Datos (tu parte)
 
-- [ ] **T12 🟢 P3** Galería: 5 imágenes por clase y cámara.
+- [x] **T12 🟢 P3** Galería: 5 imágenes por clase y cámara.
   - **Esperas a:** Cristhian (T10 descarga y T11 inventario).
   - **Qué hacer:** leer `results/inventario.csv` y armar una figura con 5 imágenes por clase y cámara.
   - **Entregable:** `results/figuras/galeria.png`.
@@ -97,20 +97,20 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
 
 ### Fase 2. Perturbaciones
 
-- [ ] **T20 ⛔ P1** `src/perturbations.py`.
+- [x] **T20 ⛔ P1** `src/perturbations.py`.
   - **Qué hacer:** funciones de brillo (oscurecer y aclarar), corrección gamma, ruido gaussiano, sal y pimienta y compresión JPEG; 3 niveles cada una; parámetro de semilla. **No incluir desenfoque** (es una clase, ver D7).
   - **Entregable:** `src/perturbations.py`.
   - **Cómo verificar:** las pruebas de T21 pasan.
   - **Quién te espera:** Cristhian (T70, conjuntos degradados); tú mismo (T91; T50 si se hace MATLAB).
-- [ ] **T21 ⛔ P1** `tests/test_perturbations.py`.
+- [x] **T21 ⛔ P1** `tests/test_perturbations.py`.
   - **Qué hacer:** probar que cada perturbación conserva forma, `dtype` uint8, rango 0–255 y es reproducible con la misma semilla.
   - **Cómo verificar:** `pytest` pasa.
-- [ ] **T22 🟢 P2** `notebooks/02_perturbaciones.ipynb`: grilla perturbación × nivel.
-- [ ] **T23 🟢 P2** Justificar los niveles: qué situación real simula cada uno (anochecer, contraluz, sensor ruidoso, transmisión comprimida…).
+- [x] **T22 🟢 P2** `notebooks/02_perturbaciones.ipynb`: grilla perturbación × nivel.
+- [x] **T23 🟢 P2** Justificar los niveles: qué situación real simula cada uno (anochecer, contraluz, sensor ruidoso, transmisión comprimida…).
 
 ### Fase 5. Clásico (tu parte)
 
-- [ ] **T44 🟢 P2** `notebooks/04_clasico.ipynb`: análisis de errores del módulo clásico.
+- [x] **T44 🟢 P2** `notebooks/04_clasico.ipynb`: análisis de errores del módulo clásico.
   - **Esperas a:** Cristhian (T43, evaluación del clásico).
   - **Qué hacer:** mostrar las imágenes mal clasificadas, agruparlas por tipo de error y escribir la causa (qué descriptor falló).
   - **Cómo verificar:** cada tipo de error tiene ejemplos y causa escrita.
@@ -134,19 +134,19 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 
 ### Fase 7. Aprendizaje profundo (arquitectura confirmada en la clase 17, D16)
 
-- [ ] **T60 ⛔ P1** Cargar datos desde `data/splits/split.csv` (224×224, normalización).
+- [x] **T60 ⛔ P1** Cargar datos desde `data/splits/split.csv` (224×224, normalización).
   - **Esperas a:** Cristhian (T14, división).
-- [ ] **T61 ⛔ P1** Modelo: MobileNetV2 congelado y cabeza de 4 clases (confirmada en la clase 17, D16).
-- [ ] **T62 ⛔ P1** Entrenar con early stopping; guardar curvas de loss y accuracy (train y val) en `results/cnn/`.
-- [ ] **T66 ⛔ P1** Comparación pequeña de hiperparámetros (orden: T62 → T66 → T63 → T64).
+- [x] **T61 ⛔ P1** Modelo: MobileNetV2 congelado y cabeza de 4 clases (confirmada en la clase 17, D16).
+- [x] **T62 ⛔ P1** Entrenar con early stopping; guardar curvas de loss y accuracy (train y val) en `results/cnn/`.
+- [x] **T66 ⛔ P1** Comparación pequeña de hiperparámetros (orden: T62 → T66 → T63 → T64).
   - **Qué hacer:** probar tasa de aprendizaje 1e-2, 1e-3 y 1e-4; tamaño de lote 16 y 32; número de capas descongeladas. Comparar las curvas de validación.
   - **Entregable:** `results/cnn/hiperparametros.csv` y sección en `docs/cnn.md` con el porqué de cada valor.
   - **Cómo verificar:** cada valor elegido tiene su curva y su justificación (la rúbrica califica como básico elegirlos al azar).
 - [ ] **T66b 🟢 P2** Probar la tasa 1e-1 (lote 32, base congelada). Tu mejor tasa, 1e-2, quedó en el borde de la grilla, y la clase 17 dice explorar por décadas (D16).
   - **Cómo verificar:** fila nueva en `hiperparametros.csv`; si 1e-1 gana, rehaces T63 y T64; si diverge, lo documentas.
-- [ ] **T63 ⛔ P1** Diagnosticar sobreajuste y ajustar con aumentación de datos y dropout (después de T66).
+- [x] **T63 ⛔ P1** Diagnosticar sobreajuste y ajustar con aumentación de datos y dropout (después de T66).
   - **Cómo verificar:** las curvas de train y val no se separan de forma severa.
-- [ ] **T64 ⛔ P1** Evaluar en test y en la cámara no vista (ubicación 2) con `src/metrics.py` y medir tiempo por frame.
+- [x] **T64 ⛔ P1** Evaluar en test y en la cámara no vista (ubicación 2) con `src/metrics.py` y medir tiempo por frame.
   - **Esperas a:** Cristhian (T25, métricas; T19, cámara no vista).
   - **Quién te espera:** Cristhian (T71, auditoría).
 - [ ] **T65 🟢 P1** `docs/cnn.md`: arquitectura, parámetros y decisiones, para explicarlos en la defensa.
@@ -168,14 +168,14 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
   - **Antes de guardar:** pasa cada foto por `src/anonymize.py` (T86, de Cristhian) si aparece alguien.
   - **Cómo verificar:** conteo de ~100 por clase, conjunto de iluminación completo y sin personas identificables.
   - **Quién te espera:** Cristhian (T75, auditoría física); tú mismo (T83); ambos (T93).
-- [ ] **T82 🟢 P1** `src/demo.py`: webcam → clasificación clásica en vivo con FPS en pantalla.
+- [x] **T82 🟢 P1** `src/demo.py`: webcam → clasificación clásica en vivo con FPS en pantalla.
   - **Qué hacer:** empezar con un paso de calibración que capture 8 frames normales de referencia de la escena en vivo (el método clásico compara ORB contra referencias de la **misma** cámara; las de Bremen no sirven para otra cámara; 8 como en el artículo).
   - **Esperas a:** Cristhian (T40, reglas); tu tarea T07.
 - [ ] **T83 ⛔ P2** Evaluar ambos modelos sobre los datos propios; ajuste fino de la CNN si falla.
   - **Esperas a:** Cristhian (T43); tus tareas T64 y T81.
   - **Quién te espera:** ambos (T93, guía de defensa).
-- [ ] **T84 🟢 P1** Agregar la CNN a la demo.
-- [ ] **T85 ⛔ P1** Teclas en la demo para activar y desactivar los filtros de T91 (CLAHE, gamma, mediana). Hazla primero con el módulo clásico (depende de T82 y T91); la CNN se agrega cuando T84 esté lista, así el ensayo T94 no espera el tema de CNN.
+- [x] **T84 🟢 P1** Agregar la CNN a la demo.
+- [x] **T85 ⛔ P1** Teclas en la demo para activar y desactivar los filtros de T91 (CLAHE, gamma, mediana). Hazla primero con el módulo clásico (depende de T82 y T91); la CNN se agrega cuando T84 esté lista, así el ensayo T94 no espera el tema de CNN.
   - **Qué hacer:** mostrar la predicción antes y después del filtro, con los FPS.
   - **Esperas a:** tus tareas T82 y T91 (T84 solo para agregar la CNN después).
   - **Quién te espera:** ambos (T94, ensayo de la defensa).
@@ -197,7 +197,7 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 
 - [ ] **T90 ⛔ P1** Diagnóstico de los fallos de la CNN: qué canal o patrón se altera con cada perturbación y por qué.
   - **Esperas a:** Cristhian (T74 y T75, auditoría artificial y física).
-- [ ] **T91 ⛔ P1** `src/corrections.py`: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral.
+- [x] **T91 ⛔ P1** `src/corrections.py`: CLAHE o ecualización, corrección gamma, mediana, Gaussiano o bilateral.
   - **Cómo verificar:** pruebas de forma y `dtype`.
   - **Quién te espera:** Cristhian (T92, antes/después).
 
@@ -229,8 +229,8 @@ estará escrita para el informe; no hace falta esperarla como bloqueo.
 
 ## Tareas compartidas
 
-- [ ] **T01 ⛔ P1** Acordar el plan (ver Fase 0).
-- [ ] **T03 🟢 P1** Entorno Python (ver Fase 0).
+- [x] **T01 ⛔ P1** Acordar el plan (ver Fase 0).
+- [x] **T03 🟢 P1** Entorno Python (ver Fase 0).
 - [ ] **T93 ⛔ P1** `docs/defensa.md`: ataque → síntoma → causa matemática → filtro → mejora medida. Tú escribes la parte de la CNN y de las correcciones.
 - [ ] **T94 🟢 P1** Ensayo cruzado con la demo: uno ataca en vivo y el otro explica y activa el filtro, y viceversa (requiere tu T85).
 - [ ] **T101 🟢 P1** Tus secciones del informe: perturbaciones, CNN, dataset regional de Medellín, captura en Armenia, demo y MATLAB si se hizo.
