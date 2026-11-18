@@ -96,10 +96,30 @@ una tapada de 2,5 a 24,1, por encima de 18,9. El clásico las cree nítidas y la
 | **"¿Por qué no usaron solo la CNN?"** | — | "En test la CNN rinde igual (F1 0,967 frente a 0,954), pero en una cámara nunca vista cae a 0,58 y el clásico se mantiene en 0,92. Todo modelo que aprende de una sola cámara memoriza esa cámara; las reglas deciden con señales relativas a la cámara" |
 | **"¿Cómo saben que no hay fuga de datos?"** | — | "Sin duplicados (MD5), división por bloques de 12 imágenes con 2 descartadas en cada frontera, umbrales solo con train, y la cámara no vista nunca se usó para elegir nada" |
 
-## 6. CNN (Santiago, T90 y T93)
+## 6. CNN (T90 y T93)
 
-Pendiente: mismo formato (ataque → síntoma → causa → corrección → mejora) con los resultados de la CNN sobre el
-mismo conjunto degradado (`audit.degrade`) y la explicabilidad de T67.
+**Lo medido** (Cristhian, T71–T73): síntoma y dirección del error de la CNN en el nivel 3 de cada ataque, sobre las
+mismas imágenes que el clásico. Fuentes: `results/auditoria/tabla.csv` y `results/auditoria/matrices_cruzadas.csv`.
+**Lo que falta** (Santiago, T67, PR #34): confirmar o descartar cada causa con Grad-CAM. Hasta entonces, la columna
+"Causa probable" son **hipótesis** y se deben presentar así en la defensa.
+
+| Ataque (nivel 3) | Síntoma medido | Hacia dónde se equivoca | Causa probable (hipótesis) | Frente al clásico |
+|---|---|---|---|---|
+| **Sal y pimienta** (10 %) | F1 0,221; **33,5 %** de falsas alarmas; AUC 0,872 | 61 de 182 normales, las 68 desenfocadas y las 68 tapadas → girada | Los impulsos 0/255 dominan los rasgos de bordes de las primeras capas y la escena deja de parecerse a la vista normal | Los dos fallan, pero el clásico se recupera con la **mediana** (0,23 → 0,46; niveles 1 y 2: 0,98) y la CNN no tiene un filtro equivalente medido |
+| **JPEG** (calidad 10) | F1 0,575; falsas alarmas 0,5 % | 28 de 68 desenfocadas y 50 de 68 tapadas → girada | Los bloques de 8×8 de la compresión crean bordes artificiales donde la imagen era lisa (desenfocada, tapada) | **El clásico resiste (0,903)**; por qué resiste no está medido |
+| **Ruido gaussiano** (σ = 30) | F1 0,416; falsas alarmas 1,1 % | 63 de 68 desenfocadas y 42 de 68 tapadas → girada | El ruido fuerte también parece textura y bordes | La CNN aguanta más: σ = 5 da 0,985 frente a 0,266 del clásico, cuyo Laplaciano se infla desde el nivel 1 (sección 2.1) |
+| **Gamma** (3) | F1 0,820; 0 falsas alarmas | 9 desenfocadas → girada; 5 giradas → normal | Los medios tonos se oscurecen, pero la estructura de la escena sigue | **La CNN resiste mejor** (el clásico: 0,599 y 18,7 % de falsas alarmas) |
+| **Brillo oscuro y claro** (3) | F1 0,993 y 0,935 | Casi sin errores | La red se entrenó con escenas de distinta luz | La CNN resiste mejor; el clásico baja a 0,842 y 0,852 |
+
+**Cómo decirlo en la defensa:** "La CNN no es más robusta en todo. Gana con la luz y el ruido leve; pierde con la
+compresión fuerte, y con sal y pimienta da muchas falsas alarmas. Y cuando falla, no podemos señalar un descriptor ni
+corregirlo con un filtro conocido, como sí hacemos con el clásico (mediana ante impulsos, gamma inversa ante la
+oscuridad). Una propuesta coherente con estos datos es un sistema híbrido: la CNN como detector principal y el clásico para
+diagnosticar y corregir."
+
+**Pendiente para Santiago:** con los mapas de Grad-CAM (#34), confirmar o descartar las hipótesis de sal y pimienta y
+JPEG, y medir si aplicar la mediana **antes** de la CNN recupera la sal y pimienta (hoy solo está medido para el
+clásico).
 
 ## 7. Límites que conviene reconocer
 
