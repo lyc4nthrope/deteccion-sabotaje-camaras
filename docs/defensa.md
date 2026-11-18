@@ -100,8 +100,9 @@ una tapada de 2,5 a 24,1, por encima de 18,9. El clásico las cree nítidas y la
 
 **Lo medido** (Cristhian, T71–T73): síntoma y dirección del error de la CNN en el nivel 3 de cada ataque, sobre las
 mismas imágenes que el clásico. Fuentes: `results/auditoria/tabla.csv` y `results/auditoria/matrices_cruzadas.csv`.
-**Lo que falta** (Santiago, T67, PR #34): confirmar o descartar cada causa con Grad-CAM. Hasta entonces, la columna
-"Causa probable" son **hipótesis** y se deben presentar así en la defensa.
+**Grad-CAM** (Santiago, T67, #34; `docs/cnn.md`) no resuelve las causas: se calculó sobre imágenes sin perturbar y los
+mapas son centrales y difusos, sin una zona propia del sabotaje. Por eso la columna "Causa probable" sigue siendo
+**hipótesis** y se debe presentar así en la defensa.
 
 | Ataque (nivel 3) | Síntoma medido | Hacia dónde se equivoca | Causa probable (hipótesis) | Frente al clásico |
 |---|---|---|---|---|
@@ -119,8 +120,8 @@ normal frente a saboteada, porque generaliza a una cámara nueva con 8 referenci
 en la cámara no vista), y la CNN como segunda opinión sobre el tipo en cámaras con imágenes de entrenamiento, donde
 resiste mejor la luz y el ruido leve. Es una propuesta: no la medimos." (Informe, sección 12.2.)
 
-**Pendiente para Santiago:** con los mapas de Grad-CAM (#34), confirmar o descartar las hipótesis de sal y pimienta y
-JPEG, y medir si aplicar la mediana **antes** de la CNN recupera la sal y pimienta (hoy solo está medido para el
+**Pendiente (trabajo futuro):** correr Grad-CAM sobre el conjunto degradado para poner a prueba las hipótesis de sal y
+pimienta y JPEG, y medir si aplicar la mediana **antes** de la CNN recupera la sal y pimienta (hoy solo está medido para el
 clásico).
 
 ## 7. Límites que conviene reconocer

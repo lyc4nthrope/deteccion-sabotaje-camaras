@@ -20,7 +20,7 @@ secciones 7 a 9 y responde qué módulo conviene en cada situación y por qué.
 | Auditoría: condiciones con mejor F1 (de 19) | 4 | **10** | **CNN** (5 empates) |
 | Tiempo por cuadro, mediana de las 19 condiciones de la auditoría | **12,4 ms** | 51,9 ms | **Clásico** (unas 4 veces) |
 | Qué se ajusta con datos | 5 parámetros de decisión (tabla 5.1), más 8 referencias por cámara | 5 124 pesos sobre una base preentrenada | Clásico (menos datos) |
-| Explicación y corrección de cada fallo | Fórmula y filtro medidos (sección 9) | Hipótesis, Grad-CAM pendiente | **Clásico** |
+| Explicación y corrección de cada fallo | Fórmula y filtro medidos (sección 9) | Hipótesis; Grad-CAM no las resuelve | **Clásico** |
 
 La respuesta corta es que **ningún módulo es mejor en todo**: en condiciones limpias empatan, ante perturbaciones de
 la misma cámara gana la CNN, y en una cámara nueva gana con amplitud el clásico.
@@ -79,8 +79,9 @@ La caída de la CNN en la cámara no vista es **compatible** con ese atajo, pero
 el cambio de escena, de resolución (4608×2592 frente a 1280×720) y de tipo de giro. Este último punto es concreto:
 en la ubicación 1 "girada" es un cambio completo de escena, mientras que en la ubicación 2 es un giro parcial con la
 escena superpuesta (sección 11.1). Que 102 de 167 giradas salgan como normales es lo esperable si la red aprendió
-"otra escena" y no "giro"; es una **hipótesis**. Distinguir entre fecha, escena y tipo de giro requiere mirar
-dónde se fija la red, con Grad-CAM (T67), que está pendiente.
+"otra escena" y no "giro"; es una **hipótesis**. Grad-CAM (T67) no permite distinguir entre fecha, escena y tipo de
+giro: en prueba y en la cámara no vista, en todas las clases, el tercio medio del mapa concentra de 0,442 a 0,585 de la atención (1,3 a 1,8 veces lo que
+daría un mapa uniforme), con atención difusa y sin una zona propia del sabotaje (`results/cnn/lr1e-2_b32_frozen/gradcam_resumen.csv`).
 
 El clásico es **menos sensible** al sesgo por construcción, no por medición: sus parámetros de decisión (tabla 5.1) tienen un
 significado físico fijado de antemano (nitidez, dispersión del matiz, coincidencias, ángulo) y la decisión principal se compara
@@ -162,8 +163,8 @@ este proyecto.
   CNN generalice, solo que esta no lo hizo con estos datos.
 - **Sin validación regional ni física.** La prueba en Medellín y la captura en Armenia no están terminadas, y la
   auditoría con luz real (T75) depende de esa captura (sección 8.6).
-- **Causas de la CNN sin confirmar.** Todo lo que se dice sobre por qué falla la CNN es hipótesis hasta tener los
-  mapas de Grad-CAM (T67).
+- **Causas de la CNN sin confirmar.** Todo lo que se dice sobre por qué falla la CNN es hipótesis: los mapas de
+  Grad-CAM (T67) son centrales y difusos y no la confirman ni la descartan.
 
 ## 10.8 Consecuencia
 
