@@ -20,3 +20,22 @@ Numeración única para todo el informe. Cada sección cita con `[n]`. Agregar l
 7. N. Hernández-Díaz, E. Puertas, J. C. Martinez-Santos, G. Archbold, Y. Rios y Y. Peñaloza. "Dataset for
    Detecting Motorcyclists in Pedestrian Areas". Zenodo, 2023. DOI: 10.5281/zenodo.7935299. Licencia CC BY 4.0.
    Artículo de datos en *Data in Brief*, DOI: 10.1016/j.dib.2023.109610.
+8. J. L. Pech-Pacheco, G. Cristóbal, J. Chamorro-Martínez y J. Fernández-Valdivia. "Diatom autofocusing in
+   brightfield microscopy: a comparative study". Proc. 15th International Conference on Pattern Recognition
+   (ICPR), vol. 3, pp. 314–317, 2000.
+9. E. Rublee, V. Rabaud, K. Konolige y G. Bradski. "ORB: An efficient alternative to SIFT or SURF". Proc. IEEE
+   International Conference on Computer Vision (ICCV), pp. 2564–2571, 2011.
+10. D. G. Lowe. "Distinctive Image Features from Scale-Invariant Keypoints". International Journal of Computer
+    Vision, 60(2), pp. 91–110, 2004.
+11. P. F. Alcantarilla, A. Bartoli y A. J. Davison. "KAZE Features". European Conference on Computer Vision (ECCV),
+    LNCS 7577, pp. 214–227, 2012.
+12. M. A. Fischler y R. C. Bolles. "Random Sample Consensus: A Paradigm for Model Fitting with Applications to Image
+    Analysis and Automated Cartography". Communications of the ACM, 24(6), pp. 381–395, 1981.
+13. M. Sandler, A. Howard, M. Zhu, A. Zhmoginov y L.-C. Chen. "MobileNetV2: Inverted Residuals and Linear
+    Bottlenecks". Proc. IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 4510–4520, 2018.
+    arXiv:1801.04381.
+14. T. Fawcett. "An introduction to ROC analysis". Pattern Recognition Letters, 27(8), pp. 861–874, 2006.
+15. J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li y L. Fei-Fei. "ImageNet: A large-scale hierarchical image
+    database". Proc. IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pp. 248–255, 2009.
+16. A. G. Howard, M. Zhu, B. Chen, D. Kalenichenko, W. Wang, T. Weyand, M. Andreetto y H. Adam. "MobileNets:
+    Efficient Convolutional Neural Networks for Mobile Vision Applications". arXiv:1704.04861, 2017.
