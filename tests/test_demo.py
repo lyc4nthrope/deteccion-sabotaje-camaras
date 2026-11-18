@@ -58,3 +58,27 @@ def test_headless_run_counts_frames_after_calibration(tmp_path):
 def test_headless_run_fails_clearly_on_a_missing_source(tmp_path):
     with pytest.raises(RuntimeError):
         demo.run(str(tmp_path / "missing.avi"), headless=True)
+
+
+class _FakeCamera:
+    """Gives frames 0, 1, 2, ... where every pixel of frame i equals i, like a capture that never ends."""
+
+    def __init__(self):
+        self.count = 0
+
+    def read(self):
+        frame = np.full((360, 640, 3), self.count % 256, dtype=np.uint8)
+        self.count += 1
+        return True, frame
+
+
+def test_a_camera_discards_warmup_frames_and_a_video_does_not():
+    assert demo.warmup_frames("0") == demo.WARMUP_FRAMES > 0
+    assert demo.warmup_frames("clip.avi") == 0
+
+
+def test_calibration_skips_the_warmup_frames():
+    camera = _FakeCamera()
+    frames = demo.read_calibration(camera, warmup=30)
+    assert len(frames) == demo.CALIBRATION_FRAMES
+    assert [int(f[0, 0, 0]) for f in frames] == list(range(30, 30 + demo.CALIBRATION_FRAMES))

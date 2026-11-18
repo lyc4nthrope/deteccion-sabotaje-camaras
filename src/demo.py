@@ -31,7 +31,31 @@ from src import classic, corrections, features
 ROOT = Path(__file__).resolve().parents[1]
 CLASSIC = ROOT / "results" / "clasico"
 CALIBRATION_FRAMES = 8  # as in the article (T82)
+# A webcam starts with a default exposure and corrects it over its first frames (measured: mean gray 74 -> 103 in
+# about 2 s). References taken in that window do not match the settled scene, so ORB matches drop and RANSAC reports
+# false rotations. About 1.5 s at 20 fps are discarded first. A video file is already exposed: nothing to discard.
+WARMUP_FRAMES = 30
 FILTER_KEYS = {"c": "clahe", "g": "gamma_inverso_nivel_2", "m": "mediana"}
+
+
+def warmup_frames(source) -> int:
+    """Frames to discard before calibrating: only a live camera (a numeric source) needs to settle its exposure."""
+    return WARMUP_FRAMES if str(source).isdigit() else 0
+
+
+def read_calibration(capture, warmup: int) -> list[np.ndarray]:
+    """Discard `warmup` frames, then return the next CALIBRATION_FRAMES frames as references."""
+    frames = []
+    for _ in range(warmup):
+        ok, _frame = capture.read()
+        if not ok:
+            raise RuntimeError("source ended during the camera warm-up")
+    while len(frames) < CALIBRATION_FRAMES:
+        ok, frame = capture.read()
+        if not ok:
+            raise RuntimeError("source ended before the calibration frames")
+        frames.append(frame)
+    return frames
 
 
 def calibrate(frames: list[np.ndarray]) -> features.ReferenceMatcher:
@@ -81,13 +105,7 @@ def run(source, cnn_run: str | None = None, headless: bool = False, max_frames: 
     if not capture.isOpened():
         raise RuntimeError(f"cannot open source {source!r}")
 
-    calibration = []
-    while len(calibration) < CALIBRATION_FRAMES:
-        ok, frame = capture.read()
-        if not ok:
-            raise RuntimeError("source ended before the calibration frames")
-        calibration.append(frame)
-    matcher = calibrate(calibration)
+    matcher = calibrate(read_calibration(capture, warmup_frames(source)))
 
     active: set[str] = set()
     counts: Counter = Counter()
