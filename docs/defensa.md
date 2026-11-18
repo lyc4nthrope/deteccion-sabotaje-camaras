@@ -101,28 +101,29 @@ una tapada de 2,5 a 24,1, por encima de 18,9. El clásico las cree nítidas y la
 **Lo medido** (Cristhian, T71–T73): síntoma y dirección del error de la CNN en el nivel 3 de cada ataque, sobre las
 mismas imágenes que el clásico. Fuentes: `results/auditoria/tabla.csv` y `results/auditoria/matrices_cruzadas.csv`.
 **Grad-CAM** (Santiago, T67, #34; `docs/cnn.md`) no resuelve las causas: se calculó sobre imágenes sin perturbar y los
-mapas son centrales y difusos, sin una zona propia del sabotaje. Por eso la columna "Causa probable" sigue siendo
-**hipótesis** y se debe presentar así en la defensa.
+mapas son centrales y difusos, sin una zona propia del sabotaje. Lo que sí se midió es aplicar un filtro **antes** de
+la CNN (`src/audit_cnn_filter.py`, `results/auditoria/cnn_con_filtro.csv`), una prueba por intervención: si quitar
+la supuesta causa recupera la métrica, la causa es esa. Con eso, sal y pimienta queda **confirmada**; JPEG y ruido
+gaussiano siguen siendo **hipótesis** y se deben presentar así en la defensa.
 
 | Ataque (nivel 3) | Síntoma medido | Hacia dónde se equivoca | Causa probable (hipótesis) | Frente al clásico |
 |---|---|---|---|---|
-| **Sal y pimienta** (10 %) | F1 0,221; **33,5 %** de falsas alarmas; AUC 0,872 | 61 de 182 normales, las 68 desenfocadas y las 68 tapadas → girada | Los impulsos 0/255 dominan los rasgos de bordes de las primeras capas y la escena deja de parecerse a la vista normal | Los dos fallan, pero el clásico se recupera con la **mediana** (0,23 → 0,46; niveles 1 y 2: 0,98) y la CNN no tiene un filtro equivalente medido |
-| **JPEG** (calidad 10) | F1 0,575; falsas alarmas 0,5 % | 28 de 68 desenfocadas y 50 de 68 tapadas → girada | Los bloques de 8×8 de la compresión crean bordes artificiales donde la imagen era lisa (desenfocada, tapada) | **El clásico resiste (0,903)**; por qué resiste no está medido |
-| **Ruido gaussiano** (σ = 30) | F1 0,416; falsas alarmas 1,1 % | 63 de 68 desenfocadas y 42 de 68 tapadas → girada | El ruido fuerte también parece textura y bordes | La CNN aguanta más: σ = 5 da 0,985 frente a 0,266 del clásico, cuyo Laplaciano se infla desde el nivel 1 (sección 2.1) |
+| **Sal y pimienta** (10 %) | F1 0,221; **33,5 %** de falsas alarmas; AUC 0,872 | 61 de 182 normales, las 68 desenfocadas y las 68 tapadas → girada | **Confirmada por intervención:** los impulsos 0/255 aislados son la causa, porque la mediana de 3×3 antes de la red devuelve el F1 de 0,694 a 0,967 (nivel 1), de 0,244 a 0,967 (nivel 2) y de 0,221 a 0,810 (nivel 3), sin falsas alarmas | **La mediana también recupera a la CNN**, y más que al clásico en el nivel 3 (0,81 frente a 0,46; niveles 1 y 2: 0,967 frente a 0,98, parejo) |
+| **JPEG** (calidad 10) | F1 0,575; falsas alarmas 0,5 % | 28 de 68 desenfocadas y 50 de 68 tapadas → girada | Hipótesis: los bloques de 8×8 de la compresión crean bordes artificiales donde la imagen era lisa (desenfocada, tapada). **La mediana no la recupera** (0,575 → 0,522), así que no es ruido aislado que ese filtro pueda quitar; la causa no está confirmada | **El clásico resiste (0,903)**; por qué resiste no está medido |
+| **Ruido gaussiano** (σ = 30) | F1 0,416; falsas alarmas 1,1 % | 63 de 68 desenfocadas y 42 de 68 tapadas → girada | Hipótesis: el ruido fuerte también parece textura y bordes. La mediana ayuda a medias (σ = 15: 0,764 → 0,878; σ = 30: 0,416 → 0,470) y con σ = 5 resta (0,985 → 0,967), así que no sirve a ciegas | La CNN aguanta más: σ = 5 da 0,985 frente a 0,266 del clásico, cuyo Laplaciano se infla desde el nivel 1 (sección 2.1) |
 | **Gamma** (3) | F1 0,820; 0 falsas alarmas | 9 desenfocadas → girada; 5 giradas → normal | Los medios tonos se oscurecen, pero la estructura de la escena sigue | **La CNN resiste mejor** (el clásico: 0,599 y 18,7 % de falsas alarmas) |
 | **Brillo oscuro y claro** (3) | F1 0,993 y 0,935 | Casi sin errores | La red se entrenó con escenas de distinta luz | La CNN resiste mejor; el clásico baja a 0,842 y 0,852 |
 
 **Cómo decirlo en la defensa:** "La CNN no es más robusta en todo. Gana con la luz y el ruido leve; pierde con la
-compresión fuerte, y con sal y pimienta da muchas falsas alarmas. Y cuando falla, no podemos señalar un descriptor ni
-corregirlo con un filtro conocido, como sí hacemos con el clásico (mediana ante impulsos, gamma inversa ante la
-oscuridad). Una propuesta coherente con estos datos es un sistema híbrido: el clásico como detector principal de
+compresión fuerte, y con sal y pimienta da muchas falsas alarmas. Y cuando falla, no podemos señalar un descriptor, como sí hacemos con el clásico. Lo que sí podemos hacer es
+probar un filtro delante y medir: la mediana arregla la sal y pimienta también en la CNN (sin costo en imágenes
+limpias: F1 0,967 antes y después), pero no ayuda ante JPEG fuerte y resta con ruido leve. Una propuesta coherente con estos datos es un sistema híbrido: el clásico como detector principal de
 normal frente a saboteada, porque generaliza a una cámara nueva con 8 referencias (F1 0,920 frente a 0,580 de la CNN
 en la cámara no vista), y la CNN como segunda opinión sobre el tipo en cámaras con imágenes de entrenamiento, donde
 resiste mejor la luz y el ruido leve. Es una propuesta: no la medimos." (Informe, sección 12.2.)
 
-**Pendiente (trabajo futuro):** correr Grad-CAM sobre el conjunto degradado para poner a prueba las hipótesis de sal y
-pimienta y JPEG, y medir si aplicar la mediana **antes** de la CNN recupera la sal y pimienta (hoy solo está medido para el
-clásico).
+**Límites de esta prueba:** una sola corrida de la CNN (semilla 0) y la mediana de 3×3 como único filtro. Queda como
+trabajo futuro correr Grad-CAM sobre el conjunto degradado, y medir CLAHE o el filtro bilateral delante de la red.
 
 ## 7. Límites que conviene reconocer
 
