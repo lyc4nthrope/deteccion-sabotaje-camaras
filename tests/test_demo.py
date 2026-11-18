@@ -77,6 +77,30 @@ def test_a_camera_discards_warmup_frames_and_a_video_does_not():
     assert demo.warmup_frames("clip.avi") == 0
 
 
+_THRESHOLDS = demo.classic.Thresholds(
+    match_min=12.5, blur_max=18.86, cover_feature="hue_std", cover_threshold=5.40, cover_direction="<", angle_max=0.94
+)
+
+
+def test_descriptor_lines_show_each_value_next_to_its_threshold():
+    desc = {"orb_matches": 652, "angle": 0.013, "lap_var": 6.31, "hue_std": 34.07}
+    text = " ".join(demo.descriptor_lines(desc, _THRESHOLDS, gray_mean=108.4))
+    for expected in ("ORB 652 / 12.5", "angulo 0.01 / 0.94", "Laplaciano 6.3 / 18.9", "matiz 34.1 / 5.4", "gris 108"):
+        assert expected in text
+
+
+def test_descriptor_lines_say_when_there_is_no_reliable_angle():
+    desc = {"orb_matches": 0, "angle": float("nan"), "lap_var": 4.2, "hue_std": 5.0}
+    assert "sin angulo" in " ".join(demo.descriptor_lines(desc, _THRESHOLDS, gray_mean=17.0))
+
+
+def test_classify_classic_returns_the_descriptors_it_decided_with():
+    frames = [_scene(s) for s in range(demo.CALIBRATION_FRAMES)]
+    label, desc = demo.classify_classic(frames[0], demo.calibrate(frames), _THRESHOLDS)
+    assert label in ("normal", "desenfocada", "girada", "tapada")
+    assert {"orb_matches", "angle", "lap_var", "hue_std"} <= set(desc)
+
+
 def test_calibration_skips_the_warmup_frames():
     camera = _FakeCamera()
     frames = demo.read_calibration(camera, warmup=30)

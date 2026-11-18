@@ -40,6 +40,19 @@ No toques el portátil durante la demo: mover la pantalla 1° o 2° ya supera el
 
 Con filtros activos, la pantalla muestra la predicción antes y después del filtro, y los FPS.
 
+## Diagnóstico en pantalla
+
+Debajo de la predicción, la demo muestra cada descriptor del árbol de decisión con su umbral al lado (valor / umbral),
+para explicar en vivo por qué el clásico decide cada etiqueta:
+
+```
+ORB 652 / 12.5   angulo 0.01 / 0.94
+Laplaciano 113.9 / 18.9   matiz 34.1 / 5.4   gris 108
+```
+
+Con filtros activos, los valores son los de la imagen filtrada, que es la que decide. El gris medio sirve para
+comprobar la gamma inversa: 255 · (gris / 255)^0,5.
+
 ## Pruebas sin cámara
 
 ```bash

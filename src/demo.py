@@ -72,9 +72,27 @@ def apply_filters(frame: np.ndarray, active: set[str]) -> np.ndarray:
     return out
 
 
-def classify_classic(frame: np.ndarray, matcher: features.ReferenceMatcher, thresholds: classic.Thresholds) -> str:
-    row = pd.DataFrame([features.extract(frame, matcher)])
-    return str(classic.predict(row, thresholds)[0])
+def classify_classic(
+    frame: np.ndarray, matcher: features.ReferenceMatcher, thresholds: classic.Thresholds
+) -> tuple[str, dict]:
+    """Label of the decision tree and the descriptors it used, so the demo can show why it decided."""
+    desc = features.extract(frame, matcher)
+    return str(classic.predict(pd.DataFrame([desc]), thresholds)[0]), desc
+
+
+def descriptor_lines(desc: dict, thresholds: classic.Thresholds, gray_mean: float) -> list[str]:
+    """On-screen diagnosis: each descriptor of the decision tree next to its threshold (value / threshold).
+
+    ASCII only, because cv2.putText cannot draw accents or the degree sign.
+    """
+    angle = desc["angle"]
+    angle_text = "sin angulo" if np.isnan(angle) else f"angulo {abs(angle):.2f} / {thresholds.angle_max:.2f}"
+    cover = desc[thresholds.cover_feature]
+    return [
+        f"ORB {int(desc['orb_matches'])} / {thresholds.match_min:.1f}   {angle_text}",
+        f"Laplaciano {desc['lap_var']:.1f} / {thresholds.blur_max:.1f}   matiz {cover:.1f} / "
+        f"{thresholds.cover_threshold:.1f}   gris {gray_mean:.0f}",
+    ]
 
 
 def classify_cnn(frame: np.ndarray, model) -> str:
@@ -89,7 +107,10 @@ def classify_cnn(frame: np.ndarray, model) -> str:
 def overlay(frame: np.ndarray, lines: list[str]) -> np.ndarray:
     out = frame.copy()
     for i, text in enumerate(lines):
-        cv2.putText(out, text, (10, 25 + 24 * i), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+        origin = (10, 25 + 24 * i)
+        # Black outline first, so the yellow text reads on a bright wall as well as on a dark scene.
+        cv2.putText(out, text, origin, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 4)
+        cv2.putText(out, text, origin, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
     return out
 
 
@@ -118,10 +139,15 @@ def run(source, cnn_run: str | None = None, headless: bool = False, max_frames: 
             break
         frames += 1
         filtered = apply_filters(frame, active)
-        before = classify_classic(frame, matcher, thresholds)
-        after = classify_classic(filtered, matcher, thresholds) if active else before
+        before, desc = classify_classic(frame, matcher, thresholds)
+        if active:
+            after, desc = classify_classic(filtered, matcher, thresholds)
+        else:
+            after = before
         counts[after] += 1
+        gray_mean = float(cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY).mean())
         lines = [f"clasico: {before}" + (f" -> con filtros: {after}" if active else ""), f"FPS: {fps:.1f}"]
+        lines += descriptor_lines(desc, thresholds, gray_mean)  # values of the image the classic decided on
         if model is not None:
             lines.append(f"CNN: {classify_cnn(filtered, model)}")
         if active:
