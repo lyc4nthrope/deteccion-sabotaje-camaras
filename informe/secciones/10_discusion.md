@@ -113,9 +113,11 @@ qué el clásico resiste ese mismo ataque no está medido.
 **Qué pasa después del fallo.** Aquí está la diferencia que más pesa para la defensa. El fallo del clásico se
 explica con una fórmula que predice la medición con menos de 2 % de error (tabla 9.1) y se corrige con un filtro
 elegido por teoría: la mediana lleva la sal y pimienta de niveles 1 y 2 a F1 0,98 y baja las falsas alarmas del
-nivel 3 de 27,5 % a 1,1 %; la gamma inversa lleva gamma 3 de 0,599 a 0,871 (tabla 9.4). Para la CNN no hay todavía
-ni diagnóstico confirmado ni corrección medida: si la mediana aplicada **antes** de la red recupera la sal y
-pimienta está pendiente (`docs/defensa.md`, sección 6).
+nivel 3 de 27,5 % a 1,1 %; la gamma inversa lleva gamma 3 de 0,599 a 0,871 (tabla 9.4). Para la CNN no hay una fórmula
+que explique el fallo, pero sí una prueba por intervención: la mediana aplicada **antes** de la red lleva la sal y
+pimienta de F1 0,221 a 0,810 en el nivel 3 y a 0,967 en los niveles 1 y 2, sin falsas alarmas (tabla 9.6). Eso
+confirma la causa de ese ataque. Con JPEG fuerte la mediana no ayuda (0,575 → 0,522) y con ruido gaussiano ayuda a
+medias, así que esas causas siguen sin confirmar.
 
 Las correcciones tienen además un límite que la auditoría dejó claro: **ninguna se puede aplicar a ciegas**. CLAHE
 sobre imágenes limpias baja el F1 del clásico de 0,954 a 0,323, y la inversa del brillo claro empeora el nivel 3
@@ -163,8 +165,9 @@ este proyecto.
   CNN generalice, solo que esta no lo hizo con estos datos.
 - **Sin validación regional ni física.** La prueba en Medellín y la captura en Armenia no están terminadas, y la
   auditoría con luz real (T75) depende de esa captura (sección 8.6).
-- **Causas de la CNN sin confirmar.** Todo lo que se dice sobre por qué falla la CNN es hipótesis: los mapas de
-  Grad-CAM (T67) son centrales y difusos y no la confirman ni la descartan.
+- **Causas de la CNN sin confirmar, salvo una.** Lo que se dice sobre por qué falla la CNN es hipótesis, excepto la
+  sal y pimienta, que la mediana antes de la red confirma (tabla 9.6). Los mapas de Grad-CAM (T67) son centrales y
+  difusos y no confirman ni descartan ninguna causa.
 
 ## 10.8 Consecuencia
 
