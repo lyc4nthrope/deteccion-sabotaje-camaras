@@ -77,9 +77,69 @@ que el procedimiento de degradación no altera las imágenes cuando no hay pertu
 
 El porqué de cada fallo, con su fórmula, y su corrección están en la sección 9.
 
-## 8.4 Pendiente
+## 8.4 CNN frente al clásico en las mismas condiciones (T71)
 
-- **CNN sobre las mismas 6213 imágenes** (Cristhian, T71, cuando se una la evaluación de la CNN), con matrices de
-  confusión cruzadas modelo × condición crítica (T72), curvas ROC por condición y F1 frente a severidad (T73).
+La CNN corre sobre **las mismas 6213 imágenes** (327 de test × 19 condiciones), con la misma degradación y la misma
+semilla por imagen que el clásico (`src/audit_cnn.py`; una prueba comprueba píxel a píxel que los dos modelos ven el
+mismo cuadro). La imagen degradada de 640×360 se reduce a 224×224 como en el entrenamiento. En la original la CNN da
+F1 0,967, igual que en su evaluación de la sección 7 (T64), lo que confirma que el procedimiento es el mismo.
+
+**Tabla 8.3.** F1 macro, tasa de falsas alarmas (normales marcadas como sabotaje) y AUC normal frente a sabotaje por
+condición. Fuente: `results/auditoria/tabla.csv`. "Mejor F1": diferencia mayor que 0,02; si no, ≈.
+
+| Condición | Nivel | F1 clásico | F1 CNN | Falsas alarmas clásico | Falsas alarmas CNN | AUC clásico | AUC CNN | Mejor F1 |
+|---|---|---|---|---|---|---|---|---|
+| Original | — | 0,954 | 0,967 | 0,5 % | 0,0 % | 0,997 | 1,000 | ≈ |
+| Brillo oscuro | 1 | 0,955 | 0,948 | 1,6 % | 0,0 % | 0,997 | 1,000 | ≈ |
+| Brillo oscuro | 2 | 0,935 | 0,967 | 2,7 % | 0,0 % | 0,997 | 1,000 | CNN |
+| Brillo oscuro | 3 | 0,842 | 0,993 | 2,7 % | 0,0 % | 0,989 | 1,000 | CNN |
+| Brillo claro | 1 | 0,971 | 0,926 | 0,5 % | 0,0 % | 0,997 | 1,000 | Clásico |
+| Brillo claro | 2 | 0,966 | 0,926 | 1,1 % | 0,0 % | 0,997 | 1,000 | Clásico |
+| Brillo claro | 3 | 0,852 | 0,935 | 5,5 % | 0,5 % | 0,994 | 1,000 | CNN |
+| Gamma | 1 | 0,902 | 0,926 | 1,1 % | 0,0 % | 0,997 | 1,000 | CNN |
+| Gamma | 2 | 0,762 | 0,876 | 3,3 % | 0,0 % | 0,995 | 1,000 | CNN |
+| Gamma | 3 | 0,599 | 0,820 | 18,7 % | 0,0 % | 0,978 | 1,000 | CNN |
+| Ruido gaussiano | 1 | 0,266 | 0,985 | 1,1 % | 0,0 % | 0,997 | 1,000 | CNN |
+| Ruido gaussiano | 2 | 0,278 | 0,764 | 0,5 % | 0,5 % | 0,997 | 1,000 | CNN |
+| Ruido gaussiano | 3 | 0,277 | 0,416 | 1,6 % | 1,1 % | 0,997 | 1,000 | CNN |
+| Sal y pimienta | 1 | 0,278 | 0,694 | 0,5 % | 22,0 % | 0,997 | 0,995 | CNN |
+| Sal y pimienta | 2 | 0,267 | 0,244 | 7,7 % | 25,3 % | 0,992 | 0,940 | Clásico |
+| Sal y pimienta | 3 | 0,232 | 0,221 | 27,5 % | 33,5 % | 0,964 | 0,872 | ≈ |
+| JPEG | 1 | 0,934 | 0,948 | 1,1 % | 0,0 % | 0,997 | 1,000 | ≈ |
+| JPEG | 2 | 0,975 | 0,985 | 0,5 % | 0,0 % | 0,997 | 1,000 | ≈ |
+| JPEG | 3 | 0,903 | 0,575 | 2,2 % | 0,5 % | 0,995 | 0,999 | Clásico |
+
+Tiempo por cuadro (mediana de las 19 condiciones): clásico **12,4 ms**, CNN **51,9 ms**.
+
+## 8.5 Lectura de la comparación (T72, T73)
+
+![F1 frente a severidad](../../results/figuras/auditoria_f1_severidad.png)
+
+**Figura 8.1.** F1 macro frente al nivel de cada perturbación. Fuente: `results/figuras/auditoria_f1_severidad.png`.
+
+1. **Ningún modelo es más robusto en todo.** La CNN tiene mejor F1 en 10 de las 19 condiciones, el clásico en 4 y en
+   5 quedan parejos. La CNN gana con la luz (gamma 3: 0,820 frente a 0,599; brillo oscuro 3: 0,993 frente a 0,842) y
+   con el ruido gaussiano leve (σ = 5: 0,985 frente a 0,266). El clásico gana con la compresión JPEG fuerte (0,903
+   frente a 0,575) y con el brillo claro leve (niveles 1 y 2).
+2. **Los dos siguen detectando *que* hay sabotaje; fallan en *qué tipo*.** El AUC normal frente a sabotaje es
+   ≥ 0,96 en 36 de las 38 combinaciones de modelo y condición. Por eso el F1, que sí mira el tipo, cae mucho más que
+   el AUC. Las dos excepciones son la CNN con sal y pimienta (AUC 0,940 en el nivel 2 y 0,872 en el nivel 3).
+3. **Falsas alarmas:** la CNN casi no da (≤ 1,1 %) salvo con sal y pimienta (22,0 % a 33,5 %); el clásico llega a
+   18,7 % con gamma 3 y 27,5 % con sal y pimienta 3.
+4. **Hacia dónde se equivocan** (matrices cruzadas, `results/figuras/auditoria_matrices.png` y
+   `results/auditoria/matrices_cruzadas.csv`): los dos tienden a "girada". El clásico, con ruido, porque el Laplaciano
+   inflado hace parecer nítidas las desenfocadas y tapadas (sección 9). La CNN, con sal y pimienta 3, manda a girada
+   61 de 182 normales y todas las desenfocadas y tapadas; con JPEG 3, 28 de 68 desenfocadas y 50 de 68 tapadas.
+5. **Costo:** la CNN tarda unas 4 veces más por cuadro, y su error no se explica con un descriptor ni se corrige con
+   un filtro conocido; el del clásico sí (sección 9).
+
+![Curvas ROC por condición](../../results/figuras/auditoria_roc.png)
+
+**Figura 8.2.** ROC normal frente a sabotaje por perturbación: nivel 3 (continua) frente a la original (punteada).
+Fuente: `results/figuras/auditoria_roc.png`. La interpretación completa está en `notebooks/06_auditoria.ipynb`.
+
+## 8.6 Pendiente
+
 - **Degradación física** con luz real en la captura propia (Cristhian, T75, después de la captura T81).
-- **Prueba regional en Medellín** y robustez de ORB, SIFT y KAZE ante perturbaciones (Santiago, T76 y T77).
+- **Prueba regional en Medellín** y robustez de ORB, SIFT y KAZE ante perturbaciones (Santiago, T76 y T77). Si no
+  alcanza el tiempo, se declara como limitación (sección 11).

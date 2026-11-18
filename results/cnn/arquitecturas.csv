@@ -1,0 +1,4 @@
+modelo,parametros,ms_mediana,ms_min,ms_max,veces_el_primero,repeticiones,rondas
+MobileNetV2,3538984,82.7,82.4,83.3,1.0,30,3
+ResNet-50,25636712,147.7,147.6,148.0,1.8,30,3
+VGG-16,138357544,355.8,351.5,370.6,4.3,30,3
