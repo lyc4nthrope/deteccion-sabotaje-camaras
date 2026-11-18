@@ -95,11 +95,11 @@ Cada corrida: `results/cnn/<corrida>/run.json`. Tabla completa en `results/cnn/h
 
 ## Evaluación en test y cámara no vista (T64)
 
-Modelo: lr 1e-2, lote 32, base congelada (la corrida elegida en T66). Métricas de T25, mismas fórmulas que el clásico. Detalle en `results/cnn/evaluacion/`.
+Modelo: lr 1e-2, lote 32, base congelada (la corrida elegida en T66). Métricas de T25, mismas fórmulas que el clásico. Detalle en `results/cnn/lr1e-2_b32_frozen/evaluacion/`.
 
 | Conjunto | n | Accuracy | F1 macro | FPR normal | AUC binaria |
 |---|---|---|---|---|---|
-| Test (ubicación 1) | 327 | 0,994 | 0,967 | 0,000 | 0,999 |
+| Test (ubicación 1) | 327 | 0,994 | 0,967 | 0,000 | 1,000 |
 | Cámara no vista (ubicación 2) | 1163 | 0,739 | 0,580 | 0,042 | 0,753 |
 
 Mismas métricas para el clásico en la cámara no vista (`results/clasico/metricas.csv`, 1163 imágenes): accuracy 0,947, F1 macro 0,920, FPR normal 0,001, AUC 0,979. Las 8 imágenes de diferencia son las referencias ORB de la cámara no vista (`referencias_camara_no_vista.csv`): el clásico no las evalúa y la CNN sí, hasta esta corrección. Ahora ambos evalúan las mismas 1163.

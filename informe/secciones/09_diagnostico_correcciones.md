@@ -136,5 +136,59 @@ hay, así que un filtro no debe dañar las imágenes normales.
 
 ## 9.5 Diagnóstico de la CNN
 
-*Redacta Santiago (T90 y T93): mismo formato (ataque → descriptor o capa que falla → causa → corrección → mejora)
-con la CNN sobre el mismo conjunto degradado y la explicabilidad con Grad-CAM (T67).*
+La CNN no expone descriptores: no se puede señalar "el descriptor que falla", como en el clásico. Lo que sí se
+midió es **qué** pasa con cada ataque (síntoma y dirección del error, sobre las mismas imágenes que el clásico) y,
+cuando una corrección aplicada **antes** de la red recupera la métrica, eso confirma la causa. Esa prueba por
+intervención es el único método de esta sección que puede confirmar una causa: Grad-CAM se calculó solo sobre
+imágenes sin degradar (sección 6.6) y sus mapas son centrales y difusos, así que **no confirma ni descarta
+ninguna** de las causas de la tabla 9.5.
+
+**Tabla 9.5. Diagnóstico de la CNN en el nivel 3 de cada ataque.** Fuentes: `results/auditoria/tabla.csv` y
+`results/auditoria/matrices_cruzadas.csv`.
+
+| Ataque | Síntoma medido | Hacia dónde se equivoca | Causa | Estado de la causa |
+|---|---|---|---|---|
+| Sal y pimienta (10 %) | F1 0,221; 33,5 % de falsas alarmas | 61 de 182 normales, las 68 desenfocadas y las 68 tapadas → girada | Los impulsos 0/255 aislados dominan los rasgos de las primeras capas y la escena deja de parecerse a la vista normal | **Confirmada** por la mediana (tabla 9.6) |
+| JPEG (calidad 10) | F1 0,575; 0,5 % de falsas alarmas | 28 de 68 desenfocadas y 50 de 68 tapadas → girada | Los bloques de 8×8 crean bordes artificiales donde la imagen era lisa | Hipótesis: la mediana no la recupera |
+| Ruido gaussiano (σ = 30) | F1 0,416; 1,1 % de falsas alarmas | 63 de 68 desenfocadas y 42 de 68 tapadas → girada | El ruido fuerte también parece textura y bordes | Hipótesis: la mediana ayuda a medias |
+| Gamma (3) | F1 0,820; 0 falsas alarmas | 9 desenfocadas → girada; 5 giradas → normal | Los medios tonos se oscurecen, pero la estructura de la escena sigue | No probada con filtro |
+| Brillo oscuro y claro (3) | F1 0,993 y 0,935 | Casi sin errores | La red se entrenó con escenas de distinta luz | No probada con filtro |
+
+**Corrección antes de la red.** Se aplicó la mediana de 3×3 al cuadro degradado y después se redujo a la entrada de
+la red, que es lo que haría la demo con el filtro activado (`src/audit_cnn_filter.py`,
+`results/auditoria/cnn_con_filtro.csv`). Mismas 327 imágenes y mismas semillas que la auditoría.
+
+**Tabla 9.6. F1 macro de la CNN sin y con mediana antes de la red.**
+
+| Ataque | Nivel | F1 sin filtro | F1 con mediana | Diferencia | Falsas alarmas sin → con |
+|---|---|---|---|---|---|
+| Original | — | 0,967 | 0,967 | 0,000 | 0,0 % → 0,0 % |
+| Sal y pimienta | 1 | 0,694 | 0,967 | +0,273 | 22,0 % → 0,0 % |
+| Sal y pimienta | 2 | 0,244 | 0,967 | +0,724 | 25,3 % → 0,0 % |
+| Sal y pimienta | 3 | 0,221 | 0,810 | +0,590 | 33,5 % → 0,0 % |
+| JPEG | 1 | 0,948 | 0,967 | +0,019 | 0,0 % → 0,0 % |
+| JPEG | 2 | 0,985 | 0,985 | 0,000 | 0,0 % → 0,0 % |
+| JPEG | 3 | 0,575 | 0,522 | −0,052 | 0,5 % → 0,5 % |
+| Ruido gaussiano | 1 | 0,985 | 0,967 | −0,017 | 0,0 % → 0,0 % |
+| Ruido gaussiano | 2 | 0,764 | 0,878 | +0,114 | 0,5 % → 0,5 % |
+| Ruido gaussiano | 3 | 0,416 | 0,470 | +0,055 | 1,1 % → 0,0 % |
+
+**Lectura:**
+
+1. **La mediana también corrige la sal y pimienta en la CNN, y mejor que en el clásico.** Con 10 % de impulsos
+   devuelve la red de F1 0,221 a 0,810 y elimina las falsas alarmas; el clásico llega solo a 0,46 (sección 9.4).
+   En los niveles 1 y 2 la red vuelve a su F1 sin degradar (0,967). Como quitar los impulsos devuelve el
+   rendimiento, **los impulsos aislados son la causa del fallo**: no hace falta Grad-CAM para confirmarlo.
+2. **No cuesta nada en imágenes limpias:** 0,967 antes y después. Dejarla siempre activa no daña a la CNN, como
+   tampoco al clásico (sección 9.4), pero el efecto en otras condiciones se verificó solo en prueba.
+3. **La mediana no sirve para todo.** Ante JPEG fuerte baja el F1 (0,575 → 0,522): el daño no es ruido aislado que
+   el filtro pueda quitar, y la causa de los bloques de 8×8 queda como hipótesis. Con ruido gaussiano ayuda a
+   medias (σ = 15: 0,764 → 0,878; σ = 30: 0,416 → 0,470) y con ruido leve resta (0,985 → 0,967). Un filtro
+   aplicado a ciegas puede empeorar, como CLAHE en el clásico.
+4. **Qué sí se puede decir de la CNN frente al clásico.** El clásico explica por qué falla (fórmula del Laplaciano)
+   y tiene un filtro que lo corrige para cada ataque. La CNN no ofrece esa explicación, pero la prueba por
+   intervención sí permite diagnosticar sus fallos: se coloca un filtro delante y se mide.
+
+**Límites.** Una sola corrida de la CNN (semilla 0), la mediana de 3×3 como único filtro, y no se probó CLAHE ni el
+bilateral delante de la red. Los valores de la sección 9.5 se calcularon sobre el conjunto de prueba, que ya se miró
+más de una vez (sección 11).

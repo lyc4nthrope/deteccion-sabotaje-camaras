@@ -33,7 +33,8 @@ medido (sección 10).
    4,7 + 8,94 σ² predice con menos de 2 % de error cómo el ruido infla el Laplaciano (tabla 9.1), y cada ataque
    tiene un filtro medido: la mediana recupera la sal y pimienta de niveles 1 y 2 (F1 0,98) y la gamma inversa
    lleva gamma 3 de 0,599 a 0,871 (tabla 9.4). La auditoría también mostró que una corrección a ciegas daña: CLAHE
-   baja el F1 limpio de 0,954 a 0,323. Para la CNN, síntomas y dirección del error están medidos, pero las causas
+   baja el F1 limpio de 0,954 a 0,323. Para la CNN, síntomas y dirección del error están medidos y la causa de la sal
+   y pimienta se confirmó al aplicar la mediana antes de la red (F1 0,221 → 0,810, tabla 9.6); las demás causas
    siguen siendo hipótesis: Grad-CAM (T67) da mapas centrales y difusos que no las resuelven.
 6. **Generalización regional: no cumplido.** La prueba en Medellín y la captura propia en Armenia no se
    completaron para esta entrega. La única medida de generalización es la segunda cámara de Bremen, que sí muestra
@@ -57,7 +58,7 @@ también KNN, SVM y Naive Bayes sobre los descriptores clásicos (sección 7.3)�
 3. **Explicabilidad de la CNN más fina que Grad-CAM.** Grad-CAM (T67) se hizo sobre imágenes sin perturbar y su mapa
    de 7×7 es demasiado grueso para ver si la red se fija en el sabotaje o en el contexto del día de grabación. Queda
    correrlo sobre el conjunto degradado y probar métodos de mayor resolución para confirmar o descartar las hipótesis de la sección 10.4 y de la sección 9.5, y
-   medir si la mediana aplicada antes de la red corrige la sal y pimienta como en el clásico.
+   medir CLAHE o el filtro bilateral antes de la red (la mediana ya se midió, tabla 9.6).
 4. **Validar las correcciones en validación.** La elección del bilateral para el ruido gaussiano y la decisión de
    dejar la mediana siempre activa se tomaron en prueba (sección 11.2) y deben confirmarse en validación.
 5. **Sistema híbrido (propuesta, no medida).** Los resultados sugieren combinar los módulos en lugar de elegir uno:
