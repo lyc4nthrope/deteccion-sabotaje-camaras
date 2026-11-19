@@ -19,9 +19,9 @@ mano. El reparto sugerido es C = Cristhian y S = Santiago.
 | 10 | Diagnóstico de la CNN | S | No hay descriptor que señalar, pero sí intervención: mediana antes de la red lleva sal y pimienta de 0,221 a 0,810; con JPEG no ayuda | 9.5 |
 | 11 | **Demo en vivo** | S y C | Uno ataca la cámara y el otro explica y activa el filtro (`c`, `g`, `m`); ver `docs/ensayo_defensa.md` | `docs/demo.md` |
 | 12 | Sistema híbrido (propuesta) | S | Clásico como detector principal, CNN como segunda opinión sobre el tipo; **no está medido**, y se dice | 12.2 |
-| 13 | Limitaciones | C | Test mirado varias veces, sesgo de fechas por clase, sin captura física ni regional, causas de la CNN en su mayoría hipótesis | 10, 11 |
+| 13 | Limitaciones | C | Test mirado varias veces, sesgo de fechas por clase, sin captura física, regional solo sintética (Medellín: clásico 0,782, CNN 0,404; favorece al clásico), causas de la CNN en su mayoría hipótesis | 10, 11 |
 | 14 | Conclusiones | C y S | Ningún módulo es más robusto en todo; la prueba en otra cámara cambia la conclusión; el clásico se explica y se corrige | 12.1 |
-| 15 | Trabajo futuro | S | Medellín (T76), captura en Armenia (T81, T75), Grad-CAM sobre imágenes degradadas, validar correcciones en validación | 12.2 |
+| 15 | Trabajo futuro | S | diagnosticar la CNN en Medellín, captura en Armenia (T81, T75), Grad-CAM sobre imágenes degradadas, validar correcciones en validación | 12.2 |
 | R1 | Respaldo: tabla ataque → causa → filtro | C | Tabla de `docs/defensa.md`, sección 3, para las preguntas | `docs/defensa.md` |
 | R2 | Respaldo: Grad-CAM **(recortable)** | S | Atención difusa con sesgo central; no prueba que la red "mire el sabotaje" | 6.6 |
 
@@ -41,7 +41,8 @@ cuestionen como una afirmación sin medir.
 ## Lo que no se debe afirmar
 
 - Que la CNN "mira el sabotaje" o "mira el contexto": Grad-CAM no lo demuestra (sección 6.6).
-- Que el resultado de Medellín o de la captura propia generaliza: no se evaluaron (sección 12.1, objetivo 6).
+- Que Medellín prueba sabotaje real: es sintético y se ajustó midiendo el módulo clásico (sección 3.5).
+- Nada de la captura propia en Armenia: no se hizo (sección 3.6).
 - Que la mediana corrige todo: ante JPEG fuerte empeora y con ruido leve resta.
 
 ## Pendiente de confirmar

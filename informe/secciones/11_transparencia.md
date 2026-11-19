@@ -18,8 +18,8 @@ después de ver resultados**. Por eso la prueba y la cámara no vista no se eval
 - **Versión 3:** corrige defectos de código (ángulos de 150° calculados con 2 o 3 puntos inflaban el umbral), no
   ajustes a los resultados.
 
-Los resultados de la prueba y de la cámara no vista son, por tanto, **optimistas**. Las pruebas que no se han
-mirado durante el desarrollo son Medellín y la captura propia.
+Los resultados de la prueba y de la cámara no vista son, por tanto, **optimistas**. La prueba de Medellín se
+corrió una sola vez, con los umbrales de Bremen y sin ajustar nada con ella. La captura propia no se hizo.
 
 ## 11.2 Las correcciones se compararon en el conjunto de prueba
 
@@ -36,11 +36,12 @@ fijarla en la demo, igual que la decisión de dejar la mediana siempre activa.
   (luz, clima, vegetación) en lugar del sabotaje. Las reglas son menos sensibles porque comparan contra
   referencias de la misma cámara; los modelos aprendidos (sección 7.3) no.
 - **Sin tapadas en la cámara no vista:** las de la ubicación 2 eran copias de la ubicación 1, así que la tapa
-  solo se evalúa en la ubicación 1, en Medellín (sintética) y en la captura propia.
+  solo se evalúa en la ubicación 1 y en Medellín (sintética).
 - **Sin tapas con la mano:** en Bremen las cámaras se taparon con objetos, así que `skin_ratio` no se pudo usar y
-  la tapa con la mano no está medida. Se prueba con la captura propia.
+  la tapa con la mano no está medida: la captura propia que la iba a medir no se hizo.
 - **Sabotaje sintético en Medellín:** el dataset no trae sabotaje, se genera por código; mide la generalización
-  a otras cámaras, no la apariencia de un sabotaje real.
+  a otras cámaras, no la apariencia de un sabotaje real. Sus parámetros se ajustaron midiendo el módulo clásico,
+  así que las cifras del clásico en la tabla 3.3 son optimistas, y 72 grupos de cámara no son 72 cámaras.
 - **La auditoría usa solo la ubicación 1:** las perturbaciones se aplicaron a la prueba de la ubicación 1, no a la
   cámara no vista.
 

@@ -87,7 +87,7 @@ ubicación 1. Fuentes: `data/splits/camara_no_vista.csv` y `data/splits/referenc
 
 Se preparó una prueba regional con el dataset público de cámaras CCTV de Medellín [7] (licencia CC BY 4.0). El
 dataset no trae sabotaje ni referencias de la misma cámara, y el módulo clásico las necesita (sección 5), así que
-se resolvieron las dos carencias por código. **Estado: la preparación está hecha y la evaluación (T76) no.**
+se resolvieron las dos carencias por código y se evaluaron los dos módulos (T76, tabla 3.3).
 
 1. **Recuperar la cámara de cada imagen (T17b).** Cada imagen se reduce a una miniatura gris de 32×18, estandarizada,
    y se agrupa con el método jerárquico de Ward. Con k = 80 grupos se conservan los de al menos 10 imágenes, y cada
@@ -105,7 +105,32 @@ se resolvieron las dos carencias por código. **Estado: la preparación está he
    desplazamiento horizontal con giro (girada) y oclusión total o parcial (tapada). Los parámetros se midieron contra
    el clasificador clásico y contra los rangos de Bremen: la desenfocada se clasifica como tal en 37 de 40 casos, y
    la tapada total en 40 de 40. **Limitación:** la tapada parcial casi siempre sale "girada", porque lo que queda
-   visible es nítido; por eso esa clase se evalúa como sabotaje frente a normal.
+   visible es nítido; por eso se reporta también si se detectó como sabotaje, sin exigir la clase.
+5. **Evaluación (T76).** Se usan las 600 normales y sus 4 variantes (3 000 imágenes). El módulo clásico conserva
+   los umbrales calibrados en Bremen y solo cambia las referencias, las 8 de la cámara de cada grupo. La CNN es la
+   de Bremen, sin reentrenar. Nada se calibró con Medellín, y la prueba se corrió una sola vez.
+
+**Tabla 3.3.** Prueba cruzada Bremen → Medellín. Fuente: `results/medellin/metricas.csv` y `recall_por_variante.csv`.
+
+| Módulo | F1 macro | Falsas alarmas | AUC binaria | Desenfocada | Girada | Tapada total | Tapada parcial |
+|---|---|---|---|---|---|---|---|
+| Clásico | 0,782 | 0,132 | 0,972 | 0,937 | 0,947 | 1,000 | 0,000 (detectada 1,000) |
+| CNN | 0,404 | 0,143 | 0,801 | 0,087 | 0,207 | 0,997 | 0,273 (detectada 0,498) |
+
+Las cuatro columnas de variantes son la proporción puesta en la clase correcta. Sin la tapada parcial, el F1
+es 0,938 para el clásico y 0,485 para la CNN.
+
+**Qué se lee y qué no.**
+
+- **Se repite el resultado de la cámara no vista:** el clásico generaliza a otras cámaras y la CNN no. La CNN deja
+  pasar como normal el 79 % de las giradas (476 de 600) y manda a "girada" más de la mitad de las desenfocadas
+  (316 de 600). La causa no se diagnosticó: no hay Grad-CAM ni intervención sobre Medellín.
+- **Las falsas alarmas no son bajas en ninguno:** 13,2 % (clásico) y 14,3 % (CNN), frente a 0,5 % y 0,0 % en
+  Bremen. El clásico falla en pocas cámaras: 7 de los 72 grupos concentran 39 de sus 79 falsas alarmas.
+- **La tabla favorece al clásico, y hay que decirlo:** los parámetros del sabotaje sintético se ajustaron midiendo
+  el propio módulo clásico (punto 4), así que sus cifras sobre desenfocada y tapada total son optimistas. Medellín
+  además mide la generalización a otras cámaras, no la apariencia de un sabotaje real.
+- **72 grupos no son 72 cámaras** (punto 2), y una parte de las falsas alarmas puede venir de esa agrupación.
 
 Código: `src/medellin.py`, `src/medellin_groups.py` y `src/synthetic_tampering.py`. Las imágenes con personas no se
 versionan ni se publican (Ley 1581 de 2012).

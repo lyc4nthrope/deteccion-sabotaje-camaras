@@ -163,8 +163,9 @@ este proyecto.
 - **Una sola configuración de CNN.** La comparación es con MobileNetV2 congelada y una cabeza lineal; no se probó
   descongelar más capas ni otra arquitectura en la cámara no vista. El resultado no permite afirmar que *ninguna*
   CNN generalice, solo que esta no lo hizo con estos datos.
-- **Sin validación regional ni física.** La prueba en Medellín y la captura en Armenia no están terminadas, y la
-  auditoría con luz real (T75) depende de esa captura (sección 8.6).
+- **Validación regional solo sintética y sin validación física.** La prueba en Medellín (sección 3.5) usa sabotaje
+  generado por código, ajustado midiendo el propio módulo clásico, y se corrió una sola vez. La captura en Armenia
+  no se hizo, y la auditoría con luz real (T75) depende de ella (sección 8.6).
 - **Causas de la CNN sin confirmar, salvo una.** Lo que se dice sobre por qué falla la CNN es hipótesis, excepto la
   sal y pimienta, que la mediana antes de la red confirma (tabla 9.6). Los mapas de Grad-CAM (T67) son centrales y
   difusos y no confirman ni descartan ninguna causa.
