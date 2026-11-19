@@ -44,9 +44,13 @@ def build_cases(normales: pd.DataFrame, manifest: pd.DataFrame) -> pd.DataFrame:
 
 
 def recall_by_variant(cases: pd.DataFrame) -> pd.DataFrame:
-    """Share of each variant that the module put in its expected class (for `normal`, the true negative rate)."""
+    """Per variant: share in its expected class (`recall`) and share flagged as anything but normal (`detectada`).
+
+    For `normal`, `recall` is the true negative rate and `detectada` is the false alarm rate.
+    """
     rows = [
-        {"variante": v, "n": len(g), "recall": float(np.mean(g["pred"] == g["label"]))}
+        {"variante": v, "n": len(g), "recall": float(np.mean(g["pred"] == g["label"])),
+         "detectada": float(np.mean(g["pred"] != "normal"))}
         for v, g in cases.groupby("variante", sort=False)
     ]
     return pd.DataFrame(rows)

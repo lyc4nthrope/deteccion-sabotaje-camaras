@@ -48,3 +48,12 @@ def test_recall_by_variant_counts_each_variant_against_its_class():
     table = E.recall_by_variant(cases)
     got = dict(zip(table["variante"], table["recall"]))
     assert got["girada"] == 0.0 and got["normal"] == 1.0 and got["tapada_total"] == 1.0
+
+
+def test_detection_counts_any_class_but_normal_as_a_detection_of_sabotage():
+    cases = E.build_cases(_normales(), _manifest())
+    cases["pred"] = np.where(cases["variante"] == "tapada_parcial", "girada", cases["label"])
+    table = E.recall_by_variant(cases).set_index("variante")
+    assert table.loc["tapada_parcial", "recall"] == 0.0  # wrong class
+    assert table.loc["tapada_parcial", "detectada"] == 1.0  # but still flagged as sabotage
+    assert table.loc["normal", "detectada"] == 0.0  # a normal image flagged would be a false alarm
