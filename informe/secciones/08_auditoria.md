@@ -1,8 +1,8 @@
 # 8. Auditoría de robustez
 
 La guía pide enfrentar ambos sistemas a entornos degradados de forma artificial o física. Esta sección reporta la
-degradación artificial del módulo clásico; la CNN, la degradación física y la prueba regional se agregan cuando
-estén sus resultados.
+degradación artificial de los dos módulos: el clásico en 8.2 y 8.3, y la CNN y la comparación en 8.4 y 8.5. La
+degradación física con luz real no se hizo (sección 8.6).
 
 ## 8.1 Conjuntos degradados
 
@@ -142,8 +142,10 @@ Fuente: `results/figuras/auditoria_roc.png`. La interpretación completa está e
 
 **Figura 8.3.** Matrices de confusión cruzadas del clásico y la CNN en condiciones críticas, filas = clase real y columnas = clase predicha. Fuente: `results/figuras/auditoria_matrices.png`.
 
-## 8.6 Pendiente
+## 8.6 Lo que no se hizo
 
-- **Degradación física** con luz real en la captura propia (Cristhian, T75, después de la captura T81).
-- **Prueba regional en Medellín:** hecha (T76, sección 3.5, tabla 3.3). Queda sin hacer la robustez de ORB, SIFT y
-  KAZE ante perturbaciones (T77), que se declara como limitación (sección 11).
+- **Degradación física con luz real:** no se hizo, porque dependía de la captura propia en Armenia, que no se tomó
+  (sección 3.6). La auditoría usa solo perturbaciones artificiales.
+- **Prueba regional en Medellín:** sí se hizo, con sabotaje sintético (sección 3.5, tabla 3.3).
+- **Robustez de ORB, SIFT y KAZE ante perturbaciones:** no se hizo; solo se comparó su separación (tabla 5.3) y se
+  declara como limitación (sección 11).

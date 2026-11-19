@@ -32,4 +32,4 @@ repositorios académicos, y no hay cámaras web públicas de Armenia o Salento q
 acordó con la docente, **el método se desarrolló y entrenó con el dataset de la Universidad de Bremen** [6], que
 se usó para entender el problema y construir el sistema. El método no depende de esa ciudad y se aplica igual a un
 dataset regional. La componente regional se evalúa con cámaras CCTV públicas de Medellín [7], a las que se aplica
-sabotaje sintético, y con una captura propia en Armenia (sección 3).
+sabotaje sintético, y se planeó una captura propia en Armenia, que no se pudo hacer (secciones 3.6 y 11).

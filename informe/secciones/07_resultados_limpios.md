@@ -99,7 +99,9 @@ cambio de dominio, no el sobreajuste de la sección 6.4. La cámara no vista no 
 son copias de la 1, sección 3), así que el F1 macro usa tres clases.
 
 **Tiempo por cuadro.** Media de **81,8 ms** (mediana 79,5 ms) en CPU, unos 12 cuadros por segundo, frente a 12,6 ms
-del clásico (sección 7.1): la CNN es unas 6,5 veces más lenta. Fuente:
+del clásico (sección 7.1). Las dos cifras salen de procedimientos distintos (12,6 ms incluye la reducción de
+tamaño; 81,8 ms parte de imágenes ya reducidas a 224×224), así que no conviene dividirlas. La comparación en las
+mismas condiciones y con la misma máquina está en la sección 8.4: unas 4 veces (12,4 frente a 51,9 ms). Fuente:
 `results/cnn/lr1e-2_b32_frozen/evaluacion/tiempo.json`.
 
 **Lectura.** En la misma cámara la CNN rinde igual o mejor que el clásico (F1 0,967 frente a 0,954), y con una cámara
