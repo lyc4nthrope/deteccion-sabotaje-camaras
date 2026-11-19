@@ -36,9 +36,12 @@ medido (sección 10).
    baja el F1 limpio de 0,954 a 0,323. Para la CNN, síntomas y dirección del error están medidos y la causa de la sal
    y pimienta se confirmó al aplicar la mediana antes de la red (F1 0,221 → 0,810, tabla 9.6); las demás causas
    siguen siendo hipótesis: Grad-CAM (T67) da mapas centrales y difusos que no las resuelven.
-6. **Generalización regional: no cumplido.** La prueba en Medellín y la captura propia en Armenia no se
-   completaron para esta entrega. La única medida de generalización es la segunda cámara de Bremen, que sí muestra
-   la diferencia entre los dos enfoques (F1 0,920 frente a 0,580).
+6. **Generalización regional: cumplido en parte.** La prueba en cámaras de Medellín se hizo con sabotaje sintético
+   (sección 3.5, tabla 3.3) y repite el resultado de la cámara no vista: F1 0,782 para el clásico y 0,404 para la
+   CNN, con falsas alarmas de 13,2 % y 14,3 %. Es una prueba sintética, ajustada midiendo el propio clásico, así
+   que favorece a ese módulo. **La captura propia en Armenia no se hizo**, y con ella la muestra de sabotaje real
+   de la región y la tapa con la mano. La otra medida de generalización es la segunda cámara de Bremen (F1 0,920
+   frente a 0,580).
 
 **Lección de método.** La prueba en la misma cámara habría llevado a una conclusión equivocada: con F1 de 0,954 y
 0,967, la CNN parecía igual o mejor. Solo la cámara no vista mostró que las reglas, al compararse contra referencias
@@ -47,10 +50,9 @@ también KNN, SVM y Naive Bayes sobre los descriptores clásicos (sección 7.3)�
 
 ## 12.2 Trabajo futuro
 
-1. **Prueba regional en Medellín (T16–T18, T76).** Agrupar las imágenes CCTV públicas de Medellín [7] por cámara
-   con clustering jerárquico de Ward (PR #31, prioridad P2, no entregado), generar el sabotaje sintético con semilla
-   fija y evaluar los dos módulos. Es la prueba que falta para el objetivo 6 y la única que no se miró durante el
-   desarrollo (sección 11.1).
+1. **Diagnosticar por qué la CNN falla en Medellín (T76).** La prueba mostró el síntoma (deja pasar como normal el
+   79 % de las giradas) pero no la causa. Queda aplicar Grad-CAM e intervenciones a esas imágenes, y repetir la
+   prueba con sabotaje que no se haya ajustado contra el módulo clásico.
 2. **Captura propia en Armenia y auditoría física (T81, T75).** El protocolo y el ayudante de captura ya existen
    (`src/capture.py`); faltan las fotos. Con ellas se mide la tapa con la mano, que Bremen no tiene (sección 11.3),
    y se compara la luz real con la perturbación artificial equivalente: si el oscurecimiento por código predice la
