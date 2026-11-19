@@ -1,0 +1,11 @@
+variante,n,recall,modelo
+normal,600,0.8683333333333333,clasico
+desenfocada,600,0.9366666666666666,clasico
+girada,600,0.9466666666666667,clasico
+tapada_total,600,1.0,clasico
+tapada_parcial,600,0.0,clasico
+normal,600,0.8566666666666667,cnn
+desenfocada,600,0.08666666666666667,cnn
+girada,600,0.20666666666666667,cnn
+tapada_total,600,0.9966666666666667,cnn
+tapada_parcial,600,0.2733333333333333,cnn
