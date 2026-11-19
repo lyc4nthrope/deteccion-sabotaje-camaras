@@ -75,8 +75,36 @@ Los puntos de cada curva están en `results/clasico/roc_<conjunto>.csv`; la figu
 
 ## 7.2 Módulo de aprendizaje profundo
 
-*Redacta Santiago (T64): métricas, matrices de confusión, curva ROC y tiempo por cuadro de la CNN en prueba y en
-la cámara no vista, con las mismas funciones de `src/metrics.py`.*
+**Tabla 7.6.** Métricas globales de la CNN (MobileNetV2, tasa 1e-2, lote 32, base congelada). Fuente:
+`results/cnn/lr1e-2_b32_frozen/evaluacion/resumen.csv`.
+
+| Conjunto | Imágenes | Exactitud | F1 macro | Falsas alarmas | AUC binaria |
+|---|---|---|---|---|---|
+| **Prueba** | 327 | **0,994** | **0,967** | **0,0 %** | **1,000** (0,99996) |
+| **Cámara no vista** | 1163 | **0,739** | **0,580** | **4,2 %** | **0,753** |
+
+**Tabla 7.7.** Matriz de confusión de la CNN en la cámara no vista (filas = clase real). Fuente:
+`results/cnn/lr1e-2_b32_frozen/evaluacion/matriz_camara_no_vista.csv`.
+
+| | normal | desenfocada | girada | tapada |
+|---|---|---|---|---|
+| normal | 714 | 1 | 30 | 0 |
+| desenfocada | 110 | 80 | 61 | 0 |
+| girada | 102 | 0 | 65 | 0 |
+| tapada | 0 | 0 | 0 | 0 |
+
+En la prueba, que es de la misma cámara que el entrenamiento, la CNN no comete falsas alarmas y solo se equivoca en
+2 de 9 giradas. En la cámara no vista **110 de 251 desenfocadas y 102 de 167 giradas salen como normal**: es un
+cambio de dominio, no el sobreajuste de la sección 6.4. La cámara no vista no tiene tapadas (las de la ubicación 2
+son copias de la 1, sección 3), así que el F1 macro usa tres clases.
+
+**Tiempo por cuadro.** Media de **81,8 ms** (mediana 79,5 ms) en CPU, unos 12 cuadros por segundo, frente a 12,6 ms
+del clásico (sección 7.1): la CNN es unas 6,5 veces más lenta. Fuente:
+`results/cnn/lr1e-2_b32_frozen/evaluacion/tiempo.json`.
+
+**Lectura.** En la misma cámara la CNN rinde igual o mejor que el clásico (F1 0,967 frente a 0,954), y con una cámara
+nueva el orden se invierte (0,580 frente a 0,920). Esta diferencia es la que justifica la discusión de la sección 10.
+No hay curva ROC de la CNN guardada en `results/`: el AUC se calculó con 1 − P(normal) como puntaje de sabotaje.
 
 ## 7.3 Comparación con los clasificadores aprendidos
 

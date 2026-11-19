@@ -85,10 +85,46 @@ ubicación 1. Fuentes: `data/splits/camara_no_vista.csv` y `data/splits/referenc
 
 ## 3.5 Prueba regional en Medellín
 
-*Redacta Santiago (T16–T18): dataset de cámaras CCTV públicas de Medellín [7], agrupación por cámara (T17b) y
-sabotaje sintético.*
+Se preparó una prueba regional con el dataset público de cámaras CCTV de Medellín [7] (licencia CC BY 4.0). El
+dataset no trae sabotaje ni referencias de la misma cámara, y el módulo clásico las necesita (sección 5), así que
+se resolvieron las dos carencias por código. **Estado: la preparación está hecha y la evaluación (T76) no.**
+
+1. **Recuperar la cámara de cada imagen (T17b).** Cada imagen se reduce a una miniatura gris de 32×18, estandarizada,
+   y se agrupa con el método jerárquico de Ward. Con k = 80 grupos se conservan los de al menos 10 imágenes, y cada
+   uno toma 8 imágenes como referencias. Elegir k no tiene un codo claro: la silueta decrece con k
+   (`results/medellin_k.csv`).
+2. **Qué tan confiables son los grupos.** Un grupo es confiable si el 70 % o más de sus imágenes coincide por ORB con
+   sus propias referencias; quedan 72 grupos. Esa tasa sola no prueba nada, así que se hizo un **control negativo**:
+   las mismas imágenes contra otro grupo dan una tasa media de 0,953 con el propio, 0,219 con 3 grupos al azar y
+   0,616 con los 5 más cercanos (`results/medellin_control_negativo.csv`). Las referencias propias discriminan, pero
+   el umbral de 12,5 coincidencias da una coincidencia falsa con otra escena cerca del 22 % de las veces, y **los 80
+   grupos no son 80 cámaras**: varios vecinos son la misma cámara partida.
+3. **Selección sin fugas.** Se eligieron 600 imágenes normales de los grupos confiables, sin ninguna de las
+   referencias y a más de 10 minutos de cualquiera; una prueba lo verifica sobre los CSV versionados.
+4. **Sabotaje sintético (T18).** Se generan tres clases por código con semilla fija: desenfoque gaussiano,
+   desplazamiento horizontal con giro (girada) y oclusión total o parcial (tapada). Los parámetros se midieron contra
+   el clasificador clásico y contra los rangos de Bremen: la desenfocada se clasifica como tal en 37 de 40 casos, y
+   la tapada total en 40 de 40. **Limitación:** la tapada parcial casi siempre sale "girada", porque lo que queda
+   visible es nítido; por eso esa clase se evalúa como sabotaje frente a normal.
+
+Código: `src/medellin.py`, `src/medellin_groups.py` y `src/synthetic_tampering.py`. Las imágenes con personas no se
+versionan ni se publican (Ley 1581 de 2012).
 
 ## 3.6 Captura propia en Armenia
 
-*Redacta Santiago (T80–T81): protocolo, conteo por clase, conjunto de iluminación física y cumplimiento de la
-Ley 1581 de 2012.*
+Para tener una muestra de sabotaje real en una escena de la región, se definió un protocolo de captura en Armenia,
+Quindío (`docs/captura.md`). **Estado: el protocolo y el ayudante de captura están hechos; las fotos no se tomaron
+para esta entrega** (sección 11).
+
+- **Qué se planeó capturar:** unas 100 imágenes por clase (normal, desenfocada, girada y tapada, esta última mitad
+  total y mitad parcial), repartidas en tres condiciones de luz (apagada, lámpara y contraluz), más 8 referencias
+  normales por luz que no entran en la evaluación.
+- **Orden de la sesión:** la luz se fija por bloques y dentro de cada bloque se toman las cuatro clases, sin cambiar
+  la luz.
+- **Evaluación sin fugas:** una ráfaga entera va a un solo conjunto, porque las fotos de una misma ráfaga son casi
+  duplicadas.
+- **Protección de datos (Ley 1581 de 2012):** no capturar a personas identificables, o pedir autorización escrita
+  previa; difuminar con YOLOv8n antes de usar o compartir, revisar a mano la copia difuminada y borrar las
+  originales con personas; nunca publicar imágenes con personas, y los datos no se suben al repositorio.
+- **Ayudante:** `src/capture.py` toma las ráfagas, nombra los archivos y llena la hoja de sesión. Se probó con
+  cámaras simuladas (14 pruebas) y con un video de 1280×720; no se probó con una webcam real.
