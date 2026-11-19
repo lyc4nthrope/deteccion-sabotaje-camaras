@@ -100,6 +100,11 @@ Se calculó Grad-CAM sobre la última capa convolucional (mapa de 7×7) para la 
 no vista, y se midió el reparto de la atención por tercios verticales **frente a la línea base de un mapa uniforme**
 (1/3 por tercio) (`notebooks/05_explicabilidad_cnn.ipynb`, `results/cnn/lr1e-2_b32_frozen/gradcam_resumen.csv`).
 
+![Grad-CAM en el conjunto de prueba](../../results/figuras/gradcam_test.png)
+
+**Figura 6.2.** Grad-CAM de la CNN en el conjunto de prueba, cuatro imágenes por clase. El rojo marca la zona que más pesó en la decisión; el título en rojo es un error. Fuente: `results/figuras/gradcam_test.png`.
+
+
 - **Atención difusa, con sesgo central moderado.** El tercio medio concentra entre 0,442 y 0,585 de la atención
   (1,3 a 1,8 veces el azar) en todas las clases y cámaras. Es el sesgo central habitual de Grad-CAM sobre un mapa tan
   grueso, y no prueba por sí solo que la red mire el centro.

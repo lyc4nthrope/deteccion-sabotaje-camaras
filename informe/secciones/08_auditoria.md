@@ -138,6 +138,10 @@ Tiempo por cuadro (mediana de las 19 condiciones): clásico **12,4 ms**, CNN **5
 **Figura 8.2.** ROC normal frente a sabotaje por perturbación: nivel 3 (continua) frente a la original (punteada).
 Fuente: `results/figuras/auditoria_roc.png`. La interpretación completa está en `notebooks/06_auditoria.ipynb`.
 
+![Matrices de confusión cruzadas](../../results/figuras/auditoria_matrices.png)
+
+**Figura 8.3.** Matrices de confusión cruzadas del clásico y la CNN en condiciones críticas, filas = clase real y columnas = clase predicha. Fuente: `results/figuras/auditoria_matrices.png`.
+
 ## 8.6 Pendiente
 
 - **Degradación física** con luz real en la captura propia (Cristhian, T75, después de la captura T81).
