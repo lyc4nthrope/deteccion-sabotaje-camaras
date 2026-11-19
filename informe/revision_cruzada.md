@@ -25,7 +25,8 @@ corrección propuesta. Una cifra se verifica contra el CSV que la cita, no contr
 - [ ] Lo que no se midió está dicho como **hipótesis** o **no medido**: causas de la CNN con JPEG y ruido gaussiano,
       sistema híbrido, tapa con la mano, degradación física.
 - [ ] Nada afirma que la CNN "mire el sabotaje" o "el contexto" (Grad-CAM no lo prueba).
-- [ ] La captura propia y Medellín figuran como **no evaluadas**, de forma consistente en las secciones 3, 11 y 12.
+- [ ] La captura propia figura como **no hecha** y Medellín como **sintética y favorable al clásico**, de forma
+      consistente en las secciones 3, 10, 11 y 12 (cifras de la tabla 3.3 contra `results/medellin/`).
 - [ ] El test se mencionó como mirado varias veces donde se eligió un filtro o un parámetro con él.
 
 **Coherencia**
@@ -40,9 +41,8 @@ corrección propuesta. Una cifra se verifica contra el CSV que la cita, no contr
 
 ## Cosas que ya se sabe que hay que mirar
 
-- **Sección 3.5 (Medellín) y 3.6 (Armenia):** el código de Medellín vive en los PR #2 y #31, todavía sin fusionar a
-  `main`. Si no se fusionan, la sección debe seguir diciendo "preparado, no evaluado". Si se toman las fotos de
-  Armenia, hay que cambiar el estado de la 3.6 y de la 11.
+- **Sección 3.5 (Medellín) y 3.6 (Armenia):** Medellín ya está evaluado (T76, tabla 3.3). Revisar que se diga que
+  el sabotaje sintético se ajustó midiendo el clásico. Las fotos de Armenia no se tomaron: la 3.6 y la 11 lo dicen.
 - **Sección 8.6 (Pendiente):** sigue con la lista de T75, T76 y T77. Confirmar qué se declara como limitación en la
   sección 11.
 - **Sección 11:** una de sus frases ("se prueba con la captura propia") puede leerse como que la captura se hizo.
