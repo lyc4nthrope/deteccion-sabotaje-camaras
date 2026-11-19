@@ -80,7 +80,7 @@ Día 1 = martes 3 de noviembre. Detalle y verificación de capacidad en la secci
   - **Cómo verificar:** 6324 imágenes JPG de 1280×720; licencia y cita escritas.
 - [ ] **T17 ⛔ P2** Seleccionar ≈600 imágenes normales de Medellín repartidas entre cámaras.
   - **Qué hacer:** excluir, si es posible, las imágenes con personas identificables en primer plano; documentar el criterio en `docs/datos.md`.
-  - **Riesgo:** ORB necesita referencias de la **misma** cámara. La cámara no se deduce del nombre de archivo: se recupera con clustering en T17b; como alternativa, evaluar la rotación en Medellín con la orientación de Hough, que no usa referencias.
+  - **Riesgo:** ORB necesita referencias de la **misma** cámara. La cámara no se deduce del nombre de archivo: se recupera con clustering en T17b; la alternativa con la orientación de Hough **no está implementada**; si el clustering no alcanza, Medellín pasa al informe como limitación declarada.
   - **Cómo verificar:** ≈600 imágenes repartidas entre cámaras, con el criterio escrito.
 - [ ] **T17b ⛔ P2** Agrupar las imágenes de Medellín por cámara con clustering no supervisado (clase 20, D15).
   - **Qué hacer:** descriptor global compacto (miniatura en gris de 32×18 o histograma de color); clustering jerárquico de Ward con dendrograma (o K-means con método del codo) para elegir el número de grupos (cerca de 80 cámaras); verificación visual de una muestra de grupos; descarte de grupos con menos de 10 imágenes; apartar 8 referencias por grupo como en `calibration_split`. Resuelve el bloqueo de la revisión del PR #2: Medellín no tiene referencias de la misma cámara y el módulo clásico las necesita.
