@@ -192,3 +192,24 @@ la red, que es lo que haría la demo con el filtro activado (`src/audit_cnn_filt
 **Límites.** Una sola corrida de la CNN (semilla 0), la mediana de 3×3 como único filtro, y no se probó CLAHE ni el
 bilateral delante de la red. Los valores de la sección 9.5 se calcularon sobre el conjunto de prueba, que ya se miró
 más de una vez (sección 11).
+
+## 9.6 Recomendaciones de preprocesamiento, calidad, formato y tamaño
+
+Resumen de decisiones que salen de los resultados anteriores. Cada fila dice qué hacer, con qué número se sostiene y
+qué tan firme es.
+
+**Tabla 9.7.** Recomendaciones de preprocesamiento. Fuentes: tablas 9.4 y 9.6 y `results/auditoria/`.
+
+| Decisión | Recomendación | Evidencia | Qué tan firme es |
+|---|---|---|---|
+| Tamaño de la imagen | Reducir a 640×360 para el clásico y a 224×224 para la CNN, como hacen los dos módulos. | Con ese tamaño se midieron todos los resultados; las imágenes originales llegan hasta 4608×2592 (sección 8.1). | **No medido:** no se probó otro tamaño, así que no se sabe si uno mayor o menor mejora o empeora. |
+| Orden de los canales | Dar la imagen a la CNN en RGB y escalada de −1 a 1, no en BGR, que es el orden con que OpenCV lee. | `audit_cnn.to_cnn_input` invierte los canales antes de la red. | Es una condición del código, no un experimento. |
+| Calidad JPEG | Guardar o transmitir con calidad 30 o más. | F1 de la CNN: 0,948 (calidad 60), 0,985 (30) y 0,575 (10). Clásico: 0,934, 0,975 y 0,903. | Medido en prueba, una corrida. Con calidad 10 la CNN falla y la mediana no la recupera (0,575 a 0,522). |
+| Ruido de sal y pimienta | Mediana de 3×3 antes del módulo. | Niveles 1 y 2: clásico 0,278 a 0,982 y 0,267 a 0,986; CNN 0,694 a 0,967 y 0,244 a 0,967. Con 10 %: clásico 0,456 y CNN 0,810. | Medido. No daña las imágenes limpias (clásico 0,954 a 0,982; CNN 0,967 a 0,967). |
+| Ruido gaussiano | Leve (σ = 5): filtro bilateral o gaussiano. Fuerte (σ de 15 en adelante): evitarlo en el origen, con más luz o menos ganancia del sensor. | Clásico con σ = 5: 0,266 a 0,966 con bilateral y a 0,862 con gaussiano. Con σ = 15 el mejor filtro llega a 0,665 y con σ = 30 ninguno pasa de 0,34. | Medido en prueba para el clásico. En la CNN la mediana ayuda a medias (σ = 15: 0,764 a 0,878). |
+| Poca luz | Gamma inversa si se conoce cuánto se oscureció; no usar CLAHE a ciegas. | Gamma 3: 0,599 a 0,871. CLAHE sin ataque baja el F1 limpio de 0,954 a 0,323. | La gamma inversa usó el nivel real del ataque, así que 0,871 es una cota superior: un sistema real tendría que estimarlo. |
+| Luz saturada | No hay filtro digital: bajar la exposición o cambiar el ángulo de la cámara. | La inversa del brillo empeora el nivel 3 (0,852 a 0,795). | Medido. Lo que se saturó en 255 no tiene información que recuperar. |
+
+**Lo que no se midió:** el efecto del tamaño de la imagen, del formato sin pérdida (por ejemplo PNG) y de otros
+códecs de video. Estas recomendaciones valen para el conjunto de prueba de la ubicación 1, que ya se miró más de una
+vez (sección 11), y no se confirmaron en otra cámara.
