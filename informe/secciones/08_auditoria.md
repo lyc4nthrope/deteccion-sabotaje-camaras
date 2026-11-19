@@ -141,5 +141,5 @@ Fuente: `results/figuras/auditoria_roc.png`. La interpretación completa está e
 ## 8.6 Pendiente
 
 - **Degradación física** con luz real en la captura propia (Cristhian, T75, después de la captura T81).
-- **Prueba regional en Medellín** y robustez de ORB, SIFT y KAZE ante perturbaciones (Santiago, T76 y T77). Si no
-  alcanza el tiempo, se declara como limitación (sección 11).
+- **Prueba regional en Medellín:** hecha (T76, sección 3.5, tabla 3.3). Queda sin hacer la robustez de ORB, SIFT y
+  KAZE ante perturbaciones (T77), que se declara como limitación (sección 11).
